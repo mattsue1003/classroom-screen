@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教室螢幕 Classroom Screen</title>
+<meta name="description" content="老師的互動教室螢幕：計時器、抽籤、分組、骰子、音量計、嵌入網頁、白板等小工具，線上與實體課堂都能用。">
+<style>
+:root{
+  --ink:#1b2430; --muted:#6b7684; --line:rgba(0,0,0,.08);
+  --win:rgba(255,255,255,.96); --win-head:rgba(246,248,250,.9);
+  --accent:#2a7de1; --accent-2:#0fa37f; --danger:#e5484d; --warn:#f0a000;
+  --bar:rgba(20,24,32,.86); --bar-ink:#eef2f7;
+  --radius:16px; --shadow:0 10px 30px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.1);
+  --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);color:var(--ink);overflow:hidden;background:#1f2a44;user-select:none;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,[contenteditable]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- 舞台與背景 ---------- */
+#stage{position:fixed;inset:0;overflow:hidden;background:var(--bg,linear-gradient(135deg,#1e3c72,#2a5298));background-size:cover;background-position:center;transition:background .4s}
+#stage.grid::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+#empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:rgba(255,255,255,.75);text-align:center;pointer-events:none;padding:20px}
+#empty h1{font-size:clamp(22px,4vw,40px);margin:0;font-weight:700;letter-spacing:.04em;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+#empty p{margin:0;font-size:clamp(14px,1.6vw,18px);opacity:.9}
+#empty.hide{display:none}
+
+/* ---------- 視窗 ---------- */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--win);border-radius:var(--radius);box-shadow:var(--shadow);min-width:180px;min-height:120px;overflow:hidden;backdrop-filter:blur(8px);touch-action:none}
+.win.active{box-shadow:0 14px 40px rgba(0,0,0,.28),0 0 0 2px rgba(42,125,225,.55)}
+.win.max{border-radius:0}
+.win-head{display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 12px;background:var(--win-head);border-bottom:1px solid var(--line);cursor:grab;flex:none}
+.win-head:active{cursor:grabbing}
+.win-head .ic{font-size:16px;line-height:1}
+.win-head .ttl{flex:1;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#333}
+.win-head .hb{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#555;font-size:15px;touch-action:auto}
+.win-head .hb:hover{background:rgba(0,0,0,.07)}
+.win-head .hb.x:hover{background:#fde8e8;color:var(--danger)}
+.win-body{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;touch-action:auto}
+.rs{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;touch-action:none}
+.rs::after{content:"";position:absolute;right:5px;bottom:5px;width:9px;height:9px;border-right:2px solid #aab;border-bottom:2px solid #aab;border-radius:0 0 3px 0}
+
+/* ---------- 共用小元件 ---------- */
+.pad{padding:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.center{display:flex;align-items:center;justify-content:center;text-align:center}
+.col{display:flex;flex-direction:column}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border-radius:10px;background:#eef2f6;color:#222;font-size:14px;font-weight:600;line-height:1;transition:background .15s,transform .05s;white-space:nowrap}
+.btn:hover{background:#e2e8f0}
+.btn:active{transform:scale(.97)}
+.btn.p{background:var(--accent);color:#fff}.btn.p:hover{background:#1f6ccf}
+.btn.g{background:var(--accent-2);color:#fff}.btn.g:hover{background:#0b8d6e}
+.btn.d{background:#fde8e8;color:var(--danger)}.btn.d:hover{background:#fbd5d5}
+.btn.sm{padding:5px 9px;font-size:12.5px;border-radius:8px}
+.btn.on{background:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.inp{padding:7px 10px;border:1px solid #cfd6de;border-radius:10px;background:#fff;font-size:14px;min-width:0;width:100%}
+textarea.inp{resize:none;line-height:1.5}
+.foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-top:1px solid var(--line);background:rgba(0,0,0,.02);flex:none}
+.muted{color:var(--muted);font-size:12.5px}
+.big{font-variant-numeric:tabular-nums;font-weight:800;line-height:1;letter-spacing:.02em}
+.fit{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;overflow:hidden}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+input[type=range]{accent-color:var(--accent)}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2f6;font-size:12px;font-weight:600}
+
+/* ---------- 底部工具列 ---------- */
+#bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100vw - 20px);display:flex;align-items:stretch;gap:4px;padding:6px;border-radius:18px;background:var(--bar);color:var(--bar-ink);box-shadow:0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(12px);z-index:5000;transition:transform .3s,opacity .3s}
+#bar.hidden{transform:translateX(-50%) translateY(120%);opacity:0;pointer-events:none}
+#bar .tools{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding:0 2px;flex:1 1 auto;min-width:0}
+#bar>.tb,#bar .sep{flex:none}
+#bar .tools::-webkit-scrollbar{display:none}
+#bar .sep{width:1px;background:rgba(255,255,255,.15);margin:4px 4px}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:58px;padding:6px 6px;border-radius:12px;color:var(--bar-ink);font-size:11px;line-height:1;flex:none;transition:background .15s}
+.tb .i{font-size:21px;line-height:1}
+.tb:hover{background:rgba(255,255,255,.12)}
+.tb.on{background:rgba(42,125,225,.55)}
+#barToggle{position:fixed;right:14px;bottom:14px;z-index:5001;width:40px;height:40px;border-radius:50%;background:var(--bar);color:#fff;font-size:18px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none}
+#barToggle.show{display:grid;place-items:center}
+
+/* ---------- 面板 / 對話框 ---------- */
+.panel{position:fixed;right:14px;top:14px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 110px);overflow:auto;background:#fff;border-radius:16px;box-shadow:var(--shadow);z-index:6000;display:none;flex-direction:column}
+.panel.open{display:flex}
+.panel h3{margin:0;padding:14px 16px;font-size:15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.panel h3 .grow{flex:1}
+.panel .pbody{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.sw{aspect-ratio:1;border-radius:10px;border:2px solid transparent;cursor:pointer;background-size:cover;background-position:center}
+.sw.on{border-color:var(--accent);box-shadow:0 0 0 2px #fff inset}
+.scene{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.scene .n{flex:1;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:7000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.card{background:#fff;border-radius:18px;max-width:640px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow)}
+.card .pad{padding:20px 22px}
+.card h2{margin:0 0 10px;font-size:20px}
+.card ul{padding-left:20px;line-height:1.7;margin:8px 0}
+kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-width:2px;border-radius:5px;font-size:12px;background:#f7f8fa}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:#1b2430;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:9000;box-shadow:var(--shadow);opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ---------- 全螢幕畫筆覆蓋層 ---------- */
+#overlay{position:fixed;inset:0;width:100%;height:100%;z-index:4000;display:none;touch-action:none;cursor:crosshair}
+#overlay.on{display:block}
+#overlayTools{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:4100;display:none;gap:6px;padding:6px 8px;border-radius:14px;background:var(--bar);box-shadow:var(--shadow);align-items:center}
+#overlayTools.on{display:flex}
+.dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.4);cursor:pointer}
+.dot.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+
+/* ---------- 各小工具 ---------- */
+.clock-time{font-size:clamp(28px,10cqw,160px)}
+.clock-date{font-size:clamp(12px,3cqw,28px);color:var(--muted);margin-top:6px}
+.analog{width:min(100%,100cqh);aspect-ratio:1}
+.timer-disp{font-size:clamp(32px,14cqw,200px);transition:color .2s}
+.timer-disp.alarm{color:var(--danger);animation:blink .6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.ring{position:absolute;inset:0;pointer-events:none}
+.pick-out{font-size:clamp(24px,9cqw,120px);font-weight:800;word-break:break-all;transition:transform .15s}
+.pick-out.pop{animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+.dice-wrap{display:flex;gap:4%;align-items:center;justify-content:center;flex-wrap:wrap}
+.die{position:relative;width:clamp(50px,22cqw,160px);aspect-ratio:1;border-radius:18%;background:#fff;border:2px solid #333;box-shadow:0 4px 0 #bbb,inset 0 0 0 2px #fff}
+.die.roll{animation:shake .5s ease}
+@keyframes shake{0%{transform:rotate(0)}25%{transform:rotate(-20deg) scale(.9)}50%{transform:rotate(15deg)}75%{transform:rotate(-10deg) scale(1.05)}100%{transform:rotate(0)}}
+.die i{position:absolute;width:19%;height:19%;transform:translate(-50%,-50%);border-radius:50%;background:#222;visibility:hidden}
+.die i.on{visibility:visible}
+.textbox{flex:1;padding:14px;outline:none;overflow:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word;user-select:text;cursor:text}
+.meter{flex:1;display:flex;flex-direction:column;justify-content:flex-end;margin:12px;border-radius:12px;background:#eef2f6;overflow:hidden;position:relative}
+.meter .lv{width:100%;background:linear-gradient(0deg,#0fa37f,#f0c000 60%,#e5484d);transition:height .08s;height:0}
+.meter .th{position:absolute;left:0;right:0;border-top:2px dashed #e5484d}
+.meter .face{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(30px,18cqw,120px);pointer-events:none}
+.tl{width:min(34cqw,100%);max-height:100%;aspect-ratio:1/2.9;background:#2b2f36;border-radius:14%/5%;display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:6%}
+.tl .lamp{width:72%;aspect-ratio:1;border-radius:50%;opacity:.18;cursor:pointer;transition:opacity .2s,box-shadow .2s}
+.tl .lamp.on{opacity:1;box-shadow:0 0 30px currentColor}
+.tl.h{flex-direction:row;aspect-ratio:2.9/1;width:100%;height:min(34cqh,100%);border-radius:5%/14%}
+.tl.h .lamp{width:auto;height:72%}
+.sym-grid{display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:minmax(70px,1fr);gap:8px;padding:10px;flex:1;min-height:0;overflow:auto}
+.sym{border-radius:14px;background:#f1f4f8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:clamp(12px,2.6cqw,18px);cursor:pointer;border:3px solid transparent;transition:all .15s}
+.sym .e{font-size:clamp(24px,8cqw,56px)}
+.sym.on{background:#e3f0ff;border-color:var(--accent)}
+.sym-big{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.sym-big .e{font-size:clamp(50px,30cqw,220px);line-height:1}
+.sym-big .t{font-size:clamp(16px,6cqw,44px);font-weight:800}
+.embed-frame{flex:1;border:0;background:#fff;width:100%}
+.draw-cv{flex:1;min-height:0;background:#fff;touch-action:none;cursor:crosshair;display:block;width:100%;height:100%}
+.poll-opt{display:flex;align-items:center;gap:8px;padding:6px 0}
+.poll-bar{flex:1;height:30px;background:#eef2f6;border-radius:8px;overflow:hidden;position:relative}
+.poll-bar b{position:absolute;left:0;top:0;bottom:0;background:var(--accent);transition:width .3s;border-radius:8px}
+.poll-bar span{position:absolute;left:10px;top:0;bottom:0;display:flex;align-items:center;font-weight:700;font-size:14px;color:#111;text-shadow:0 0 4px #fff}
+.team{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#f3f6f9;margin:6px 10px}
+.team .nm{flex:1;font-weight:700;font-size:clamp(14px,4cqw,24px);border:0;background:transparent;min-width:0}
+.team .sc{font-size:clamp(22px,7cqw,48px);font-weight:800;min-width:1.6em;text-align:center;font-variant-numeric:tabular-nums}
+.team .pm{width:34px;height:34px;border-radius:50%;background:#fff;font-size:18px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.task{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:clamp(14px,3.6cqw,20px)}
+.task input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent-2);flex:none}
+.task .t{flex:1;border:0;background:transparent;min-width:0;font:inherit;padding:2px 0}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+.task .x{color:#aaa;font-size:16px;padding:4px}
+.task .x:hover{color:var(--danger)}
+.img-view{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#f3f4f6;overflow:hidden}
+.img-view img{max-width:100%;max-height:100%;object-fit:contain}
+.grp{display:grid;gap:8px;padding:10px;flex:1;min-height:0;overflow:auto;align-content:start;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.grp .g{background:#f1f4f8;border-radius:12px;padding:10px}
+.grp .g h4{margin:0 0 6px;font-size:14px;color:var(--accent)}
+.grp .g div{font-size:14px;line-height:1.6}
+.rnum{font-size:clamp(40px,22cqw,220px)}
+.qr-box{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
+.qr-box img,.qr-box canvas{max-width:100%;max-height:100%;image-rendering:pixelated}
+.win-body{container-type:size}
+@media (max-width:700px){.tb{min-width:44px;padding:8px 4px;font-size:0;gap:0}.tb .i{font-size:22px}#bar{bottom:8px;max-width:calc(100vw - 12px)}#bar .tools{min-width:96px}}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="empty">
+    <h1>教室螢幕</h1>
+    <p>從下方工具列加入小工具，拖曳標題列可移動、拉右下角可調整大小。</p>
+    <p class="muted" style="color:rgba(255,255,255,.6)">按 <b>F</b> 全螢幕、<b>H</b> 隱藏工具列、<b>?</b> 說明</p>
+  </div>
+</div>
+
+<canvas id="overlay"></canvas>
+<div id="overlayTools">
+  <span class="dot on" data-c="#e5484d" style="background:#e5484d"></span>
+  <span class="dot" data-c="#2a7de1" style="background:#2a7de1"></span>
+  <span class="dot" data-c="#0fa37f" style="background:#0fa37f"></span>
+  <span class="dot" data-c="#f0c000" style="background:#f0c000"></span>
+  <span class="dot" data-c="#111" style="background:#111"></span>
+  <span class="dot" data-c="#fff" style="background:#fff"></span>
+  <input type="range" id="ovSize" min="2" max="30" value="6" style="width:90px">
+  <button class="btn sm" id="ovEraser">橡皮擦</button>
+  <button class="btn sm" id="ovClear">清除</button>
+  <button class="btn sm d" id="ovClose">關閉畫筆 (Esc)</button>
+</div>
+
+<div id="bar">
+  <div class="tools" id="tools"></div>
+  <div class="sep"></div>
+  <button class="tb" id="btnPen" title="在整個螢幕上畫圖"><span class="i">🖍️</span>畫筆</button>
+  <button class="tb" id="btnBg"><span class="i">🎨</span>背景</button>
+  <button class="tb" id="btnScenes"><span class="i">🗂️</span>場景</button>
+  <button class="tb" id="btnFull"><span class="i">⛶</span>全螢幕</button>
+  <button class="tb" id="btnHelp"><span class="i">❔</span>說明</button>
+  <button class="tb" id="btnHide" title="隱藏工具列 (H)"><span class="i">⬇️</span>隱藏</button>
+</div>
+<button id="barToggle" title="顯示工具列 (H)">⬆️</button>
+
+<!-- 背景面板 -->
+<div class="panel" id="pnBg">
+  <h3>🎨 背景 <span class="grow"></span><button class="hb btn sm" data-close>✕</button></h3>
+  <div class="pbody">
+    <div class="swatches" id="swatches"></div>
+    <div class="row"><input class="inp grow" id="bgUrl" placeholder="圖片網址 https://…"><button class="btn p" id="bgUrlGo">套用</button></div>
+    <div class="row"><label class="btn grow">📁 上傳圖片<input type="file" id="bgFile" accept="image/*" hidden></label><button class="btn" id="bgGrid">格線</button></div>
+    <p class="muted" style="margin:0">上傳的圖片會存在這台裝置的瀏覽器中，建議 2MB 以下。</p>
+  </div>
+</div>
+
+<!-- 場景面板 -->
+<div class="panel" id="pnScenes">
+  <h3>🗂️ 場景 <span class="grow"></span><button class="hb btn sm" data-close>✕</button></h3>
+  <div class="pbody">
+    <p class="muted" style="margin:0">把目前的版面（小工具位置、內容、背景）存成場景，下次上課一鍵載入。</p>
+    <div class="row"><input class="inp grow" id="sceneName" placeholder="場景名稱，例如：三年級國語"><button class="btn p" id="sceneSave">儲存</button></div>
+    <div id="sceneList" class="col" style="gap:8px"></div>
+    <div class="row">
+      <button class="btn grow" id="exportBtn">⬇️ 匯出全部</button>
+      <label class="btn grow">⬆️ 匯入<input type="file" id="importFile" accept="application/json" hidden></label>
+    </div>
+    <button class="btn d" id="clearAll">🧹 清空目前螢幕</button>
+  </div>
+</div>
+
+<!-- 說明 -->
+<div class="modal" id="help">
+  <div class="card"><div class="pad">
+    <h2>教室螢幕 使用說明</h2>
+    <p style="margin:0 0 6px;line-height:1.6">把這個頁面投影到教室白板，或在線上課程中分享螢幕，就能用各種小工具與學生互動。所有內容都存在你這台裝置的瀏覽器中，不會上傳。</p>
+    <ul>
+      <li><b>加入小工具</b>：點底部工具列的圖示。可以同時開很多個，同一種也能開多個。</li>
+      <li><b>移動 / 縮放</b>：拖曳標題列移動，拉右下角調整大小；點 ⤢ 可放大到全螢幕，再點一次還原。</li>
+      <li><b>畫筆</b>：在所有小工具上方直接畫圖、圈重點，Esc 關閉。</li>
+      <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
+      <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
+      <li><b>音量計</b>需要允許使用麥克風；聲音只在本機分析，不會錄音。</li>
+    </ul>
+    <p style="margin:6px 0"><b>快速鍵</b>：<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 隱藏/顯示工具列　<kbd>P</kbd> 畫筆　<kbd>Esc</kbd> 關閉面板　<kbd>?</kbd> 說明</p>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn p" data-close>知道了</button></div>
+  </div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   教室螢幕 — 核心
+   ========================================================= */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function h(tag,attrs={},...kids){
+  const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k==='class')e.className=v;
+    else if(k==='style')e.style.cssText=v;
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='html')e.innerHTML=v;
+    else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v);
+  }
+  for(const c of kids.flat()){ if(c==null||c===false)continue; e.append(c.nodeType?c:document.createTextNode(c)); }
+  return e;
+}
+const uid=()=>Math.random().toString(36).slice(2,9);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pad2=n=>String(n).padStart(2,'0');
+let toastT; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* 音效 */
+let actx;
+function beep(times=3){
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    for(let i=0;i<times;i++){
+      const o=actx.createOscillator(),g=actx.createGain();
+      o.type='sine';o.frequency.value=i%2?1046:880;
+      g.gain.setValueAtTime(0,actx.currentTime+i*.35);
+      g.gain.linearRampToValueAtTime(.4,actx.currentTime+i*.35+.02);
+      g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+i*.35+.3);
+      o.connect(g).connect(actx.destination);o.start(actx.currentTime+i*.35);o.stop(actx.currentTime+i*.35+.32);
+    }
+  }catch(e){}
+}
+
+/* ---------- 狀態 ---------- */
+const KEY='classroomscreen.v1', SCENES_KEY='classroomscreen.scenes.v1';
+const BG_PRESETS=[
+  'linear-gradient(135deg,#1e3c72,#2a5298)','linear-gradient(135deg,#0f2027,#203a43,#2c5364)','linear-gradient(135deg,#134e5e,#71b280)',
+  'linear-gradient(135deg,#42275a,#734b6d)','linear-gradient(135deg,#c33764,#1d2671)','linear-gradient(135deg,#ff9966,#ff5e62)',
+  'linear-gradient(135deg,#f7971e,#ffd200)','linear-gradient(135deg,#56ab2f,#a8e063)','linear-gradient(135deg,#8360c3,#2ebf91)',
+  'linear-gradient(135deg,#fdfbfb,#ebedee)','#1b2430','#2d3436','#0b3d2e','#3a2e39','#fff8e7','#e8f1f8','#f6e7ea','#ffffff'
+];
+let state=load()||{bg:BG_PRESETS[0],grid:false,widgets:[],z:10};
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+let saveT;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('儲存失敗：儲存空間不足（圖片太大？）')}},250);}
+
+/* ---------- 背景 ---------- */
+const stage=$('#stage');
+function applyBg(){
+  const v=state.bg||BG_PRESETS[0];
+  stage.style.setProperty('--bg', v.startsWith('url(')||v.startsWith('linear')?v:v);
+  stage.classList.toggle('grid',!!state.grid);
+  $$('.sw').forEach(s=>s.classList.toggle('on',s.dataset.v===v));
+}
+function setBg(v){state.bg=v;applyBg();save();}
+(function buildSwatches(){
+  const box=$('#swatches');
+  BG_PRESETS.forEach(v=>box.append(h('div',{class:'sw','data-v':v,style:'background:'+v,onclick:()=>setBg(v)})));
+})();
+$('#bgUrlGo').onclick=()=>{const u=$('#bgUrl').value.trim();if(u)setBg(`url("${u}")`);};
+$('#bgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>3*1024*1024)toast('圖片較大，可能無法儲存');const r=new FileReader();r.onload=()=>setBg(`url("${r.result}")`);r.readAsDataURL(f);e.target.value='';};
+$('#bgGrid').onclick=()=>{state.grid=!state.grid;applyBg();save();};
+
+/* ---------- 視窗管理 ---------- */
+const live=new Map(); // id -> {el,api}
+function addWidget(type,opts={}){
+  const def=WIDGETS[type]; if(!def)return;
+  const vw=innerWidth,vh=innerHeight;
+  const w=Math.min(def.w||360,vw-40),hh=Math.min(def.h||260,vh-120);
+  const n=state.widgets.length;
+  const inst={id:uid(),type,x:clamp(40+(n%6)*36,0,vw-w),y:clamp(40+(n%6)*30,0,vh-hh-90),w,h:hh,z:++state.z,s:Object.assign({},def.init?def.init():{},opts.s||{})};
+  state.widgets.push(inst);mount(inst);save();updateEmpty();
+  return inst;
+}
+function removeWidget(id){
+  const L=live.get(id);if(L){L.api?.destroy?.();L.el.remove();live.delete(id);}
+  state.widgets=state.widgets.filter(w=>w.id!==id);save();updateEmpty();
+}
+function updateEmpty(){$('#empty').classList.toggle('hide',state.widgets.length>0);}
+function focusWin(inst){
+  $$('.win').forEach(e=>e.classList.remove('active'));
+  const L=live.get(inst.id);if(!L)return;L.el.classList.add('active');
+  if(inst.z!==state.z){inst.z=++state.z;L.el.style.zIndex=inst.z;save();}
+}
+function place(inst){
+  const L=live.get(inst.id);if(!L)return;const e=L.el;
+  if(inst.max){e.classList.add('max');Object.assign(e.style,{left:0,top:0,width:'100vw',height:'100vh'});}
+  else{e.classList.remove('max');Object.assign(e.style,{left:inst.x+'px',top:inst.y+'px',width:inst.w+'px',height:inst.h+'px'});}
+  e.style.zIndex=inst.z;
+}
+function mount(inst){
+  const def=WIDGETS[inst.type];
+  const body=h('div',{class:'win-body'});
+  const ttl=h('span',{class:'ttl'},def.name);
+  const head=h('div',{class:'win-head'},
+    h('span',{class:'ic'},def.icon),ttl,
+    h('button',{class:'hb',title:'放大 / 還原',onclick:ev=>{ev.stopPropagation();inst.max=!inst.max;place(inst);focusWin(inst);save();L.api?.resize?.();}},'⤢'),
+    h('button',{class:'hb x',title:'關閉',onclick:ev=>{ev.stopPropagation();removeWidget(inst.id);}},'✕'));
+  const rs=h('div',{class:'rs'});
+  const el=h('div',{class:'win','data-id':inst.id},head,body,rs);
+  stage.append(el);
+  const L={el,api:null};live.set(inst.id,L);
+  place(inst);
+  el.addEventListener('pointerdown',()=>focusWin(inst),{capture:true});
+  // 拖曳
+  head.addEventListener('pointerdown',ev=>{
+    if(ev.target.closest('button')||inst.max)return;
+    ev.preventDefault();head.setPointerCapture(ev.pointerId);
+    const sx=ev.clientX-inst.x,sy=ev.clientY-inst.y;
+    const mv=e=>{inst.x=clamp(e.clientX-sx,-inst.w+80,innerWidth-80);inst.y=clamp(e.clientY-sy,0,innerHeight-40);place(inst);};
+    const up=()=>{head.removeEventListener('pointermove',mv);head.removeEventListener('pointerup',up);head.removeEventListener('pointercancel',up);save();};
+    head.addEventListener('pointermove',mv);head.addEventListener('pointerup',up);head.addEventListener('pointercancel',up);
+  });
+  head.addEventListener('dblclick',ev=>{if(ev.target.closest('button'))return;inst.max=!inst.max;place(inst);save();L.api?.resize?.();});
+  // 縮放
+  rs.addEventListener('pointerdown',ev=>{
+    if(inst.max)return;ev.preventDefault();ev.stopPropagation();rs.setPointerCapture(ev.pointerId);
+    const sx=ev.clientX-inst.w,sy=ev.clientY-inst.h;
+    const mv=e=>{inst.w=clamp(e.clientX-sx,def.minW||200,innerWidth);inst.h=clamp(e.clientY-sy,def.minH||140,innerHeight);place(inst);L.api?.resize?.();};
+    const up=()=>{rs.removeEventListener('pointermove',mv);rs.removeEventListener('pointerup',up);save();L.api?.resize?.();};
+    rs.addEventListener('pointermove',mv);rs.addEventListener('pointerup',up);
+  });
+  const ctx={save, setTitle:t=>{ttl.textContent=t||def.name;}, el, inst, remove:()=>removeWidget(inst.id)};
+  try{L.api=def.mount(body,inst.s,ctx)||{};}catch(e){console.error(e);body.append(h('div',{class:'pad muted'},'這個小工具載入失敗：'+e.message));}
+}
+
+/* =========================================================
+   小工具定義
+   ========================================================= */
+const WIDGETS={};
+
+/* ---- 時鐘 ---- */
+WIDGETS.clock={name:'時鐘',icon:'🕐',w:340,h:220,init:()=>({mode:'digital',h24:true,sec:true}),
+mount(body,s,ctx){
+  const disp=h('div',{class:'fit col'});
+  const b24=h('button',{class:'btn sm',onclick:()=>{s.h24=!s.h24;ctx.save();tick();}},'24h');
+  const bsec=h('button',{class:'btn sm',onclick:()=>{s.sec=!s.sec;ctx.save();tick();}},'秒');
+  const bmode=h('button',{class:'btn sm',onclick:()=>{s.mode=s.mode==='digital'?'analog':'digital';ctx.save();build();}},'指針/數字');
+  body.append(disp,h('div',{class:'foot'},bmode,b24,bsec));
+  let timeEl,dateEl,cv;
+  function build(){
+    disp.innerHTML='';
+    if(s.mode==='digital'){timeEl=h('div',{class:'big clock-time'});dateEl=h('div',{class:'clock-date'});disp.append(timeEl,dateEl);}
+    else{cv=h('canvas',{class:'analog'});disp.append(cv);}
+    tick();
+  }
+  function tick(){
+    const d=new Date();
+    b24.classList.toggle('on',s.h24);bsec.classList.toggle('on',s.sec);
+    if(s.mode==='digital'){
+      let hh=d.getHours(),ap='';if(!s.h24){ap=hh<12?' 上午':' 下午';hh=hh%12||12;}
+      timeEl.textContent=`${s.h24?pad2(hh):hh}:${pad2(d.getMinutes())}${s.sec?':'+pad2(d.getSeconds()):''}${ap}`;
+      dateEl.textContent=d.toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+    }else drawAnalog(d);
+  }
+  function drawAnalog(d){
+    const r=cv.getBoundingClientRect(),sz=Math.max(60,Math.min(r.width,r.height))*devicePixelRatio;
+    cv.width=cv.height=sz;const c=cv.getContext('2d'),R=sz/2;c.translate(R,R);
+    c.fillStyle='#fff';c.beginPath();c.arc(0,0,R-2,0,7);c.fill();c.lineWidth=sz*.02;c.strokeStyle='#222';c.stroke();
+    for(let i=0;i<60;i++){c.save();c.rotate(i*Math.PI/30);c.beginPath();c.moveTo(0,-R*.9);c.lineTo(0,-R*(i%5?.85:.78));c.lineWidth=sz*(i%5?.008:.02);c.stroke();c.restore();}
+    const hand=(a,len,w,col)=>{c.save();c.rotate(a);c.beginPath();c.moveTo(0,R*.1);c.lineTo(0,-R*len);c.lineWidth=w;c.lineCap='round';c.strokeStyle=col;c.stroke();c.restore();};
+    const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
+    hand(hr*Math.PI/6,.5,sz*.04,'#222');hand(min*Math.PI/30,.72,sz*.03,'#222');if(s.sec)hand(sec*Math.PI/30,.8,sz*.012,'#e5484d');
+    c.fillStyle='#222';c.beginPath();c.arc(0,0,sz*.025,0,7);c.fill();
+  }
+  build();const iv=setInterval(tick,s.mode==='analog'?200:250);
+  return {destroy:()=>clearInterval(iv),resize:()=>{if(s.mode==='analog')tick();}};
+}};
+
+/* ---- 計時器 ---- */
+WIDGETS.timer={name:'倒數計時',icon:'⏱️',w:360,h:280,init:()=>({total:300,left:300,sound:true}),
+mount(body,s,ctx){
+  let running=false,endAt=0,iv=null;
+  const disp=h('div',{class:'big timer-disp'});
+  const wrap=h('div',{class:'fit',style:'position:relative;flex-direction:column;gap:6px'},disp);
+  const presets=h('div',{class:'row',style:'justify-content:center'});
+  [1,3,5,10,15,20,30].forEach(m=>presets.append(h('button',{class:'btn sm',onclick:()=>setTotal(m*60)},m+'分')));
+  const adj=h('div',{class:'row',style:'justify-content:center'},
+    h('button',{class:'btn sm',onclick:()=>setTotal(s.total-60)},'−1分'),
+    h('button',{class:'btn sm',onclick:()=>setTotal(s.total-10)},'−10秒'),
+    h('button',{class:'btn sm',onclick:()=>setTotal(s.total+10)},'+10秒'),
+    h('button',{class:'btn sm',onclick:()=>setTotal(s.total+60)},'+1分'));
+  const bStart=h('button',{class:'btn p',onclick:toggle},'▶ 開始');
+  const bReset=h('button',{class:'btn',onclick:reset},'↺ 重設');
+  const bSound=h('button',{class:'btn sm',title:'結束提示音',onclick:()=>{s.sound=!s.sound;ctx.save();render();}},'🔔');
+  body.append(wrap,h('div',{class:'foot'},bStart,bReset,h('span',{class:'grow'}),bSound),
+    h('div',{class:'foot',style:'flex-direction:column;align-items:stretch;gap:4px'},presets,adj));
+  function fmt(t){t=Math.max(0,Math.ceil(t));const m=Math.floor(t/60),sec=t%60;return t>=3600?`${Math.floor(m/60)}:${pad2(m%60)}:${pad2(sec)}`:`${pad2(m)}:${pad2(sec)}`;}
+  function setTotal(t){t=clamp(t,5,24*3600);stop();s.total=t;s.left=t;ctx.save();render();}
+  function render(){
+    disp.textContent=fmt(s.left);disp.classList.toggle('alarm',s.left<=0);
+    bStart.textContent=running?'⏸ 暫停':(s.left<=0?'▶ 重新開始':'▶ 開始');
+    bSound.classList.toggle('on',s.sound);
+    const p=s.total?s.left/s.total:0;wrap.style.background=`conic-gradient(rgba(42,125,225,.18) ${p*360}deg, transparent 0)`;
+    disp.style.color=s.left<=0?'':(s.left<=10?'var(--danger)':s.left<=60?'var(--warn)':'');
+  }
+  function toggle(){ if(running)stop(); else{ if(s.left<=0)s.left=s.total; running=true; endAt=Date.now()+s.left*1000; iv=setInterval(step,200); render(); } }
+  function step(){s.left=(endAt-Date.now())/1000; if(s.left<=0){s.left=0;stop();if(s.sound)beep(4);toast('⏰ 時間到！');} render();}
+  function stop(){running=false;clearInterval(iv);iv=null;ctx.save();render();}
+  function reset(){stop();s.left=s.total;ctx.save();render();}
+  render();
+  return {destroy:()=>clearInterval(iv)};
+}};
+
+/* ---- 碼表 ---- */
+WIDGETS.stopwatch={name:'碼表',icon:'⏲️',w:340,h:240,init:()=>({laps:[]}),
+mount(body,s,ctx){
+  let t0=0,acc=0,running=false,iv;
+  const disp=h('div',{class:'big',style:'font-size:clamp(28px,12cqw,150px)'});
+  const laps=h('div',{class:'muted',style:'max-height:30%;overflow:auto;font-variant-numeric:tabular-nums;font-size:13px;line-height:1.5'});
+  const bS=h('button',{class:'btn p',onclick:()=>{running?pause():start();}},'▶ 開始');
+  const bL=h('button',{class:'btn',onclick:()=>{if(!running)return;s.laps.push(fmt(now()));ctx.save();renderLaps();}},'🚩 分段');
+  const bR=h('button',{class:'btn',onclick:()=>{pause();acc=0;s.laps=[];ctx.save();render();renderLaps();}},'↺ 重設');
+  body.append(h('div',{class:'fit col',style:'gap:6px'},disp,laps),h('div',{class:'foot'},bS,bL,bR));
+  const now=()=>acc+(running?Date.now()-t0:0);
+  function fmt(ms){const t=Math.floor(ms/1000),cs=Math.floor(ms%1000/10);return `${pad2(Math.floor(t/60))}:${pad2(t%60)}.${pad2(cs)}`;}
+  function render(){disp.textContent=fmt(now());bS.textContent=running?'⏸ 暫停':'▶ 開始';}
+  function renderLaps(){laps.innerHTML='';s.laps.slice().reverse().forEach((l,i)=>laps.append(h('div',{},`第 ${s.laps.length-i} 段　${l}`)));}
+  function start(){running=true;t0=Date.now();iv=setInterval(render,50);render();}
+  function pause(){if(running){acc+=Date.now()-t0;running=false;}clearInterval(iv);render();}
+  render();renderLaps();
+  return {destroy:()=>clearInterval(iv)};
+}};
+
+/* ---- 抽籤 ---- */
+const DEFAULT_NAMES='小明\n小華\n小美\n小強\n小玉\n小安';
+WIDGETS.picker={name:'隨機抽籤',icon:'🎯',w:380,h:300,init:()=>({names:DEFAULT_NAMES,noRepeat:true,picked:[],edit:true,last:''}),
+mount(body,s,ctx){
+  const out=h('div',{class:'pick-out'});
+  const info=h('div',{class:'muted'});
+  const ta=h('textarea',{class:'inp grow',placeholder:'一行一個名字',oninput:()=>{s.names=ta.value;s.picked=[];ctx.save();render();}});
+  const view=h('div',{class:'fit col',style:'gap:8px'});
+  const bPick=h('button',{class:'btn p',onclick:pick},'🎯 抽一個');
+  const bEdit=h('button',{class:'btn',onclick:()=>{s.edit=!s.edit;ctx.save();render();}},'✎ 名單');
+  const bReset=h('button',{class:'btn sm',onclick:()=>{s.picked=[];s.last='';ctx.save();render();}},'↺ 全部放回');
+  const chk=h('label',{class:'chk'},h('input',{type:'checkbox',onchange:e=>{s.noRepeat=e.target.checked;ctx.save();render();}}),'抽過不重複');
+  body.append(view,h('div',{class:'foot'},bPick,bEdit,bReset,h('span',{class:'grow'}),chk));
+  const list=()=>s.names.split(/\n|,|，|、/).map(x=>x.trim()).filter(Boolean);
+  function pool(){const L=list();return s.noRepeat?L.filter(n=>!s.picked.includes(n)):L;}
+  function render(){
+    chk.querySelector('input').checked=s.noRepeat;bEdit.classList.toggle('on',s.edit);
+    view.innerHTML='';
+    if(s.edit){ta.value=s.names;view.append(ta);view.style.alignItems='stretch';view.style.padding='10px';}
+    else{view.style.alignItems='center';view.style.padding='10px';out.textContent=s.last||'？';view.append(out,info);}
+    const p=pool(),L=list();info.textContent=s.noRepeat?`還剩 ${p.length} / ${L.length} 人`:`共 ${L.length} 人`;
+    bPick.disabled=!p.length;bPick.textContent=p.length?'🎯 抽一個':'已抽完';
+  }
+  let spinning=false;
+  function pick(){
+    const p=pool();if(!p.length||spinning)return;s.edit=false;render();spinning=true;
+    let n=0;const iv=setInterval(()=>{out.textContent=p[Math.floor(Math.random()*p.length)];out.style.opacity=.5;if(++n>14){clearInterval(iv);
+      const r=p[Math.floor(Math.random()*p.length)];s.last=r;if(s.noRepeat)s.picked.push(r);out.style.opacity=1;out.classList.remove('pop');void out.offsetWidth;out.classList.add('pop');spinning=false;ctx.save();render();}},70);
+  }
+  render();
+}};
+
+/* ---- 分組 ---- */
+WIDGETS.groups={name:'隨機分組',icon:'👥',w:460,h:320,init:()=>({names:DEFAULT_NAMES,mode:'count',n:2,groups:null}),
+mount(body,s,ctx){
+  const ta=h('textarea',{class:'inp',style:'flex:1;margin:10px',placeholder:'一行一個名字',oninput:()=>{s.names=ta.value;ctx.save();}});
+  const grid=h('div',{class:'grp'});
+  const view=h('div',{class:'col',style:'flex:1;min-height:0'});
+  const num=h('input',{class:'inp',type:'number',min:1,max:50,style:'width:70px',onchange:()=>{s.n=clamp(+num.value||1,1,50);ctx.save();}});
+  const sel=h('select',{class:'inp',style:'width:auto',onchange:()=>{s.mode=sel.value;ctx.save();}},h('option',{value:'count'},'組數'),h('option',{value:'size'},'每組人數'));
+  const bGo=h('button',{class:'btn p',onclick:go},'🔀 分組');
+  const bEdit=h('button',{class:'btn',onclick:()=>{s.groups=null;ctx.save();render();}},'✎ 名單');
+  body.append(view,h('div',{class:'foot'},sel,num,bGo,bEdit));
+  function render(){
+    sel.value=s.mode;num.value=s.n;view.innerHTML='';
+    if(!s.groups){ta.value=s.names;view.append(ta);return;}
+    grid.innerHTML='';s.groups.forEach((g,i)=>grid.append(h('div',{class:'g'},h('h4',{},`第 ${i+1} 組（${g.length}）`),h('div',{},g.join('、')))));view.append(grid);
+  }
+  function go(){
+    const L=s.names.split(/\n|,|，|、/).map(x=>x.trim()).filter(Boolean);if(!L.length){toast('請先輸入名單');return;}
+    for(let i=L.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[L[i],L[j]]=[L[j],L[i]];}
+    const k=s.mode==='count'?clamp(s.n,1,L.length):Math.ceil(L.length/clamp(s.n,1,L.length));
+    const G=Array.from({length:k},()=>[]);L.forEach((n,i)=>G[i%k].push(n));s.groups=G;ctx.save();render();
+  }
+  render();
+}};
+
+/* ---- 骰子 ---- */
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+WIDGETS.dice={name:'骰子',icon:'🎲',w:340,h:260,init:()=>({n:2,vals:[1,1]}),
+mount(body,s,ctx){
+  const wrap=h('div',{class:'fit dice-wrap'});
+  const sum=h('div',{class:'muted',style:'font-weight:700;font-size:15px'});
+  const sel=h('select',{class:'inp',style:'width:auto',onchange:()=>{s.n=+sel.value;s.vals=Array.from({length:s.n},(_,i)=>s.vals[i]||1);ctx.save();render();}},[1,2,3,4].map(n=>h('option',{value:n},n+' 顆')));
+  body.append(wrap,h('div',{class:'foot'},h('button',{class:'btn p',onclick:roll},'🎲 擲骰'),sel,h('span',{class:'grow'}),sum));
+  function die(v,anim){const d=h('div',{class:'die'+(anim?' roll':'')});for(let i=0;i<9;i++)d.append(h('i',{class:PIPS[v].includes(i)?'on':'',style:`left:${25+(i%3)*25}%;top:${25+Math.floor(i/3)*25}%`}));return d;}
+  function render(anim){sel.value=s.n;wrap.innerHTML='';s.vals.forEach(v=>wrap.append(die(v,anim)));sum.textContent=s.n>1?'合計 '+s.vals.reduce((a,b)=>a+b,0):'';}
+  function roll(){let k=0;const iv=setInterval(()=>{s.vals=s.vals.map(()=>1+Math.floor(Math.random()*6));render(k===0);if(++k>7){clearInterval(iv);ctx.save();}},70);}
+  render();
+}};
+
+/* ---- 隨機數字 ---- */
+WIDGETS.rnum={name:'隨機數字',icon:'🔢',w:300,h:220,init:()=>({min:1,max:30,v:'?'}),
+mount(body,s,ctx){
+  const out=h('div',{class:'big rnum pick-out'},s.v);
+  const a=h('input',{class:'inp',type:'number',value:s.min,style:'width:70px',onchange:()=>{s.min=+a.value;ctx.save();}});
+  const b=h('input',{class:'inp',type:'number',value:s.max,style:'width:70px',onchange:()=>{s.max=+b.value;ctx.save();}});
+  body.append(h('div',{class:'fit'},out),h('div',{class:'foot'},a,'～',b,h('button',{class:'btn p',onclick:()=>{const lo=Math.min(s.min,s.max),hi=Math.max(s.min,s.max);let k=0;const iv=setInterval(()=>{out.textContent=lo+Math.floor(Math.random()*(hi-lo+1));if(++k>10){clearInterval(iv);s.v=out.textContent;ctx.save();out.classList.remove('pop');void out.offsetWidth;out.classList.add('pop');}},60);}},'抽號')));
+}};
+
+/* ---- 文字 ---- */
+WIDGETS.text={name:'文字',icon:'📝',w:380,h:240,init:()=>({html:'在這裡輸入文字…',size:24,align:'left'}),
+mount(body,s,ctx){
+  const box=h('div',{class:'textbox',contenteditable:'true',spellcheck:'false'});
+  box.innerHTML=s.html;box.addEventListener('input',()=>{s.html=box.innerHTML;ctx.save();});
+  box.addEventListener('focus',()=>{if(box.textContent.trim()==='在這裡輸入文字…')box.textContent='';});
+  const apply=()=>{box.style.fontSize=s.size+'px';box.style.textAlign=s.align;};
+  const cmd=(c,v)=>{box.focus();document.execCommand(c,false,v);s.html=box.innerHTML;ctx.save();};
+  body.append(box,h('div',{class:'foot'},
+    h('button',{class:'btn sm',onclick:()=>{s.size=clamp(s.size-4,10,120);apply();ctx.save();}},'A−'),
+    h('button',{class:'btn sm',onclick:()=>{s.size=clamp(s.size+4,10,120);apply();ctx.save();}},'A+'),
+    h('button',{class:'btn sm',style:'font-weight:900',onclick:()=>cmd('bold')},'B'),
+    h('button',{class:'btn sm',onclick:()=>cmd('foreColor','#e5484d')},'🔴'),
+    h('button',{class:'btn sm',onclick:()=>cmd('foreColor','#2a7de1')},'🔵'),
+    h('button',{class:'btn sm',onclick:()=>cmd('foreColor','#111')},'⚫'),
+    h('button',{class:'btn sm',onclick:()=>cmd('insertUnorderedList')},'• 列表'),
+    h('button',{class:'btn sm',onclick:()=>{s.align=s.align==='left'?'center':'left';apply();ctx.save();}},'置中')));
+  apply();
+}};
+
+/* ---- 音量計 ---- */
+WIDGETS.noise={name:'音量計',icon:'🔊',w:300,h:300,init:()=>({th:60,count:0}),
+mount(body,s,ctx){
+  const lv=h('div',{class:'lv'}),th=h('div',{class:'th'}),face=h('div',{class:'face'},'🎤');
+  const meter=h('div',{class:'meter'},lv,th,face);
+  const msg=h('div',{class:'muted center',style:'padding:6px 10px 0;min-height:1.5em'},'點「開始」並允許使用麥克風');
+  const bGo=h('button',{class:'btn p',onclick:start},'🎤 開始');
+  const cnt=h('span',{class:'tag'});
+  const rng=h('input',{type:'range',min:10,max:95,value:s.th,style:'width:110px',oninput:()=>{s.th=+rng.value;ctx.save();render();}});
+  body.append(msg,meter,h('div',{class:'foot'},bGo,h('span',{class:'muted'},'門檻'),rng,cnt,h('button',{class:'btn sm',onclick:()=>{s.count=0;ctx.save();render();}},'歸零')));
+  let ac,an,raf,stream,over=false,smooth=0;
+  function render(){th.style.bottom=s.th+'%';cnt.textContent=`超過 ${s.count} 次`;}
+  async function start(){
+    if(stream){stop();return;}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){msg.textContent='無法使用麥克風：'+(e.message||e.name);return;}
+    ac=new (window.AudioContext||window.webkitAudioContext)();an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(stream).connect(an);
+    const buf=new Uint8Array(an.fftSize);bGo.textContent='⏹ 停止';msg.textContent='安靜 🤫';
+    (function loop(){
+      an.getByteTimeDomainData(buf);let sum=0;for(const v of buf){const d=(v-128)/128;sum+=d*d;}
+      const rms=Math.sqrt(sum/buf.length);const db=clamp(20*Math.log10(rms||1e-5)+100,0,100);smooth=smooth*.7+db*.3;
+      lv.style.height=smooth+'%';
+      const isOver=smooth>s.th;
+      if(isOver&&!over){s.count++;ctx.save();render();}
+      over=isOver;face.textContent=isOver?'🤯':smooth>s.th*.7?'😐':'😊';msg.textContent=isOver?'太大聲了！':smooth>s.th*.7?'再小聲一點':'安靜 🤫';
+      meter.style.background=isOver?'#fde8e8':'#eef2f6';
+      raf=requestAnimationFrame(loop);
+    })();
+  }
+  function stop(){cancelAnimationFrame(raf);stream?.getTracks().forEach(t=>t.stop());stream=null;ac?.close();bGo.textContent='🎤 開始';lv.style.height=0;face.textContent='🎤';msg.textContent='已停止';}
+  render();
+  return {destroy:stop};
+}};
+
+/* ---- 紅綠燈 ---- */
+WIDGETS.traffic={name:'紅綠燈',icon:'🚦',w:220,h:360,init:()=>({on:'red',labels:{red:'安靜',yellow:'小聲',green:'可討論'}}),
+mount(body,s,ctx){
+  const cols={red:'#ff3b30',yellow:'#ffcc00',green:'#34c759'};
+  const lamps={};const tl=h('div',{class:'tl'});
+  for(const k of ['red','yellow','green']){lamps[k]=h('div',{class:'lamp',style:`background:${cols[k]};color:${cols[k]}`,title:s.labels[k],onclick:()=>{s.on=s.on===k?'':k;ctx.save();render();}});tl.append(lamps[k]);}
+  const lab=h('div',{style:'font-weight:800;font-size:clamp(16px,8cqw,40px);min-height:1.2em'});
+  const labIn=h('input',{class:'inp',style:'width:110px',placeholder:'此燈的意思',onchange:()=>{if(s.on){s.labels[s.on]=labIn.value;ctx.save();render();}}});
+  body.append(h('div',{class:'fit col',style:'gap:10px'},tl,lab),h('div',{class:'foot'},labIn,h('span',{class:'grow'}),h('button',{class:'btn sm',onclick:()=>{tl.classList.toggle('h');}},'橫/直')));
+  function render(){for(const k in lamps)lamps[k].classList.toggle('on',s.on===k);lab.textContent=s.on?s.labels[s.on]:'';lab.style.color=s.on?cols[s.on]:'';labIn.value=s.on?s.labels[s.on]:'';labIn.disabled=!s.on;}
+  render();
+  return {resize:()=>{const r=body.getBoundingClientRect();tl.classList.toggle('h',r.width>r.height*1.3);}};
+}};
+
+/* ---- 工作模式 ---- */
+const SYMS=[['🤫','安靜工作'],['🗣️','小聲討論'],['🙋','有問題請舉手'],['🤝','小組合作'],['📖','自行閱讀'],['💻','使用電腦'],['✏️','寫作業'],['🎧','專心聽講']];
+WIDGETS.symbols={name:'工作模式',icon:'🤫',w:360,h:300,init:()=>({on:-1,big:false}),
+mount(body,s,ctx){
+  const view=h('div',{class:'col',style:'flex:1;min-height:0'});
+  body.append(view,h('div',{class:'foot'},h('button',{class:'btn sm',onclick:()=>{s.big=!s.big;ctx.save();render();}},'格狀 / 放大'),h('span',{class:'muted'},'點選目前的課堂模式')));
+  function render(){
+    view.innerHTML='';
+    if(s.big&&s.on>=0){const [e,t]=SYMS[s.on];view.append(h('div',{class:'sym-big',onclick:()=>{s.big=false;ctx.save();render();}},h('div',{class:'e'},e),h('div',{class:'t'},t)));return;}
+    const g=h('div',{class:'sym-grid'});SYMS.forEach(([e,t],i)=>g.append(h('div',{class:'sym'+(s.on===i?' on':''),onclick:()=>{s.on=i;s.big=true;ctx.save();render();}},h('div',{class:'e'},e),h('div',{},t))));view.append(g);
+  }
+  render();
+}};
+
+/* ---- 嵌入網頁 ---- */
+function toEmbedUrl(u){
+  try{
+    const url=new URL(u);const host=url.hostname.replace('www.','');
+    if(host==='youtube.com'||host==='m.youtube.com'){const v=url.searchParams.get('v');if(v)return `https://www.youtube.com/embed/${v}`;const L=url.searchParams.get('list');if(L)return `https://www.youtube.com/embed/videoseries?list=${L}`;if(url.pathname.startsWith('/live/')||url.pathname.startsWith('/shorts/'))return `https://www.youtube.com/embed/${url.pathname.split('/')[2]}`;}
+    if(host==='youtu.be')return `https://www.youtube.com/embed/${url.pathname.slice(1)}`;
+    if(host==='docs.google.com'&&/\/(presentation|document|spreadsheets)\/d\//.test(url.pathname)&&!/\/(embed|preview|pub)/.test(url.pathname))return u.replace(/\/(edit|view).*$/,'/preview');
+    if(host==='drive.google.com'&&/\/file\/d\//.test(url.pathname))return u.replace(/\/view.*$/,'/preview');
+    if(host==='vimeo.com'&&/^\/\d+/.test(url.pathname))return `https://player.vimeo.com/video${url.pathname}`;
+    if(host==='wordwall.net'&&url.pathname.startsWith('/resource/'))return u.replace('/resource/','/embed/');
+    if(host==='padlet.com'&&!url.pathname.startsWith('/embed/'))return `https://padlet.com/embed${url.pathname}`;
+    return u;
+  }catch(e){return u.startsWith('http')?u:'https://'+u;}
+}
+WIDGETS.embed={name:'嵌入網頁',icon:'🌐',w:560,h:380,init:()=>({url:''}),
+mount(body,s,ctx){
+  const inp=h('input',{class:'inp grow',placeholder:'貼上網址：YouTube、Google 簡報、Padlet、Wordwall…',onkeydown:e=>{if(e.key==='Enter')go();}});
+  const view=h('div',{class:'col',style:'flex:1;min-height:0'});
+  const bOpen=h('button',{class:'btn sm',title:'在新分頁開啟',onclick:()=>{if(s.url)open(s.url,'_blank');}},'↗');
+  body.append(h('div',{class:'row',style:'padding:8px 10px;border-bottom:1px solid var(--line)'},inp,h('button',{class:'btn p sm',onclick:go},'嵌入'),bOpen),view);
+  function go(){s.url=inp.value.trim();ctx.save();render();}
+  function render(){
+    inp.value=s.url;view.innerHTML='';
+    if(!s.url){view.append(h('div',{class:'fit muted col',style:'gap:6px'},h('div',{style:'font-size:40px'},'🌐'),'貼上網址後按「嵌入」','支援 YouTube、Google 簡報/文件、Vimeo、Padlet、Wordwall、Kahoot、Quizlet 等'));return;}
+    const src=toEmbedUrl(s.url);
+    const f=h('iframe',{class:'embed-frame',src,allow:'autoplay; fullscreen; camera; microphone; clipboard-write',allowfullscreen:true,referrerpolicy:'no-referrer-when-downgrade'});
+    view.append(f,h('div',{class:'muted',style:'padding:4px 10px;font-size:11.5px;border-top:1px solid var(--line)'},'若畫面空白，表示該網站不允許被嵌入，請按 ↗ 在新分頁開啟。'));
+    ctx.setTitle('嵌入：'+(new URL(src).hostname.replace('www.','')));
+  }
+  render();
+}};
+
+/* ---- QR Code ---- */
+WIDGETS.qr={name:'QR Code',icon:'▦',w:300,h:340,init:()=>({text:''}),
+mount(body,s,ctx){
+  const box=h('div',{class:'qr-box'});
+  const inp=h('input',{class:'inp grow',placeholder:'網址或文字',onkeydown:e=>{if(e.key==='Enter')go();}});
+  const cap=h('div',{class:'muted center',style:'padding:0 10px 6px;word-break:break-all;font-size:12px'});
+  body.append(box,cap,h('div',{class:'foot'},inp,h('button',{class:'btn p sm',onclick:go},'產生')));
+  function go(){s.text=inp.value.trim();ctx.save();render();}
+  async function render(){
+    inp.value=s.text;box.innerHTML='';cap.textContent=s.text;
+    if(!s.text){box.append(h('div',{class:'muted'},'輸入網址，讓學生掃描加入'));return;}
+    box.append(h('div',{class:'muted'},'產生中…'));
+    try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',()=>window.QRCode);box.innerHTML='';
+      const holder=h('div',{style:'width:min(100%,100cqh);aspect-ratio:1'});box.append(holder);
+      new QRCode(holder,{text:s.text,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
+      const img=holder.querySelector('img,canvas');if(img){img.style.width='100%';img.style.height='100%';}
+    }catch(e){box.innerHTML='';box.append(h('div',{class:'muted'},'QR 程式庫載入失敗（需要網路）'));}
+  }
+  render();
+}};
+const _scripts={};
+function loadScript(src,ready){ if(ready&&ready())return Promise.resolve(); return _scripts[src]||(_scripts[src]=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=()=>{delete _scripts[src];rej(new Error('load fail'))};document.head.append(sc);})); }
+
+/* ---- 畫板 ---- */
+function makeDrawer(canvas,opts){
+  const c=canvas.getContext('2d');let drawing=false,last=null;let color=opts.color||'#111',size=opts.size||4,eraser=false;
+  function fit(){
+    const r=canvas.getBoundingClientRect();const dpr=devicePixelRatio||1;
+    const snap=canvas.width?c.getImageData(0,0,canvas.width,canvas.height):null;
+    canvas.width=Math.max(1,r.width*dpr);canvas.height=Math.max(1,r.height*dpr);
+    if(snap)c.putImageData(snap,0,0);
+    c.lineCap=c.lineJoin='round';
+  }
+  const scale=()=>{const r=canvas.getBoundingClientRect();return r.width?canvas.width/r.width:1;};
+  const pos=e=>{const r=canvas.getBoundingClientRect(),k=scale();return [(e.clientX-r.left)*k,(e.clientY-r.top)*k];};
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);drawing=true;last=pos(e);draw(last,last);});
+  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);draw(last,p);last=p;});
+  const end=()=>{if(drawing){drawing=false;opts.onChange?.();}};
+  canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('pointerleave',end);
+  function draw(a,b){c.globalCompositeOperation=eraser?'destination-out':'source-over';c.strokeStyle=color;c.lineWidth=size*scale()*(eraser?4:1);c.lineCap=c.lineJoin='round';c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.stroke();}
+  return {fit,clear:()=>{c.clearRect(0,0,canvas.width,canvas.height);opts.onChange?.();},set:o=>{if(o.color!=null){color=o.color;eraser=false;}if(o.size!=null)size=o.size;if(o.eraser!=null)eraser=o.eraser;},get eraser(){return eraser},
+    toData:()=>canvas.toDataURL(),fromData:d=>{if(!d)return;const im=new Image();im.onload=()=>c.drawImage(im,0,0,canvas.width,canvas.height);im.src=d;}};
+}
+WIDGETS.draw={name:'小白板',icon:'✏️',w:460,h:360,init:()=>({img:null}),
+mount(body,s,ctx){
+  const cv=h('canvas',{class:'draw-cv'});
+  const colors=['#111','#e5484d','#2a7de1','#0fa37f','#f0a000','#8e44ad'];
+  const foot=h('div',{class:'foot'});
+  let saveT;
+  const D=makeDrawer(cv,{color:'#111',size:4,onChange:()=>{clearTimeout(saveT);saveT=setTimeout(()=>{s.img=D.toData();ctx.save();},400);}});
+  const dots=colors.map(col=>h('span',{class:'dot'+(col==='#111'?' on':''),style:`background:${col};border-color:#ccc`,onclick:()=>{D.set({color:col});dots.forEach(d=>d.classList.remove('on'));bEr.classList.remove('on');dots[colors.indexOf(col)].classList.add('on');}}));
+  const bEr=h('button',{class:'btn sm',onclick:()=>{D.set({eraser:!D.eraser});bEr.classList.toggle('on',D.eraser);}},'橡皮擦');
+  foot.append(...dots,h('input',{type:'range',min:1,max:24,value:4,style:'width:80px',oninput:e=>D.set({size:+e.target.value})}),bEr,h('span',{class:'grow'}),h('button',{class:'btn sm d',onclick:()=>D.clear()},'清除'));
+  body.append(cv,foot);
+  requestAnimationFrame(()=>{D.fit();D.fromData(s.img);});
+  return {resize:()=>D.fit()};
+}};
+
+/* ---- 投票 ---- */
+WIDGETS.poll={name:'即時投票',icon:'📊',w:400,h:320,init:()=>({q:'你最喜歡哪一個？',opts:[{t:'A',n:0},{t:'B',n:0},{t:'C',n:0}]}),
+mount(body,s,ctx){
+  const qEl=h('input',{class:'inp',style:'font-weight:700;font-size:16px;border:0;background:transparent;padding:10px 12px 4px',value:s.q,onchange:()=>{s.q=qEl.value;ctx.save();}});
+  const list=h('div',{style:'flex:1;overflow:auto;padding:4px 12px'});
+  body.append(qEl,list,h('div',{class:'foot'},h('button',{class:'btn sm',onclick:()=>{s.opts.push({t:String.fromCharCode(65+s.opts.length),n:0});ctx.save();render();}},'＋ 選項'),h('button',{class:'btn sm',onclick:()=>{s.opts.forEach(o=>o.n=0);ctx.save();render();}},'歸零'),h('span',{class:'grow'}),h('span',{class:'muted',id:'tot'})));
+  function render(){
+    list.innerHTML='';const tot=s.opts.reduce((a,o)=>a+o.n,0);const max=Math.max(1,...s.opts.map(o=>o.n));
+    s.opts.forEach((o,i)=>{
+      const name=h('input',{class:'inp',style:'width:90px;padding:4px 8px',value:o.t,onchange:()=>{o.t=name.value;ctx.save();}});
+      list.append(h('div',{class:'poll-opt'},name,
+        h('div',{class:'poll-bar'},h('b',{style:`width:${o.n/max*100}%`}),h('span',{},`${o.n}${tot?`（${Math.round(o.n/tot*100)}%）`:''}`)),
+        h('button',{class:'btn sm p',onclick:()=>{o.n++;ctx.save();render();}},'＋1'),
+        h('button',{class:'btn sm',onclick:()=>{o.n=Math.max(0,o.n-1);ctx.save();render();}},'−'),
+        h('button',{class:'btn sm',title:'刪除',onclick:()=>{s.opts.splice(i,1);ctx.save();render();}},'✕')));
+    });
+    body.querySelector('#tot').textContent=`共 ${tot} 票`;
+  }
+  render();
+}};
+
+/* ---- 計分板 ---- */
+const TEAM_COLORS=['#e3f0ff','#ffe9e3','#e6f8ef','#fff6d6','#f1e6ff','#e0f7fa'];
+WIDGETS.score={name:'計分板',icon:'🏆',w:380,h:300,init:()=>({teams:[{n:'第一組',s:0},{n:'第二組',s:0},{n:'第三組',s:0}]}),
+mount(body,s,ctx){
+  const list=h('div',{style:'flex:1;overflow:auto;padding:4px 0'});
+  body.append(list,h('div',{class:'foot'},h('button',{class:'btn sm',onclick:()=>{s.teams.push({n:'第'+(s.teams.length+1)+'組',s:0});ctx.save();render();}},'＋ 隊伍'),h('button',{class:'btn sm',onclick:()=>{s.teams.forEach(t=>t.s=0);ctx.save();render();}},'全部歸零')));
+  function render(){
+    list.innerHTML='';
+    s.teams.forEach((t,i)=>{
+      const nm=h('input',{class:'nm',value:t.n,onchange:()=>{t.n=nm.value;ctx.save();}});
+      const sc=h('div',{class:'sc'},t.s);
+      const bump=(d)=>{t.s+=d;sc.textContent=t.s;sc.style.transform='scale(1.25)';setTimeout(()=>sc.style.transform='',120);ctx.save();};
+      list.append(h('div',{class:'team',style:`background:${TEAM_COLORS[i%TEAM_COLORS.length]}`},nm,h('button',{class:'pm',onclick:()=>bump(-1)},'−'),sc,h('button',{class:'pm',onclick:()=>bump(1)},'＋'),h('button',{class:'hb',title:'移除',onclick:()=>{s.teams.splice(i,1);ctx.save();render();}},'✕')));
+    });
+  }
+  render();
+}};
+
+/* ---- 今日流程 ---- */
+WIDGETS.agenda={name:'今日流程',icon:'📋',w:340,h:320,init:()=>({items:[{t:'暖身活動',d:false},{t:'主題講解',d:false},{t:'小組討論',d:false},{t:'分享與回饋',d:false}]}),
+mount(body,s,ctx){
+  const list=h('div',{style:'flex:1;overflow:auto'});
+  const inp=h('input',{class:'inp grow',placeholder:'新增項目後按 Enter',onkeydown:e=>{if(e.key==='Enter'&&inp.value.trim()){s.items.push({t:inp.value.trim(),d:false});inp.value='';ctx.save();render();}}});
+  body.append(list,h('div',{class:'foot'},inp,h('button',{class:'btn sm',onclick:()=>{s.items.forEach(i=>i.d=false);ctx.save();render();}},'全部重設')));
+  function render(){
+    list.innerHTML='';
+    s.items.forEach((it,i)=>{
+      const cb=h('input',{type:'checkbox',onchange:()=>{it.d=cb.checked;ctx.save();render();}});cb.checked=it.d;
+      const t=h('input',{class:'t',value:it.t,onchange:()=>{it.t=t.value;ctx.save();}});
+      list.append(h('div',{class:'task'+(it.d?' done':'')},h('span',{class:'muted',style:'min-width:1.4em;text-align:right'},i+1+'.'),cb,t,h('button',{class:'x',onclick:()=>{s.items.splice(i,1);ctx.save();render();}},'✕')));
+    });
+  }
+  render();
+}};
+
+/* ---- 圖片 ---- */
+WIDGETS.image={name:'圖片',icon:'🖼️',w:400,h:320,init:()=>({src:''}),
+mount(body,s,ctx){
+  const view=h('div',{class:'img-view'});
+  const inp=h('input',{class:'inp grow',placeholder:'圖片網址',onkeydown:e=>{if(e.key==='Enter'){s.src=inp.value.trim();ctx.save();render();}}});
+  const file=h('input',{type:'file',accept:'image/*',hidden:true,onchange:e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{s.src=r.result;ctx.save();render();};r.readAsDataURL(f);}});
+  body.append(view,h('div',{class:'foot'},inp,h('label',{class:'btn sm'},'📁 上傳',file)));
+  function render(){view.innerHTML='';if(!s.src){view.append(h('div',{class:'muted'},'貼上圖片網址或上傳圖片'));return;}inp.value=s.src.startsWith('data:')?'':s.src;view.append(h('img',{src:s.src,draggable:false}));}
+  render();
+}};
+
+/* =========================================================
+   工具列
+   ========================================================= */
+const ORDER=['clock','timer','stopwatch','picker','groups','dice','rnum','text','noise','traffic','symbols','embed','qr','draw','poll','score','agenda','image'];
+const tools=$('#tools');
+ORDER.forEach(k=>{const d=WIDGETS[k];tools.append(h('button',{class:'tb',title:d.name,onclick:()=>addWidget(k)},h('span',{class:'i'},d.icon),d.name));});
+// 滾輪橫向捲動工具列
+tools.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){tools.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
+
+/* 面板開關 */
+function closePanels(){$$('.panel.open,.modal.open').forEach(p=>p.classList.remove('open'));$$('#bar .tb.on').forEach(b=>b.classList.remove('on'));}
+function togglePanel(id,btn){const p=$(id),was=p.classList.contains('open');closePanels();if(!was){p.classList.add('open');btn?.classList.add('on');}}
+$('#btnBg').onclick=e=>togglePanel('#pnBg',e.currentTarget);
+$('#btnScenes').onclick=e=>{renderScenes();togglePanel('#pnScenes',e.currentTarget);};
+$('#btnHelp').onclick=()=>{closePanels();$('#help').classList.add('open');};
+$$('[data-close]').forEach(b=>b.onclick=closePanels);
+$('#help').addEventListener('click',e=>{if(e.target.id==='help')closePanels();});
+$('#btnFull').onclick=toggleFull;
+function toggleFull(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>toast('此瀏覽器不支援全螢幕，請用 F11'));}
+const bar=$('#bar'),barToggle=$('#barToggle');
+function toggleBar(){bar.classList.toggle('hidden');barToggle.classList.toggle('show',bar.classList.contains('hidden'));}
+$('#btnHide').onclick=toggleBar;barToggle.onclick=toggleBar;
+$('#clearAll').onclick=()=>{if(!state.widgets.length||confirm('確定要移除目前螢幕上的所有小工具？')){[...state.widgets].forEach(w=>removeWidget(w.id));closePanels();}};
+
+/* ---------- 場景 ---------- */
+function scenes(){try{return JSON.parse(localStorage.getItem(SCENES_KEY))||{}}catch(e){return {}}}
+function setScenes(o){try{localStorage.setItem(SCENES_KEY,JSON.stringify(o));}catch(e){toast('儲存失敗：空間不足');}}
+$('#sceneSave').onclick=()=>{
+  const n=$('#sceneName').value.trim()||('場景 '+new Date().toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}));
+  const S=scenes();S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
+};
+function loadState(ns){
+  [...state.widgets].forEach(w=>{const L=live.get(w.id);L?.api?.destroy?.();L?.el.remove();live.delete(w.id);});
+  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10};
+  applyBg();state.widgets.forEach(mount);updateEmpty();save();
+}
+function renderScenes(){
+  const box=$('#sceneList');box.innerHTML='';const S=scenes();const names=Object.keys(S).sort((a,b)=>(S[b].at||0)-(S[a].at||0));
+  if(!names.length){box.append(h('div',{class:'muted'},'還沒有儲存的場景'));return;}
+  names.forEach(n=>box.append(h('div',{class:'scene'},h('span',{class:'n'},n),h('span',{class:'tag'},(S[n].widgets||[]).length+' 個'),
+    h('button',{class:'btn sm p',onclick:()=>{loadState(S[n]);closePanels();toast('已載入「'+n+'」');}},'載入'),
+    h('button',{class:'btn sm',title:'用目前版面覆蓋',onclick:()=>{S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,at:Date.now()};setScenes(S);renderScenes();toast('已更新「'+n+'」');}},'覆蓋'),
+    h('button',{class:'btn sm d',onclick:()=>{if(confirm('刪除場景「'+n+'」？')){delete S[n];setScenes(S);renderScenes();}}},'✕'))));
+}
+$('#exportBtn').onclick=()=>{
+  const data={app:'classroomscreen',v:1,current:state,scenes:scenes()};
+  const a=h('a',{href:URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),download:'教室螢幕-'+new Date().toISOString().slice(0,10)+'.json'});document.body.append(a);a.click();a.remove();
+};
+$('#importFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.app!=='classroomscreen')throw 0;const S=scenes();Object.assign(S,d.scenes||{});setScenes(S);if(d.current&&confirm('要同時載入檔案中的目前版面嗎？（會取代現在的螢幕）'))loadState(d.current);renderScenes();toast('匯入完成');}catch(err){toast('這不是教室螢幕的匯出檔');}};
+  r.readAsText(f);e.target.value='';
+};
+
+/* ---------- 全螢幕畫筆 ---------- */
+const ov=$('#overlay'),ovTools=$('#overlayTools');
+const OD=makeDrawer(ov,{color:'#e5484d',size:6});
+function penOn(on){ov.classList.toggle('on',on);ovTools.classList.toggle('on',on);$('#btnPen').classList.toggle('on',on);if(on){closePanels();requestAnimationFrame(()=>OD.fit());}}
+$('#btnPen').onclick=()=>penOn(!ov.classList.contains('on'));
+$('#ovClose').onclick=()=>penOn(false);
+$('#ovClear').onclick=()=>OD.clear();
+$('#ovEraser').onclick=e=>{OD.set({eraser:!OD.eraser});e.currentTarget.classList.toggle('on',OD.eraser);};
+$('#ovSize').oninput=e=>OD.set({size:+e.target.value});
+$$('#overlayTools .dot').forEach(d=>d.onclick=()=>{OD.set({color:d.dataset.c});$$('#overlayTools .dot').forEach(x=>x.classList.remove('on'));d.classList.add('on');$('#ovEraser').classList.remove('on');});
+
+/* ---------- 鍵盤 ---------- */
+document.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();const typing=tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable;
+  if(e.key==='Escape'){closePanels();penOn(false);return;}
+  if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==='f')toggleFull();else if(k==='h')toggleBar();else if(k==='p')penOn(!ov.classList.contains('on'));else if(e.key==='?')$('#help').classList.toggle('open');
+});
+addEventListener('resize',()=>{
+  state.widgets.forEach(w=>{if(!w.max){w.x=clamp(w.x,-w.w+80,innerWidth-80);w.y=clamp(w.y,0,innerHeight-40);place(w);}live.get(w.id)?.api?.resize?.();});
+  if(ov.classList.contains('on'))OD.fit();
+});
+stage.addEventListener('pointerdown',e=>{if(e.target===stage||e.target.id==='empty'||e.target.closest('#empty')){$$('.win').forEach(x=>x.classList.remove('active'));}});
+
+/* ---------- 啟動 ---------- */
+applyBg();
+state.widgets.forEach(mount);
+updateEmpty();
+if(!localStorage.getItem('classroomscreen.seen')){localStorage.setItem('classroomscreen.seen','1');if(!state.widgets.length){addWidget('clock');addWidget('timer');}}
+</script>
+
+<!-- 公版「錯誤／建議」回報按鈕（通報進共用試算表） -->
+<script>
+window.REPORT_CONTEXT=()=>({item:'教室螢幕',itemName:('小工具：'+(JSON.parse(localStorage.getItem('classroomscreen.v1')||'{}').widgets||[]).map(w=>w.type).join(',')+'；'+navigator.userAgent).slice(0,600)});
+window.addEventListener('load',()=>{
+  const host=document.querySelector('[data-oth-report]'); if(!host||!host.shadowRoot) return;
+  const st=document.createElement('style');
+  st.textContent=`.fab{width:34px;height:34px;padding:0;gap:0;justify-content:center;font-size:0;opacity:.6;right:14px;bottom:64px;
+      box-shadow:0 2px 8px rgba(0,0,0,.14),0 0 0 1.5px #2a7de1 inset;transition:opacity .2s}
+    .fab:hover,.fab:focus-visible{opacity:1;width:auto;padding:0 12px;gap:6px;font-size:12.5px}
+    .fab svg{width:15px;height:15px}`;
+  host.shadowRoot.appendChild(st);
+  const fab=host.shadowRoot.querySelector('.fab'); if(fab){fab.title='回報錯誤或建議';fab.setAttribute('aria-label','回報錯誤或建議');}
+});
+</script>
+<script src="https://mattsue1003.github.io/oth-report-button/report.js" data-site="教室螢幕" data-color="#2a7de1" data-label="錯誤／建議" data-offset="16" defer></script>
+</body>
+</html>
