@@ -1709,9 +1709,36 @@ window.addEventListener('load',()=>{
   st.textContent=`.fab{width:34px;height:34px;padding:0;gap:0;justify-content:center;font-size:0;opacity:.6;right:14px;bottom:64px;
       box-shadow:0 2px 8px rgba(0,0,0,.14),0 0 0 1.5px #2a7de1 inset;transition:opacity .2s}
     .fab:hover,.fab:focus-visible{opacity:1;width:auto;padding:0 12px;gap:6px;font-size:12.5px}
-    .fab svg{width:15px;height:15px}`;
+    .fab svg{width:15px;height:15px}
+    .fab{white-space:nowrap}`;
   host.shadowRoot.appendChild(st);
-  const fab=host.shadowRoot.querySelector('.fab'); if(fab){fab.title='回報錯誤或建議';fab.setAttribute('aria-label','回報錯誤或建議');}
+  const fab=host.shadowRoot.querySelector('.fab'); if(!fab) return;
+  fab.title='回報錯誤或建議（可拖曳移動位置）';fab.setAttribute('aria-label','回報錯誤或建議');
+  fab.style.touchAction='none';fab.style.cursor='grab';
+  /* 可拖曳到任何位置，位置記在這台裝置（老師畫面、學生畫面各自記） */
+  const POS_KEY='classroomscreen.reportPos.'+(document.body.classList.contains('student')?'stu':'main');
+  // pos=[左上角 x, y]（收合時的位置）；按鈕在左半邊就從左邊固定、右半邊從右邊固定，滑過展開時文字才不會被擠到換行
+  const place=(x,y)=>{const w=34,hh=34;
+    x=Math.max(4,Math.min(innerWidth-w-4,x));y=Math.max(4,Math.min(innerHeight-hh-4,y));
+    if(x+w/2<innerWidth/2){fab.style.left=x+'px';fab.style.right='auto';}else{fab.style.right=(innerWidth-x-w)+'px';fab.style.left='auto';}
+    fab.style.top=y+'px';fab.style.bottom='auto';return [x,y];};
+  let pos=null;try{pos=JSON.parse(localStorage.getItem(POS_KEY));}catch(e){}
+  if(Array.isArray(pos)&&pos.length===2)pos=place(+pos[0]||0,+pos[1]||0);else pos=null;
+  addEventListener('resize',()=>{if(pos)pos=place(pos[0],pos[1]);});
+  let drag=null,moved=false;
+  fab.addEventListener('pointerdown',e=>{if(e.button)return;const r=fab.getBoundingClientRect();
+    // 收合時的左上角：從右邊固定時以右緣往回推 34px
+    const x0=fab.style.left&&fab.style.left!=='auto'?r.left:r.right-34;
+    drag={x:e.clientX,y:e.clientY,x0,y0:r.top,id:e.pointerId};moved=false;});
+  addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(!moved&&Math.hypot(dx,dy)<6)return;
+    if(!moved){moved=true;fab.style.cursor='grabbing';fab.style.opacity='1';}
+    pos=place(drag.x0+dx,drag.y0+dy);});
+  const end=()=>{if(!drag)return;drag=null;fab.style.cursor='grab';fab.style.opacity='';
+    if(moved){try{localStorage.setItem(POS_KEY,JSON.stringify(pos.map(Math.round)));}catch(e){}}};
+  addEventListener('pointerup',end);addEventListener('pointercancel',end);
+  // 拖曳結束時不要順便打開回報視窗
+  host.shadowRoot.addEventListener('click',e=>{if(moved&&e.composedPath().includes(fab)){e.stopImmediatePropagation();e.preventDefault();}},true);
 });
 </script>
 <script src="https://mattsue1003.github.io/oth-report-button/report.js" data-site="教室螢幕" data-color="#2a7de1" data-label="錯誤／建議" data-offset="16" defer></script>
