@@ -1397,12 +1397,12 @@ mount(body,s,ctx){
 
 /* ---- 呼吸練習 ---- */
 const BREATH={easy:{n:'簡單 4-6',seq:[['吸氣',4,1],['吐氣',6,0]]},box:{n:'方塊 4-4-4-4',seq:[['吸氣',4,1],['憋氣',4,1],['吐氣',4,0],['停一下',4,0]]},calm:{n:'放鬆 4-7-8',seq:[['吸氣',4,1],['憋氣',7,1],['吐氣',8,0]]},custom:{n:'自訂節奏'}};
-const BR_MUSIC={none:'無音樂',pad:'🎹 柔和和弦',ocean:'🌊 海浪',rain:'🌧️ 雨聲',chimes:'🎐 風鈴'};
+const BR_MUSIC={none:'無音樂',nature:'🐦 蟲鳴鳥叫',pad:'🎹 柔和和弦',ocean:'🌊 海浪',rain:'🌧️ 雨聲',chimes:'🎐 風鈴'};
 /* 柔和背景音樂：全部即時合成；breath() 讓音量跟著吸吐起伏 */
 function makeMusic(kind,vol){
   const a=SND.ac(),master=a.createGain(),t0=a.currentTime;master.gain.setValueAtTime(.0001,t0);master.gain.linearRampToValueAtTime(vol,t0+2.5);master.connect(a.destination);
   const srcs=[],timers=[];let level=vol;
-  const noiseSrc=()=>{const n=a.sampleRate*4,b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+.02*w)/1.02;c[i]=kind==='rain'?w:last*3.5;}
+  const noiseSrc=()=>{const n=a.sampleRate*4,b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+.02*w)/1.02;c[i]=kind==='ocean'?last*3.5:w;}
     const sN=a.createBufferSource();sN.buffer=b;sN.loop=true;sN.start();srcs.push(sN);return sN;};
   if(kind==='pad'){
     const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1000;lp.connect(master);
@@ -1417,6 +1417,21 @@ function makeMusic(kind,vol){
   }else if(kind==='rain'){
     const sN=noiseSrc(),bp=a.createBiquadFilter(),hp=a.createBiquadFilter(),g=a.createGain();
     bp.type='bandpass';bp.frequency.value=2500;bp.Q.value=.6;hp.type='highpass';hp.frequency.value=400;g.gain.value=.12;sN.connect(hp).connect(bp).connect(g).connect(master);
+  }else if(kind==='nature'){
+    /* 森林：微風底噪＋蟋蟀＋隨機鳥叫 */
+    const sN=noiseSrc(),lp=a.createBiquadFilter(),wg=a.createGain();lp.type='lowpass';lp.frequency.value=500;wg.gain.value=.05;sN.connect(lp).connect(wg).connect(master);
+    const bird=()=>{const t=a.currentTime+.05,base=2200+Math.random()*1800,notes=2+Math.floor(Math.random()*5),gap=.09+Math.random()*.08,pan=a.createStereoPanner?a.createStereoPanner():null;
+      if(pan){pan.pan.value=Math.random()*1.6-.8;pan.connect(master);}
+      for(let k=0;k<notes;k++){const o=a.createOscillator(),g=a.createGain(),st=t+k*gap,d=.06+Math.random()*.05,f=base*(1+(Math.random()-.5)*.25);
+        o.frequency.setValueAtTime(f*.8,st);o.frequency.exponentialRampToValueAtTime(f*1.25,st+d*.5);o.frequency.exponentialRampToValueAtTime(f*.9,st+d);
+        g.gain.setValueAtTime(.0001,st);g.gain.linearRampToValueAtTime(.05,st+.01);g.gain.exponentialRampToValueAtTime(.0001,st+d);
+        o.connect(g).connect(pan||master);o.start(st);o.stop(st+d+.02);}
+      timers.push(setTimeout(bird,1500+Math.random()*4500));};
+    const cricket=()=>{const t=a.currentTime+.05,f=4300+Math.random()*500,pulses=3+Math.floor(Math.random()*3);
+      for(let k=0;k<pulses;k++){const o=a.createOscillator(),g=a.createGain(),st=t+k*.06;o.frequency.value=f;
+        g.gain.setValueAtTime(.0001,st);g.gain.linearRampToValueAtTime(.012,st+.008);g.gain.exponentialRampToValueAtTime(.0001,st+.04);o.connect(g).connect(master);o.start(st);o.stop(st+.05);}
+      timers.push(setTimeout(cricket,700+Math.random()*900));};
+    bird();cricket();
   }else if(kind==='chimes'){
     const notes=[523.3,587.3,659.3,784,880,1046.5,1174.7];
     const ring=()=>{const f=notes[Math.floor(Math.random()*notes.length)],o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
@@ -1431,9 +1446,9 @@ function makeMusic(kind,vol){
       timers.forEach(x=>{clearInterval(x);clearTimeout(x);});setTimeout(()=>{srcs.forEach(x=>{try{x.stop();}catch(e){}});master.disconnect();},1400);}
   };
 }
-WIDGETS.breathe={name:'呼吸練習',icon:'🫧',w:360,h:400,init:()=>({p:'easy',custom:{in:4,h1:0,out:6,h2:0},music:'pad',mvol:.5,chime:true,rounds:0}),
+WIDGETS.breathe={name:'呼吸練習',icon:'🫧',w:360,h:400,init:()=>({p:'easy',custom:{in:4,h1:0,out:6,h2:0},music:'nature',mvol:.5,chime:true,rounds:0}),
 mount(body,s,ctx){
-  if(!s.custom)s.custom={in:4,h1:0,out:6,h2:0};if(s.music==null)s.music='pad';if(s.mvol==null)s.mvol=.5;if(s.chime==null)s.chime=true;if(s.rounds==null)s.rounds=0;
+  if(!s.custom)s.custom={in:4,h1:0,out:6,h2:0};if(s.music==null)s.music='nature';if(s.mvol==null)s.mvol=.5;if(s.chime==null)s.chime=true;if(s.rounds==null)s.rounds=0;
   const t=h('div',{class:'t'},'準備好了嗎？'),n=h('div',{class:'n'});
   const circle=h('div',{class:'br-c'},t,n);
   const info=h('button',{class:'tm-status',style:'position:absolute;bottom:8px;left:50%;transform:translateX(-50%)',title:'點一下調整',onclick:()=>openSheet()});
