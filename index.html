@@ -217,6 +217,41 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 .br-c .t{font-weight:800;font-size:clamp(16px,7cqw,44px)}
 .br-c .n{font-weight:700;font-size:clamp(14px,5cqw,32px);opacity:.9}
 @media (max-width:700px){.tb{min-width:44px;padding:8px 4px;font-size:0;gap:0}.tb .i{font-size:22px}#bar{bottom:8px;max-width:calc(100vw - 12px)}#bar .tools{min-width:96px}}
+
+/* ---------- 學生作答（手機連線） ---------- */
+.lv-bar{display:flex;align-items:center;gap:10px;margin:2px 10px 6px;padding:6px 8px;background:#eef5ff;border:1px solid #d6e6fb;border-radius:12px;flex:none;flex-wrap:wrap}
+.lv-qr{width:58px;height:58px;flex:none;background:#fff;border-radius:8px;padding:3px;cursor:zoom-in;display:grid;place-items:center;font-size:10px;color:var(--muted);text-align:center}
+.lv-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lv-pin{font-size:18px;letter-spacing:.06em;color:var(--accent);font-variant-numeric:tabular-nums}
+#liveBig .lb-card{background:#fff;border-radius:22px;padding:24px;display:flex;gap:28px;align-items:center;max-width:min(96vw,1100px);max-height:96vh;overflow:auto;flex-wrap:wrap;justify-content:center}
+.lb-qr{width:min(68vh,80vw,560px);aspect-ratio:1;display:grid;place-items:center;color:var(--muted)}
+.lb-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start;max-width:420px}
+.lb-side .muted{font-size:15px}
+.lb-url{font-size:clamp(16px,2.2vw,26px);font-weight:700;word-break:break-all}
+.lb-pin{font-size:clamp(48px,8vw,110px);font-weight:900;letter-spacing:.08em;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
+#stu{display:none}
+body.student{overflow:auto;background:#eef3f9;user-select:none}
+body.student #stage,body.student #bar,body.student #barToggle,body.student #overlay,body.student #overlayTools,body.student #undo,body.student #timesUp,body.student .panel{display:none!important}
+body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:560px;margin:0 auto;padding:16px 16px 96px}
+.st-head{display:flex;align-items:center;gap:8px;font-weight:700;color:#3a4656;font-size:15px;margin-bottom:14px}
+.st-dot{width:10px;height:10px;border-radius:50%;background:#c3ccd6;margin-left:auto;flex:none}
+.st-dot.ok{background:#0fa37f}
+.st-card{background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(0,0,0,.08);padding:20px}
+.st-q{font-size:clamp(20px,6vw,28px);font-weight:800;margin:0 0 16px;line-height:1.35;word-break:break-word}
+.st-opts{display:grid;gap:12px}
+.st-opts.emo{grid-template-columns:1fr 1fr}
+.st-o{min-height:64px;padding:14px 16px;border-radius:16px;background:#f1f5fa;border:3px solid transparent;font-size:20px;font-weight:700;text-align:left;display:flex;align-items:center;gap:12px;word-break:break-word;transition:background .15s,border-color .15s}
+.st-opts.emo .st-o{flex-direction:column;justify-content:center;text-align:center;min-height:128px;gap:6px}
+.st-o .e{font-size:52px;line-height:1}
+.st-o.on{border-color:var(--accent);background:#e3efff}
+.st-o.wait{opacity:.7}
+.st-o:disabled{opacity:.5;cursor:default}
+.st-note{margin-top:16px;text-align:center;color:var(--muted);font-size:15px;line-height:1.5}
+.st-note.ok{color:#0b8d6e;font-weight:700}
+.st-pin{width:100%;font-size:34px;letter-spacing:.2em;text-align:center;padding:12px;border-radius:14px;border:2px solid #d5dde7;font-weight:800;background:#fff}
+.st-big{display:flex;width:100%;margin-top:12px;padding:16px;font-size:20px;border-radius:14px}
+.st-msg{text-align:center;font-size:18px;line-height:1.6;padding:10px 0}
+.st-msg .e{font-size:56px;display:block;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -302,6 +337,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
+<li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
       <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理，不會錄影錄音。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
@@ -313,6 +349,13 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 
 <div class="toast" id="toast"></div>
 <div id="undo"><span></span><button class="btn sm" id="undoBtn">↶ 復原</button></div>
+<div class="modal" id="liveBig">
+  <div class="lb-card"><div class="lb-qr" id="lbQr"></div>
+    <div class="lb-side"><div class="muted">📱 用手機相機掃描 QR Code<br>或開啟這個網址：</div><div class="lb-url" id="lbUrl"></div>
+      <div class="muted">再輸入 PIN</div><div class="lb-pin" id="lbPin"></div><div class="muted" id="lbSt"></div>
+      <button class="btn p" data-close style="margin-top:8px">關閉（學生仍可作答）</button></div></div>
+</div>
+<div id="stu"><div class="st-head">📱 教室螢幕・學生作答<span class="st-dot" id="stDot"></span></div><div class="st-card" id="stMain"></div></div>
 <div id="timesUp" title="點一下關閉"><div class="t">⏰ 時間到！</div><div class="s"></div><div class="s" style="font-size:14px;opacity:.7">點一下或按 Esc 關閉</div></div>
 
 <script>
@@ -320,6 +363,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
    教室螢幕 — 核心
    ========================================================= */
 const $=(s,r=document)=>r.querySelector(s);
+const JOIN_PARAM=new URLSearchParams(location.search).get('join'), IS_STUDENT=JOIN_PARAM!==null;
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 function h(tag,attrs={},...kids){
   const e=document.createElement(tag);
@@ -820,7 +864,7 @@ mount(body,s,ctx){
     inp.value=s.text;box.innerHTML='';cap.textContent=s.text;
     if(!s.text){box.append(h('div',{class:'muted'},'輸入網址，讓學生掃描加入'));return;}
     box.append(h('div',{class:'muted'},'產生中…'));
-    try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',()=>window.QRCode);box.innerHTML='';
+    try{await loadScript(QR_SRC,()=>window.QRCode);box.innerHTML='';
       const holder=h('div',{style:'width:min(100%,100cqh);aspect-ratio:1'});box.append(holder);
       new QRCode(holder,{text:s.text,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
       const img=holder.querySelector('img,canvas');if(img){img.style.width='100%';img.style.height='100%';}
@@ -870,26 +914,163 @@ mount(body,s,ctx){
   return {resize:()=>D.fit()};
 }};
 
+/* ---- 學生用手機作答（PeerJS／WebRTC，老師的瀏覽器就是主機，不需伺服器或帳號） ---- */
+const LIVE_PREFIX='classscreen-tw-';
+const PEER_SRC='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';
+const QR_SRC='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+const newPin=()=>String(Math.floor(100000+Math.random()*900000));
+const joinBase=()=>location.origin+location.pathname;
+const joinUrl=pin=>joinBase()+'?join='+pin;
+function deviceId(){let d=null;try{d=localStorage.getItem('classroomscreen.dev');}catch(e){}
+  if(!d){d=uid()+uid()+uid();try{localStorage.setItem('classroomscreen.dev',d);}catch(e){}}return d;}
+async function makeQR(el,text){
+  el.textContent='QR 產生中…';
+  try{await loadScript(QR_SRC,()=>window.QRCode);el.innerHTML='';
+    new QRCode(el,{text,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
+    el.querySelectorAll('img,canvas').forEach(i=>{i.style.width='100%';i.style.height='100%';});
+  }catch(e){el.textContent='QR 需要網路';}
+}
+const LIVE_HOSTS=new Set();
+let bigOwner=null;
+function closeBig(){bigOwner=null;$('#liveBig').classList.remove('open');}
+$('#liveBig').addEventListener('click',e=>{if(e.target.id==='liveBig')closeBig();});
+addEventListener('pagehide',()=>LIVE_HOSTS.forEach(L=>L.quiet()));
+/* 每個開放作答的小工具各自一個房間（PIN）。ad = {payload(), count(), vote(prev,i)} */
+function liveHost(s,ctx,ad){
+  if(!s.voters||typeof s.voters!=='object')s.voters={};
+  s.qid=s.qid||1;
+  let peer=null,ready=false,err='',dead=false,syncT,qrFor='';
+  const conns=new Set();
+  const qrEl=h('div',{class:'lv-qr',title:'放大 QR Code 給全班看'});
+  const pinEl=h('b',{class:'lv-pin'}),stEl=h('span',{class:'muted'});
+  const bOpen=h('button',{class:'btn sm',title:'暫停或繼續接受學生作答'});
+  const ui=h('div',{class:'lv-bar'},qrEl,h('div',{class:'lv-info'},pinEl,stEl),h('span',{class:'grow'}),bOpen,
+    h('button',{class:'btn sm',title:'放大 QR Code 給全班看',onclick:()=>showBig()},'⛶ 放大'));
+  const btn=h('button',{class:'btn sm',title:'讓學生用手機掃 QR Code 作答（不需帳號）',onclick:()=>toggle()});
+  qrEl.onclick=()=>showBig();
+  bOpen.onclick=()=>{s.live.open=!s.live.open;ctx.save();paint();sync();};
+  const votedN=()=>Object.keys(s.voters).length;
+  function status(){
+    if(err)return err;
+    if(!ready)return '正在開啟房間…';
+    return `${conns.size} 人連線・${votedN()} 人已作答${s.live.open?'':'・已截止'}`;
+  }
+  function paint(){
+    const on=!!s.live?.on;
+    ui.style.display=on?'':'none';
+    btn.textContent=on?'📱 關閉學生作答':'📱 開放學生作答';btn.classList.toggle('on',on);
+    if(!on)return;
+    pinEl.textContent=ready?'PIN '+s.live.pin:'連線中…';stEl.textContent=status();
+    bOpen.textContent=s.live.open?'⏸ 截止':'▶ 繼續';bOpen.classList.toggle('on',!s.live.open);
+    if(ready&&qrFor!==s.live.pin){qrFor=s.live.pin;makeQR(qrEl,joinUrl(s.live.pin));}
+    if(!ready&&qrFor){qrFor='';qrEl.textContent='…';}
+    if(bigOwner===api)paintBig();
+  }
+  let bigQrFor='';
+  function paintBig(){
+    $('#lbUrl').textContent=joinBase().replace(/^https?:\/\//,'')+'?join';
+    $('#lbPin').textContent=ready?s.live.pin:'······';$('#lbSt').textContent=status();
+    if(ready&&bigQrFor!==s.live.pin){bigQrFor=s.live.pin;makeQR($('#lbQr'),joinUrl(s.live.pin));}
+    if(!ready&&bigQrFor){bigQrFor='';$('#lbQr').textContent='連線中…';}
+  }
+  function showBig(){closePanels();bigOwner=api;bigQrFor='';$('#lbQr').textContent='連線中…';paintBig();$('#liveBig').classList.add('open');}
+  async function start(attempt=0,fresh=false){
+    if(dead||!s.live?.on||peer)return;
+    err='';paint();
+    try{await loadScript(PEER_SRC,()=>window.Peer);}catch(e){err='連線程式載入失敗（需要網路）';paint();return;}
+    if(dead||!s.live?.on||peer)return;
+    if(!s.live.pin){s.live.pin=newPin();fresh=true;ctx.save();}
+    const p=new Peer(LIVE_PREFIX+s.live.pin,{debug:0});peer=p;ready=false;
+    p.on('open',()=>{if(peer!==p)return p.destroy();ready=true;err='';paint();});
+    p.on('error',e=>{
+      if(peer!==p)return;
+      if(e.type==='unavailable-id'){
+        try{p.destroy();}catch(_){} peer=null;
+        // 重新整理後要取回原本的 PIN：舊連線還沒釋放時等一下再試；新 PIN 撞號就直接換
+        if(!fresh&&attempt<10){err='正在取回原本的 PIN…';paint();setTimeout(()=>start(attempt+1),2500);}
+        else{s.live.pin=newPin();ctx.save();start(0,true);}
+        return;
+      }
+      if(e.type==='peer-unavailable')return;
+      console.warn('live',e.type);err='連線服務異常，重試中…';paint();
+      setTimeout(()=>{if(peer===p&&(p.destroyed||p.disconnected)){try{p.destroy();}catch(_){} peer=null;ready=false;start();}},4000);
+    });
+    p.on('disconnected',()=>setTimeout(()=>{try{if(peer===p&&!p.destroyed)p.reconnect();}catch(_){}},1000));
+    p.on('connection',c=>{
+      c.on('open',()=>{conns.add(c);paint();});
+      c.on('data',d=>onData(c,d));
+      const bye=()=>{if(conns.delete(c))paint();};
+      c.on('close',bye);c.on('error',bye);
+    });
+  }
+  const key=c=>'d'+c._dev;
+  function stateFor(c){const k=key(c);const mine=Object.prototype.hasOwnProperty.call(s.voters,k)?s.voters[k]:null;
+    return Object.assign({t:'state'},ad.payload(),{qid:s.qid,open:!!s.live.open,mine});}
+  function send(c,msg){if(c.open)try{c.send(msg);}catch(e){}}
+  function onData(c,d){
+    if(!d||typeof d!=='object'||!s.live?.on)return;
+    if(d.t==='hello'){c._dev=String(d.dev||c.peer).replace(/[^\w-]/g,'').slice(0,40)||c.peer;send(c,stateFor(c));paint();return;}
+    if(d.t==='vote'&&c._dev){
+      const i=Number(d.i);
+      if(s.live.open&&d.qid===s.qid&&Number.isInteger(i)&&i>=0&&i<ad.count()){
+        const k=key(c),prev=Object.prototype.hasOwnProperty.call(s.voters,k)?s.voters[k]:null;
+        if(prev!==i){ad.vote(prev,i);s.voters[k]=i;ctx.save();}
+      }
+      send(c,stateFor(c));paint();
+    }
+  }
+  function sync(){clearTimeout(syncT);syncT=setTimeout(()=>conns.forEach(c=>send(c,stateFor(c))),150);}
+  function stopPeer(sayBye){
+    const p=peer;peer=null;ready=false;qrFor='';
+    if(sayBye)conns.forEach(c=>send(c,{t:'end'}));
+    conns.clear();
+    if(p)setTimeout(()=>{try{p.destroy();}catch(e){}},sayBye?300:0);
+  }
+  function toggle(){
+    if(s.live?.on){stopPeer(true);s.live.on=false;ctx.save();if(bigOwner===api)closeBig();paint();return;}
+    s.live=Object.assign({open:true},s.live||{},{on:true});ctx.save();
+    const inst=ctx.inst;if(!inst.max&&inst.h<400){inst.h=Math.min(400,innerHeight-60);place(inst);}
+    paint();start();showBig();
+  }
+  const api={ui,btn,sync,paint,
+    reset(){s.voters={};s.qid++;ctx.save();sync();paint();},
+    removeOpt(i){for(const k of Object.keys(s.voters)){const v=s.voters[k];if(v===i)delete s.voters[k];else if(v>i)s.voters[k]=v-1;}ctx.save();sync();},
+    quiet(){stopPeer(false);},
+    destroy(){dead=true;LIVE_HOSTS.delete(api);if(bigOwner===api)closeBig();stopPeer(true);}};
+  LIVE_HOSTS.add(api);
+  paint();
+  if(s.live?.on)start();
+  return api;
+}
+
 /* ---- 投票 ---- */
 WIDGETS.poll={name:'即時投票',icon:'📊',w:400,h:320,init:()=>({q:'你最喜歡哪一個？',opts:[{t:'A',n:0},{t:'B',n:0},{t:'C',n:0}]}),
 mount(body,s,ctx){
-  const qEl=h('input',{class:'inp',style:'font-weight:700;font-size:16px;border:0;background:transparent;padding:10px 12px 4px',value:s.q,onchange:()=>{s.q=qEl.value;ctx.save();}});
+  const qEl=h('input',{class:'inp',style:'font-weight:700;font-size:16px;border:0;background:transparent;padding:10px 12px 4px',value:s.q,onchange:()=>{s.q=qEl.value;ctx.save();L.sync();}});
   const list=h('div',{style:'flex:1;overflow:auto;padding:4px 12px'});
   const totEl=h('span',{class:'muted'});
-  body.append(qEl,list,h('div',{class:'foot'},h('button',{class:'btn sm',onclick:()=>{s.opts.push({t:String.fromCharCode(65+s.opts.length),n:0});ctx.save();render();}},'＋ 選項'),h('button',{class:'btn sm',onclick:()=>{s.opts.forEach(o=>o.n=0);ctx.save();render();}},'歸零'),h('span',{class:'grow'}),totEl));
+  const L=liveHost(s,ctx,{
+    payload:()=>({kind:'poll',q:s.q,opts:s.opts.map(o=>({t:String(o.t).slice(0,80)}))}),
+    count:()=>s.opts.length,
+    vote:(prev,i)=>{if(prev!=null&&s.opts[prev])s.opts[prev].n=Math.max(0,s.opts[prev].n-1);s.opts[i].n++;render();}});
+  body.append(qEl,L.ui,list,h('div',{class:'foot'},
+    h('button',{class:'btn sm',onclick:()=>{if(s.opts.length>=12)return toast('最多 12 個選項');s.opts.push({t:String.fromCharCode(65+s.opts.length),n:0});ctx.save();render();L.sync();}},'＋ 選項'),
+    h('button',{class:'btn sm',title:'票數歸零，學生可以重新作答',onclick:()=>{s.opts.forEach(o=>o.n=0);L.reset();ctx.save();render();}},'歸零'),
+    L.btn,h('span',{class:'grow'}),totEl));
   function render(){
     list.innerHTML='';const tot=s.opts.reduce((a,o)=>a+o.n,0);const max=Math.max(1,...s.opts.map(o=>o.n));
     s.opts.forEach((o,i)=>{
-      const name=h('input',{class:'inp',style:'width:90px;padding:4px 8px',value:o.t,onchange:()=>{o.t=name.value;ctx.save();}});
+      const name=h('input',{class:'inp',style:'width:90px;padding:4px 8px',value:o.t,onchange:()=>{o.t=name.value;ctx.save();L.sync();}});
       list.append(h('div',{class:'poll-opt'},name,
         h('div',{class:'poll-bar'},h('b',{style:`width:${o.n/max*100}%`}),h('span',{},`${o.n}${tot?`（${Math.round(o.n/tot*100)}%）`:''}`)),
         h('button',{class:'btn sm p',onclick:()=>{o.n++;ctx.save();render();}},'＋1'),
         h('button',{class:'btn sm',onclick:()=>{o.n=Math.max(0,o.n-1);ctx.save();render();}},'−'),
-        h('button',{class:'btn sm',title:'刪除',onclick:()=>{s.opts.splice(i,1);ctx.save();render();}},'✕')));
+        h('button',{class:'btn sm',title:'刪除',onclick:()=>{L.removeOpt(i);s.opts.splice(i,1);ctx.save();render();L.sync();}},'✕')));
     });
     totEl.textContent=`共 ${tot} 票`;
   }
   render();
+  return {destroy:()=>L.destroy()};
 }};
 
 /* ---- 計分板 ---- */
@@ -1053,11 +1234,16 @@ mount(body,s,ctx){
 const EXIT_OPTS=[['😄','很懂'],['🙂','大致懂'],['😕','有點卡'],['😣','不太懂']];
 WIDGETS.exit={name:'心情回饋',icon:'😊',w:460,h:300,init:()=>({q:'今天的內容你懂了嗎？',n:[0,0,0,0],show:false,labels:EXIT_OPTS.map(o=>o[1])}),
 mount(body,s,ctx){
-  const qEl=h('input',{class:'inp',style:'font-weight:700;font-size:16px;border:0;background:transparent;padding:10px 12px 2px;text-align:center',value:s.q,onchange:()=>{s.q=qEl.value;ctx.save();}});
+  const qEl=h('input',{class:'inp',style:'font-weight:700;font-size:16px;border:0;background:transparent;padding:10px 12px 2px;text-align:center',value:s.q,onchange:()=>{s.q=qEl.value;ctx.save();L.sync();}});
   const grid=h('div',{class:'exit-grid'});
   const tot=h('span',{class:'muted'});
+  const L=liveHost(s,ctx,{
+    payload:()=>({kind:'exit',q:s.q,opts:EXIT_OPTS.map(([e],i)=>({e,t:s.labels[i]}))}),
+    count:()=>EXIT_OPTS.length,
+    vote:(prev,i)=>{if(prev!=null)s.n[prev]=Math.max(0,s.n[prev]-1);s.n[i]++;render();tick2();}});
   const bShow=h('button',{class:'btn sm',onclick:()=>{s.show=!s.show;ctx.save();render();}},'👁 顯示結果');
-  body.append(qEl,grid,h('div',{class:'foot'},bShow,h('button',{class:'btn sm',onclick:()=>{if(confirm('把回饋歸零？')){s.n=[0,0,0,0];ctx.save();render();}}},'歸零'),h('span',{class:'grow'}),h('span',{class:'muted'},'學生離開前點一下'),tot));
+  const hint=h('span',{class:'muted'});
+  body.append(qEl,L.ui,grid,h('div',{class:'foot'},bShow,h('button',{class:'btn sm',onclick:()=>{if(confirm('把回饋歸零？')){s.n=[0,0,0,0];L.reset();ctx.save();render();}}},'歸零'),L.btn,h('span',{class:'grow'}),hint,tot));
   let lock=0;
   function render(){
     grid.innerHTML='';const total=s.n.reduce((a,b)=>a+b,0),max=Math.max(1,...s.n);
@@ -1068,9 +1254,12 @@ mount(body,s,ctx){
       grid.append(b);
     });
     tot.textContent=`・共 ${total} 人`;bShow.textContent=s.show?'🙈 隱藏結果':'👁 顯示結果';bShow.classList.toggle('on',s.show);
+    hint.textContent=s.live?.on?'學生用手機作答':'學生離開前點一下';
   }
   function tick2(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=1200;g.gain.setValueAtTime(.12,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.15);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.16);}catch(e){}}
   render();
+  L.btn.addEventListener('click',()=>render());
+  return {destroy:()=>L.destroy()};
 }};
 
 /* ---- 呼吸練習 ---- */
@@ -1192,6 +1381,7 @@ $$('#overlayTools .dot').forEach(d=>d.onclick=()=>{OD.set({color:d.dataset.c});$
 
 /* ---------- 鍵盤 ---------- */
 document.addEventListener('keydown',e=>{
+  if(IS_STUDENT)return;
   const tag=(e.target.tagName||'').toLowerCase();const typing=tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable;
   if(e.key==='Escape'){closePanels();penOn(false);closeTimesUp();return;}
   const k=e.key.toLowerCase();
@@ -1217,12 +1407,84 @@ let wakeLock=null;
 async function keepAwake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible'&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}}
 document.addEventListener('visibilitychange',keepAwake);document.addEventListener('pointerdown',keepAwake);
 
+/* ---------- 學生端（?join=PIN） ---------- */
+function startStudent(pin0){
+  document.body.classList.add('student');document.title='教室螢幕・學生作答';
+  const main=$('#stMain'),dot=$('#stDot'),dev=deviceId();
+  let S=null;
+  const msg=(e,t,...extra)=>{main.innerHTML='';main.append(h('div',{class:'st-msg'},h('span',{class:'e'},e),t),...extra);};
+  function askPin(note,prefill=''){
+    main.innerHTML='';dot.classList.remove('ok');
+    const inp=h('input',{class:'st-pin',inputmode:'numeric',autocomplete:'off',maxlength:6,placeholder:'PIN',value:prefill});
+    const go=()=>{const v=inp.value.replace(/\D/g,'');if(v.length!==6)return toast('PIN 是 6 位數字');history.replaceState(null,'','?join='+v);join(v);};
+    inp.onkeydown=e=>{if(e.key==='Enter')go();};
+    main.append(h('h2',{class:'st-q',style:'text-align:center'},'輸入老師螢幕上的 PIN'),inp,h('button',{class:'btn p st-big',onclick:go},'加入'));
+    if(note)main.append(h('div',{class:'st-note'},note));
+    setTimeout(()=>inp.focus(),50);
+  }
+  function join(pin){
+    if(S){S.dead=true;clearTimeout(S.retryT);try{S.peer?.destroy();}catch(e){}}
+    S={pin,gen:0,tries:0,joined:false,st:null,pending:null,dead:false};
+    msg('🔌','連線中…');connect();
+  }
+  async function connect(){
+    const me=S,gen=++me.gen,live=()=>S===me&&!me.dead&&me.gen===gen;
+    try{me.peer?.destroy();}catch(e){}
+    try{await loadScript(PEER_SRC,()=>window.Peer);}catch(e){if(live())msg('📶','無法載入連線程式，請確認手機有網路',h('button',{class:'btn p st-big',onclick:()=>join(me.pin)},'重試'));return;}
+    if(!live())return;
+    const peer=new Peer({debug:0});me.peer=peer;
+    const guard=setTimeout(()=>{if(live())retry();},12000);
+    peer.on('open',()=>{
+      if(!live())return;
+      const c=peer.connect(LIVE_PREFIX+me.pin,{reliable:true});me.conn=c;
+      c.on('open',()=>{clearTimeout(guard);if(!live())return;me.tries=0;me.joined=true;dot.classList.add('ok');c.send({t:'hello',dev});});
+      c.on('data',d=>{if(live())onData(d);});
+      c.on('close',()=>{if(live()&&!me.ended)retry();});
+    });
+    peer.on('error',e=>{if(!live())return;clearTimeout(guard);
+      if(e.type==='peer-unavailable'&&!me.joined&&me.tries>=2){me.dead=true;try{peer.destroy();}catch(_){}return askPin('找不到 PIN '+me.pin+' 的房間，請確認老師已開放作答、PIN 沒打錯');}
+      retry();});
+  }
+  function retry(){
+    const me=S;if(!me||me.dead||me.ended||me.retryT)return;
+    dot.classList.remove('ok');me.tries++;
+    if(me.tries>40){msg('📴','和老師的連線中斷了',h('button',{class:'btn p st-big',onclick:()=>join(me.pin)},'重新連線'));return;}
+    if(me.st)renderQ('重新連線中…');else msg('🔌',`連線中…（${me.tries}）`);
+    me.retryT=setTimeout(()=>{me.retryT=null;if(S===me&&!me.dead)connect();},me.joined?2500:3000);
+  }
+  function onData(d){
+    if(!d||typeof d!=='object')return;
+    if(d.t==='state'){
+      S.st=d;S.pending=null;renderQ();
+    }else if(d.t==='end'){S.ended=true;dot.classList.remove('ok');try{S.peer?.destroy();}catch(e){}
+      msg('🙌','老師已結束這一題的作答，謝謝參與！',h('button',{class:'btn st-big',onclick:()=>join(S.pin)},'重新加入'),h('button',{class:'btn st-big',onclick:()=>{S.dead=true;askPin();}},'輸入其他 PIN'));}
+  }
+  function renderQ(note){
+    const st=S.st;if(!st)return;main.innerHTML='';
+    const emo=st.kind==='exit';const sel=S.pending!=null?S.pending:st.mine;
+    const grid=h('div',{class:'st-opts'+(emo?' emo':'')});
+    (st.opts||[]).forEach((o,i)=>{
+      const b=h('button',{class:'st-o'+(sel===i?' on':'')+(S.pending===i?' wait':''),disabled:!st.open||!!note},
+        emo?h('span',{class:'e'},String(o.e||'')):null,h('span',{},String(o.t??'')));
+      b.onclick=()=>{if(!st.open||!S.conn?.open)return;S.pending=i;renderQ();navigator.vibrate?.(30);
+        try{S.conn.send({t:'vote',qid:st.qid,i});}catch(e){}};
+      grid.append(b);
+    });
+    const text=note||(!st.open?'⏸ 老師已截止作答':S.pending!=null?'送出中…':st.mine!=null?'✓ 已送出！想改答案可以再點一次':'點一下你的答案');
+    main.append(h('h2',{class:'st-q'},String(st.q||'')),grid,h('div',{class:'st-note'+(!note&&st.open&&st.mine!=null&&S.pending==null?' ok':'')},text));
+  }
+  if(/^\d{6}$/.test(pin0))join(pin0);else askPin('',pin0);
+}
+
 /* ---------- 啟動 ---------- */
+if(IS_STUDENT){startStudent((JOIN_PARAM||'').replace(/\D/g,''));}
+else{
 applyBg();
 state.widgets.forEach(w=>{if(!(w.w>=120))w.w=360;if(!(w.h>=100))w.h=260;});
 state.widgets.forEach(mount);
 updateEmpty();
 if(!localStorage.getItem('classroomscreen.seen')){localStorage.setItem('classroomscreen.seen','1');if(!state.widgets.length){addWidget('clock');addWidget('timer');}}
+}
 </script>
 
 <!-- 公版「錯誤／建議」回報按鈕（通報進共用試算表） -->
