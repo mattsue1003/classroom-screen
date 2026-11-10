@@ -163,6 +163,10 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 .task.done .t{text-decoration:line-through;color:var(--muted)}
 .task .x{color:#aaa;font-size:16px;padding:4px}
 .task .x:hover{color:var(--danger)}
+.task .grip{cursor:grab;color:#b0b8c4;font-size:18px;line-height:1;padding:4px 2px;touch-action:none;user-select:none;flex:none}
+.task .grip:hover{color:var(--accent)}
+.task.dragging{background:#e3f0ff;box-shadow:0 6px 16px rgba(0,0,0,.15);position:relative;z-index:2;border-radius:10px}
+.task.dragging .grip{cursor:grabbing}
 .img-view{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#f3f4f6;overflow:hidden}
 .img-view img{max-width:100%;max-height:100%;object-fit:contain}
 .grp{display:grid;gap:8px;padding:10px;flex:1;min-height:0;overflow:auto;align-content:start;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
@@ -185,6 +189,14 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 @keyframes tu{from{background:rgba(229,72,77,.93)}to{background:rgba(190,30,45,.97)}}
 .timer-edit{font-size:clamp(28px,12cqw,160px);font-weight:800;text-align:center;width:min(90%,8ch);padding:0 8px;font-variant-numeric:tabular-nums}
 .timer-disp{cursor:pointer}
+.tm-status{font-size:clamp(11px,2.6cqw,14px);font-weight:600;color:#3b4654;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.08);padding:4px 10px;border-radius:999px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-status:hover{background:#fff;border-color:var(--accent)}
+.tm-sheet{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;gap:10px;padding:12px 14px;overflow:auto}
+.tm-sheet.on{display:flex}
+.tm-head{display:flex;align-items:center;gap:8px;font-size:15px}
+.tm-row{display:flex;align-items:center;gap:8px;font-size:14px}
+.tm-row .inp{flex:1;width:auto;min-width:0}
+.tm-lab{min-width:6.5em;font-weight:600;color:#3b4654}
 .picked-list{font-size:12px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* 全部工具 */
 #pnTools{top:auto;bottom:96px;right:auto;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 20px))}
@@ -216,6 +228,10 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 .br-c{width:min(78cqw,64cqh);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#8fd3ff,#2a7de1);box-shadow:0 0 40px rgba(42,125,225,.35);transform:scale(.45);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff}
 .br-c .t{font-weight:800;font-size:clamp(16px,7cqw,44px)}
 .br-c .n{font-weight:700;font-size:clamp(14px,5cqw,32px);opacity:.9}
+.br-stage{padding-bottom:40px}
+.br-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.br-num{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#3b4654}
+.br-num span:first-child{min-width:3.5em}
 @media (max-width:700px){.tb{min-width:44px;padding:8px 4px;font-size:0;gap:0}.tb .i{font-size:22px}#bar{bottom:8px;max-width:calc(100vw - 12px)}#bar .tools{min-width:96px}}
 
 /* ---------- 學生作答（手機連線） ---------- */
@@ -337,7 +353,7 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
-<li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
+      <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
       <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理，不會錄影錄音。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
@@ -382,17 +398,40 @@ function rosters(){try{return JSON.parse(localStorage.getItem(ROSTER_KEY))||{}}c
 function setRosters(o){try{localStorage.setItem(ROSTER_KEY,JSON.stringify(o));}catch(e){toast('儲存失敗：空間不足');}}
 function parseNames(t){return String(t||'').split(/\n|,|，|、/).map(x=>x.trim()).filter(Boolean);}
 /* 名單列：載入 / 存成班級名單（抽籤、轉盤、分組共用） */
-function rosterRow(get,set){
+const ROSTER_TOOLS=['picker','wheel','groups'];
+/* 目前班級：新開的抽籤／轉盤／分組會自動帶入 */
+function activeNames(){const R=rosters();return (typeof state!=='undefined'&&state.roster&&R[state.roster]!=null)?R[state.roster]:DEFAULT_NAMES;}
+function activeRoster(){const R=rosters();return (typeof state!=='undefined'&&state.roster&&R[state.roster]!=null)?state.roster:'';}
+function applyRosterAll(name,fromSt){
+  const R=rosters();if(R[name]==null)return 0;state.roster=name;let n=0;
+  state.widgets.forEach(w=>{if(!ROSTER_TOOLS.includes(w.type)||w.s===fromSt)return;
+    w.s.names=R[name];w.s.roster=name;if('picked' in w.s)w.s.picked=[];if('last' in w.s)w.s.last='';if('groups' in w.s)w.s.groups=null;
+    const L=live.get(w.id);if(L){L.api?.destroy?.();L.el.remove();live.delete(w.id);mount(w);}n++;});
+  save();return n;
+}
+function rosterRow(get,set,st){
+  st=st||{};
   const sel=h('select',{class:'inp',style:'flex:1;width:auto;min-width:0'});
-  const fill=()=>{const R=rosters();sel.innerHTML='';sel.append(h('option',{value:''},'📚 載入班級名單…'));
-    Object.keys(R).forEach(k=>sel.append(h('option',{value:k},`${k}（${parseNames(R[k]).length} 人）`)));
-    if(Object.keys(R).length)sel.append(h('option',{value:'__del'},'🗑 刪除某份名單…'));};
-  sel.onchange=()=>{const R=rosters(),v=sel.value;sel.value='';
-    if(v==='__del'){const n=prompt('要刪除哪一份名單？\n'+Object.keys(R).join('、'));if(n&&R[n.trim()]!=null){delete R[n.trim()];setRosters(R);fill();toast('已刪除名單「'+n.trim()+'」');}return;}
-    if(v&&R[v]!=null){set(R[v]);toast('已載入「'+v+'」');}};
-  const bSave=h('button',{class:'btn sm',onclick:()=>{const n=(prompt('名單名稱（例如：三年甲班）\n同名會覆蓋舊名單')||'').trim();if(!n)return;
-    if(!parseNames(get()).length){toast('名單是空的');return;}const R=rosters();R[n]=get();setRosters(R);fill();toast('已存成名單「'+n+'」');}},'💾 存成名單');
-  fill();return h('div',{class:'row',style:'flex-wrap:nowrap'},sel,bSave);
+  const hint=h('div',{class:'muted',style:'font-size:12px;margin-top:4px'});
+  const fill=()=>{const R=rosters(),keys=Object.keys(R);sel.innerHTML='';
+    if(!keys.length){sel.append(h('option',{value:''},'📚 還沒有存過班級名單'));}
+    else{
+      if(!st.roster||R[st.roster]==null){st.roster='';sel.append(h('option',{value:''},'📚 選擇班級名單…'));}
+      keys.forEach(k=>{const changed=k===st.roster&&R[k]!==get();sel.append(h('option',{value:k},`📚 ${k}（${parseNames(R[k]).length} 人）${changed?'・已修改':''}`));});
+      sel.append(h('option',{value:'__del'},'🗑 刪除某份名單…'));
+    }
+    sel.value=st.roster||'';
+    hint.textContent=!keys.length?'在下方貼上名單（可直接從 Excel 複製一整欄），再按「存成名單」，抽籤、轉盤、分組會一起使用這份名單。'
+      :st.roster?`目前使用：${st.roster}`:'目前是自行輸入的名單，尚未載入班級名單。';};
+  sel.onchange=()=>{const R=rosters(),v=sel.value;
+    if(v==='__del'){const n=prompt('要刪除哪一份名單？\n'+Object.keys(R).join('、'));if(n&&R[n.trim()]!=null){delete R[n.trim()];setRosters(R);if(st.roster===n.trim())st.roster='';toast('已刪除名單「'+n.trim()+'」');}fill();return;}
+    if(v&&R[v]!=null){st.roster=v;set(R[v]);const k=applyRosterAll(v,st);toast('已載入「'+v+'」，共 '+parseNames(R[v]).length+' 人'+(k?`，也套用到其他 ${k} 個工具`:''));}else st.roster='';
+    fill();};
+  const bSave=h('button',{class:'btn sm',onclick:()=>{const n=(prompt('名單名稱（例如：三年甲班）\n同名會覆蓋舊名單',st.roster||'')||'').trim();if(!n)return;
+    if(!parseNames(get()).length){toast('名單是空的');return;}const R=rosters();R[n]=get();setRosters(R);st.roster=n;fill();set(get());const k=applyRosterAll(n,st);toast('已存成名單「'+n+'」'+(k?`，也套用到其他 ${k} 個工具`:'')+'；之後新開的抽籤、轉盤、分組都會自動帶入');}},'💾 存成名單');
+  fill();
+  const wrapEl=h('div',{},h('div',{class:'row',style:'flex-wrap:nowrap'},sel,bSave),hint);
+  wrapEl.refresh=fill;return wrapEl;
 }
 const uid=()=>Math.random().toString(36).slice(2,9);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -568,11 +607,48 @@ mount(body,s,ctx){
 }};
 
 /* ---- 計時器 ---- */
-WIDGETS.timer={name:'倒數計時',icon:'⏱️',w:360,h:280,init:()=>({total:300,left:300,sound:true}),
+/* ---- 音效庫（全部用 Web Audio 即時合成，不需下載檔案） ---- */
+const SND={
+  ac(){actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx;},
+  tone(f,t,d,o={}){const a=SND.ac(),os=a.createOscillator(),g=a.createGain(),v=(o.g??.3)*(o.vol??1);
+    os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.f2)os.frequency.exponentialRampToValueAtTime(o.f2,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(Math.max(.0002,v),t+(o.att||.008));g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    os.connect(g).connect(a.destination);os.start(t);os.stop(t+d+.05);},
+  noise(t,d,o={}){const a=SND.ac(),n=Math.max(1,Math.floor(a.sampleRate*d)),b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);
+    for(let i=0;i<n;i++)c[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+    const src=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();src.buffer=b;f.type=o.hp?'highpass':'lowpass';f.frequency.value=o.hp||o.lp||8000;
+    g.gain.value=(o.g??.3)*(o.vol??1);src.connect(f).connect(g).connect(a.destination);src.start(t);}
+};
+const END_SOUNDS={
+  none:{n:'無聲',i:'🔕',play(){}},
+  beep:{n:'嗶嗶',i:'🔔',play(v){const t=SND.ac().currentTime;for(let i=0;i<4;i++)SND.tone(i%2?1046:880,t+i*.35,.3,{g:.4,vol:v});}},
+  ding:{n:'叮咚',i:'🛎️',play(v){const t=SND.ac().currentTime;[0,1.3].forEach(o=>{SND.tone(1319,t+o,1.2,{g:.35,vol:v});SND.tone(1047,t+o+.45,1.6,{g:.35,vol:v});});}},
+  alarm:{n:'鬧鈴',i:'⏰',play(v){const t=SND.ac().currentTime;[0,1.6,3.2].forEach(r=>{for(let i=0;i<14;i++)SND.tone(i%2?1500:1150,t+r+i*.08,.07,{type:'square',g:.13,vol:v});});}},
+  fanfare:{n:'號角',i:'🎺',play(v){const t=SND.ac().currentTime;[[523,0,.16],[523,.18,.16],[523,.36,.16],[659,.56,.5],[523,1.1,.22],[784,1.36,1.3]].forEach(([f,o,d])=>{SND.tone(f,t+o,d,{type:'sawtooth',g:.11,vol:v});SND.tone(f*2,t+o,d,{type:'triangle',g:.07,vol:v});});}},
+  gong:{n:'鑼聲',i:'🥁',play(v){const t=SND.ac().currentTime;[[180,1],[262,.6],[371,.45],[498,.3],[690,.18]].forEach(([f,g])=>SND.tone(f,t,5,{g:.32*g,vol:v,att:.01}));SND.noise(t,.35,{g:.18,vol:v,lp:1800});}}
+};
+/* 背景倒數音效：每秒呼叫一次 beat；sec=剩餘秒數，最後 10 秒加快、加大 */
+const BG_SOUNDS={
+  none:{n:'無',i:''},
+  tick:{n:'時鐘滴答',i:'🕰️',beat(sec,t,v){const u=sec<=10;const one=(tt,hi)=>{SND.tone(hi?2000:1400,tt,.035,{type:'square',g:u?.11:.06,vol:v});SND.noise(tt,.025,{g:u?.14:.07,vol:v,hp:3000});};
+    one(t,sec%2===0);if(u)one(t+.5,sec%2!==0);}},
+  heart:{n:'心跳',i:'💓',beat(sec,t,v){const u=sec<=10;const lub=tt=>{SND.tone(150,tt,.16,{g:.7,vol:v,f2:70,att:.004});SND.noise(tt,.06,{g:.25,vol:v,lp:400});
+      SND.tone(130,tt+.2,.14,{g:.5,vol:v,f2:65,att:.004});};lub(t);if(u)lub(t+.5);}},
+  drum:{n:'緊張鼓聲',i:'🥁',beat(sec,t,v){const u=sec<=10;const kick=tt=>{SND.tone(170,tt,.22,{g:.8,vol:v,f2:50,att:.003});SND.noise(tt,.02,{g:.2,vol:v,hp:2000});};
+      const sn=tt=>SND.noise(tt,.13,{g:.28,vol:v,hp:1200});
+      if(u){kick(t);sn(t+.25);kick(t+.5);sn(t+.75);}else{kick(t);sn(t+.5);}}},
+  count:{n:'最後倒數嗶聲',i:'📟',only:10,beat(sec,t,v){if(sec<=10)SND.tone(sec<=3?1320:880,t,.16,{g:.35,vol:v});}}
+};
+const BG_FROM=[[0,'全程'],[60,'最後 60 秒'],[30,'最後 30 秒'],[10,'最後 10 秒']];
+WIDGETS.timer={name:'倒數計時',icon:'⏱️',w:380,h:300,init:()=>({total:300,left:300,endSnd:'beep',bgSnd:'none',bgFrom:0,vol:.8,flash:true}),
 mount(body,s,ctx){
-  let running=false,endAt=0,iv=null;
+  // 舊版設定轉換
+  if(s.endSnd==null)s.endSnd=s.sound===false?'none':'beep';
+  if(s.bgSnd==null)s.bgSnd='none';if(s.bgFrom==null)s.bgFrom=0;if(s.vol==null)s.vol=.8;if(s.flash==null)s.flash=true;
+  let running=false,endAt=0,iv=null,lastSec=null;
   const disp=h('div',{class:'big timer-disp'});
-  const wrap=h('div',{class:'fit',style:'position:relative;flex-direction:column;gap:6px'},disp);
+  const status=h('button',{class:'tm-status',title:'點一下設定音效',onclick:()=>openSheet()});
+  const wrap=h('div',{class:'fit',style:'position:relative;flex-direction:column;gap:8px'},disp,status);
   const presets=h('div',{class:'row',style:'justify-content:center'});
   [1,3,5,10,15,20,30].forEach(m=>presets.append(h('button',{class:'btn sm',onclick:()=>setTotal(m*60)},m+'分')));
   const adj=h('div',{class:'row',style:'justify-content:center'},
@@ -582,11 +658,36 @@ mount(body,s,ctx){
     h('button',{class:'btn sm',onclick:()=>setTotal(s.total+60)},'+1分'));
   const bStart=h('button',{class:'btn p',onclick:toggle},'▶ 開始');
   const bReset=h('button',{class:'btn',onclick:reset},'↺ 重設');
-  const bSound=h('button',{class:'btn sm',title:'結束提示音',onclick:()=>{s.sound=!s.sound;ctx.save();render();}},'🔔');
-  if(s.flash==null)s.flash=true;
-  const bFlash=h('button',{class:'btn sm',title:'時間到時全螢幕提醒',onclick:()=>{s.flash=!s.flash;ctx.save();render();}},'📢');
-  body.append(wrap,h('div',{class:'foot'},bStart,bReset,h('span',{class:'grow'}),bFlash,bSound),
+  const bSet=h('button',{class:'btn sm',onclick:()=>openSheet()},'🔊 音效設定');
+  body.append(wrap,h('div',{class:'foot'},bStart,bReset,h('span',{class:'grow'}),bSet),
     h('div',{class:'foot',style:'flex-direction:column;align-items:stretch;gap:4px'},presets,adj));
+
+  /* ---- 音效設定面板（蓋在小工具內） ---- */
+  const sheet=h('div',{class:'tm-sheet'});body.append(sheet);
+  function openSheet(){
+    sheet.innerHTML='';
+    const endSel=h('select',{class:'inp',onchange:()=>{s.endSnd=endSel.value;ctx.save();render();}},Object.entries(END_SOUNDS).map(([k,v])=>h('option',{value:k},(v.i?v.i+' ':'')+v.n)));endSel.value=s.endSnd;
+    const bgSel=h('select',{class:'inp',onchange:()=>{s.bgSnd=bgSel.value;ctx.save();sync();render();}},Object.entries(BG_SOUNDS).map(([k,v])=>h('option',{value:k},(v.i?v.i+' ':'')+v.n)));bgSel.value=s.bgSnd;
+    const fromSel=h('select',{class:'inp',onchange:()=>{s.bgFrom=+fromSel.value;ctx.save();render();}},BG_FROM.map(([k,n])=>h('option',{value:k},n)));fromSel.value=s.bgFrom;
+    const vol=h('input',{type:'range',min:0,max:100,value:Math.round(s.vol*100),style:'flex:1',oninput:()=>{s.vol=vol.value/100;volTxt.textContent=vol.value+'%';ctx.save();}});
+    const volTxt=h('span',{class:'muted',style:'min-width:3em;text-align:right'},Math.round(s.vol*100)+'%');
+    const flash=h('input',{type:'checkbox',onchange:()=>{s.flash=flash.checked;ctx.save();render();}});flash.checked=!!s.flash;
+    const fromRow=h('label',{class:'tm-row'},h('span',{class:'tm-lab'},'背景音開始'),fromSel);
+    function sync(){fromRow.style.display=(s.bgSnd==='none'||BG_SOUNDS[s.bgSnd].only)?'none':'';}
+    sheet.append(
+      h('div',{class:'tm-head'},h('b',{},'🔊 音效設定'),h('span',{class:'grow'}),h('button',{class:'btn sm p',onclick:closeSheet},'完成')),
+      h('label',{class:'tm-row'},h('span',{class:'tm-lab'},'時間到音效'),endSel,h('button',{class:'btn sm',title:'試聽',onclick:()=>END_SOUNDS[s.endSnd].play(s.vol)},'▶ 試聽')),
+      h('label',{class:'tm-row'},h('span',{class:'tm-lab'},'背景倒數音效'),bgSel,h('button',{class:'btn sm',title:'試聽',onclick:previewBg},'▶ 試聽')),
+      fromRow,
+      h('div',{class:'tm-row'},h('span',{class:'tm-lab'},'音量'),vol,volTxt),
+      h('label',{class:'tm-row chk',style:'cursor:pointer'},flash,'時間到時，整個螢幕閃紅色提醒'),
+      h('div',{class:'muted',style:'line-height:1.5'},'背景音效在最後 10 秒會加快，增加緊張感。開始倒數後才會播放。'));
+    sync();sheet.classList.add('on');
+  }
+  function closeSheet(){sheet.classList.remove('on');}
+  function previewBg(){const B=BG_SOUNDS[s.bgSnd];if(!B.beat){toast('目前沒有選背景音效');return;}const t=SND.ac().currentTime+.05;
+    [15,14,3,2].forEach((sec,i)=>B.beat(sec,t+i,s.vol));}
+
   function fmt(t){t=Math.max(0,Math.ceil(t));const m=Math.floor(t/60),sec=t%60;return t>=3600?`${Math.floor(m/60)}:${pad2(m%60)}:${pad2(sec)}`:`${pad2(m)}:${pad2(sec)}`;}
   function setTotal(t){t=clamp(t,5,24*3600);stop();s.total=t;s.left=t;ctx.save();render();}
   disp.title='點一下輸入時間';
@@ -605,13 +706,28 @@ mount(body,s,ctx){
   function render(){
     disp.textContent=fmt(s.left);disp.classList.toggle('alarm',s.left<=0);
     bStart.textContent=running?'⏸ 暫停':(s.left<=0?'▶ 重新開始':'▶ 開始');
-    bSound.classList.toggle('on',s.sound);bFlash.classList.toggle('on',!!s.flash);
+    const E=END_SOUNDS[s.endSnd]||END_SOUNDS.beep,B=BG_SOUNDS[s.bgSnd]||BG_SOUNDS.none;
+    const parts=[(s.endSnd==='none'?'🔕 時間到無聲':`${E.i} 時間到：${E.n}`)];
+    if(s.bgSnd!=='none')parts.push(`${B.i} 背景：${B.n}${(!B.only&&s.bgFrom)?'（最後 '+s.bgFrom+' 秒）':''}`);
+    if(s.flash)parts.push('📢 全螢幕提醒');
+    status.textContent=parts.join('　·　');
     const p=s.total?s.left/s.total:0;wrap.style.background=`conic-gradient(rgba(42,125,225,.18) ${p*360}deg, transparent 0)`;
     disp.style.color=s.left<=0?'':(s.left<=10?'var(--danger)':s.left<=60?'var(--warn)':'');
   }
   function toggle(){ if(running)stop(); else{ if(s.left<=0)s.left=s.total; run(Date.now()+s.left*1000); } }
-  function run(at){ running=true; endAt=s.endAt=at; clearInterval(iv); iv=setInterval(step,200); ctx.save(); step(); }
-  function step(){s.left=(endAt-Date.now())/1000; if(s.left<=0){s.left=0;stop();if(s.sound)beep(4);if(s.flash)timesUp(fmt(s.total)+' 的倒數已結束');else toast('⏰ 時間到！');} render();}
+  function run(at){ running=true; endAt=s.endAt=at; lastSec=null; clearInterval(iv); iv=setInterval(step,100); ctx.save(); step(); }
+  function step(){
+    s.left=(endAt-Date.now())/1000;
+    const sec=Math.ceil(s.left);
+    if(sec>0&&sec!==lastSec){lastSec=sec;bgBeat(sec);}
+    if(s.left<=0){s.left=0;stop();(END_SOUNDS[s.endSnd]||END_SOUNDS.beep).play(s.vol);if(s.flash)timesUp(fmt(s.total)+' 的倒數已結束');else toast('⏰ 時間到！');}
+    render();
+  }
+  function bgBeat(sec){
+    const B=BG_SOUNDS[s.bgSnd];if(!B||!B.beat)return;
+    if(!B.only&&s.bgFrom&&sec>s.bgFrom)return;
+    try{B.beat(sec,SND.ac().currentTime+.02,s.vol);}catch(e){}
+  }
   function stop(){running=false;s.endAt=0;clearInterval(iv);iv=null;ctx.save();render();}
   function reset(){stop();s.left=s.total;ctx.save();render();}
   // 重新整理頁面後，繼續進行中的倒數
@@ -642,13 +758,13 @@ mount(body,s,ctx){
 
 /* ---- 抽籤 ---- */
 const DEFAULT_NAMES='小明\n小華\n小美\n小強\n小玉\n小安';
-WIDGETS.picker={name:'隨機抽籤',icon:'🎯',w:380,h:300,init:()=>({names:DEFAULT_NAMES,noRepeat:true,picked:[],edit:true,last:''}),
+WIDGETS.picker={name:'隨機抽籤',icon:'🎯',w:380,h:300,init:()=>({names:activeNames(),roster:activeRoster(),noRepeat:true,picked:[],edit:!activeRoster(),last:''}),
 mount(body,s,ctx){
   const out=h('div',{class:'pick-out'});
   const info=h('div',{class:'muted'});
   const done=h('div',{class:'picked-list'});
-  const ta=h('textarea',{class:'inp grow',placeholder:'一行一個名字（也可用逗號、頓號分隔）',oninput:()=>{s.names=ta.value;s.picked=[];ctx.save();updInfo();}});
-  const rr=rosterRow(()=>s.names,v=>{s.names=v;s.picked=[];s.last='';ctx.save();render();});
+  const ta=h('textarea',{class:'inp grow',placeholder:'一行一個名字（也可用逗號、頓號分隔）',oninput:()=>{s.names=ta.value;s.picked=[];ctx.save();updInfo();clearTimeout(ta._t);ta._t=setTimeout(()=>rr.refresh(),400);}});
+  const rr=rosterRow(()=>s.names,v=>{s.names=v;s.picked=[];s.last='';ctx.save();render();},s);
   const view=h('div',{class:'fit col',style:'gap:8px'});
   const bPick=h('button',{class:'btn p',onclick:pick},'🎯 抽一個');
   const bEdit=h('button',{class:'btn',onclick:()=>{s.edit=!s.edit;ctx.save();render();}},'✎ 名單');
@@ -665,7 +781,7 @@ mount(body,s,ctx){
     updInfo();
   }
   function updInfo(){
-    const p=pool(),L=list();info.textContent=s.noRepeat?`還剩 ${p.length} / ${L.length} 人`:`共 ${L.length} 人`;
+    const p=pool(),L=list(),tag=s.roster?`📚 ${s.roster}・`:'';info.textContent=tag+(s.noRepeat?`還剩 ${p.length} / ${L.length} 人`:`共 ${L.length} 人`);
     done.textContent=s.noRepeat&&s.picked.length?'已抽：'+s.picked.join('、'):'';
     bPick.disabled=!p.length;bPick.textContent=p.length?'🎯 抽一個':'已抽完';
   }
@@ -680,10 +796,10 @@ mount(body,s,ctx){
 }};
 
 /* ---- 分組 ---- */
-WIDGETS.groups={name:'隨機分組',icon:'👥',w:460,h:320,init:()=>({names:DEFAULT_NAMES,mode:'count',n:2,groups:null}),
+WIDGETS.groups={name:'隨機分組',icon:'👥',w:460,h:320,init:()=>({names:activeNames(),roster:activeRoster(),mode:'count',n:2,groups:null}),
 mount(body,s,ctx){
   const ta=h('textarea',{class:'inp',style:'flex:1;margin:0 10px 10px',placeholder:'一行一個名字',oninput:()=>{s.names=ta.value;ctx.save();}});
-  const rr=h('div',{style:'padding:10px 10px 8px'},rosterRow(()=>s.names,v=>{s.names=v;ta.value=v;ctx.save();}));
+  const rr=h('div',{style:'padding:10px 10px 8px'},rosterRow(()=>s.names,v=>{s.names=v;ta.value=v;ctx.save();},s));
   const grid=h('div',{class:'grp'});
   const view=h('div',{class:'col',style:'flex:1;min-height:0'});
   const num=h('input',{class:'inp',type:'number',min:1,max:50,style:'width:70px',onchange:()=>{s.n=clamp(+num.value||1,1,50);ctx.save();}});
@@ -1102,9 +1218,26 @@ mount(body,s,ctx){
     s.items.forEach((it,i)=>{
       const cb=h('input',{type:'checkbox',onchange:()=>{it.d=cb.checked;ctx.save();render();}});cb.checked=it.d;
       const t=h('input',{class:'t',value:it.t,onchange:()=>{it.t=t.value;ctx.save();}});
-      list.append(h('div',{class:'task'+(it.d?' done':'')},h('span',{class:'muted',style:'min-width:1.4em;text-align:right'},i+1+'.'),cb,t,h('button',{class:'x',onclick:()=>{s.items.splice(i,1);ctx.save();render();}},'✕')));
+      const grip=h('span',{class:'grip',title:'拖曳調整順序'},'⋮⋮');
+      const row=h('div',{class:'task'+(it.d?' done':''),'data-i':i},grip,h('span',{class:'muted num',style:'min-width:1.4em;text-align:right'},i+1+'.'),cb,t,h('button',{class:'x',onclick:()=>{s.items.splice(i,1);ctx.save();render();}},'✕'));
+      grip.addEventListener('pointerdown',e=>drag(e,row));
+      list.append(row);
     });
   }
+  /* 拖曳把手上下移動，放開後依畫面順序存回 */
+  function drag(e,row){
+    e.preventDefault();e.stopPropagation();const grip=e.currentTarget;grip.setPointerCapture(e.pointerId);row.classList.add('dragging');
+    const mv=ev=>{
+      const rows=[...list.children];const prev=row.previousElementSibling,next=row.nextElementSibling;
+      if(prev){const r=prev.getBoundingClientRect();if(ev.clientY<r.top+r.height/2){list.insertBefore(row,prev);renum();}}
+      if(next){const r=next.getBoundingClientRect();if(ev.clientY>r.top+r.height/2){list.insertBefore(next,row);renum();}}
+      const lr=list.getBoundingClientRect();if(ev.clientY<lr.top+20)list.scrollTop-=8;else if(ev.clientY>lr.bottom-20)list.scrollTop+=8;
+    };
+    const up=()=>{grip.removeEventListener('pointermove',mv);grip.removeEventListener('pointerup',up);grip.removeEventListener('pointercancel',up);
+      row.classList.remove('dragging');const order=[...list.children].map(r=>+r.dataset.i);s.items=order.map(k=>s.items[k]);ctx.save();render();};
+    grip.addEventListener('pointermove',mv);grip.addEventListener('pointerup',up);grip.addEventListener('pointercancel',up);
+  }
+  function renum(){[...list.children].forEach((r,k)=>{const n=r.querySelector('.num');if(n)n.textContent=(k+1)+'.';});}
   render();
 }};
 
@@ -1122,13 +1255,13 @@ mount(body,s,ctx){
 
 /* ---- 幸運轉盤 ---- */
 const WHEEL_COLS=['#ff8787','#ffa94d','#ffd43b','#8ce99a','#63e6be','#74c0fc','#91a7ff','#e599f7','#faa2c1','#c0eb75'];
-WIDGETS.wheel={name:'幸運轉盤',icon:'🎡',w:420,h:440,minH:260,init:()=>({names:DEFAULT_NAMES,edit:false,last:'',removeWin:false}),
+WIDGETS.wheel={name:'幸運轉盤',icon:'🎡',w:420,h:440,minH:260,init:()=>({names:activeNames(),roster:activeRoster(),edit:false,last:'',removeWin:false}),
 mount(body,s,ctx){
   const cv=h('canvas',{style:'display:block'});
   const wheelBox=h('div',{class:'fit',style:'padding:6px'},cv);
   const res=h('div',{class:'wheel-res'});
   const ta=h('textarea',{class:'inp',style:'flex:1;margin:0 10px 10px',placeholder:'一行一個選項（名字、題目、獎品都可以）',oninput:()=>{s.names=ta.value;ctx.save();}});
-  const rr=h('div',{style:'padding:10px 10px 8px'},rosterRow(()=>s.names,v=>{s.names=v;ta.value=v;ctx.save();}));
+  const rr=h('div',{style:'padding:10px 10px 8px'},rosterRow(()=>s.names,v=>{s.names=v;ta.value=v;ctx.save();},s));
   const view=h('div',{class:'col',style:'flex:1;min-height:0'});
   const bSpin=h('button',{class:'btn p',onclick:spin},'🎡 轉！');
   const bEdit=h('button',{class:'btn',onclick:()=>{s.edit=!s.edit;ctx.save();render();}},'✎ 選項');
@@ -1263,28 +1396,93 @@ mount(body,s,ctx){
 }};
 
 /* ---- 呼吸練習 ---- */
-const BREATH={easy:{n:'簡單 4-6',seq:[['吸氣',4,1],['吐氣',6,0]]},box:{n:'方塊 4-4-4-4',seq:[['吸氣',4,1],['憋氣',4,1],['吐氣',4,0],['停一下',4,0]]},calm:{n:'放鬆 4-7-8',seq:[['吸氣',4,1],['憋氣',7,1],['吐氣',8,0]]}};
-WIDGETS.breathe={name:'呼吸練習',icon:'🫧',w:340,h:380,init:()=>({p:'easy'}),
+const BREATH={easy:{n:'簡單 4-6',seq:[['吸氣',4,1],['吐氣',6,0]]},box:{n:'方塊 4-4-4-4',seq:[['吸氣',4,1],['憋氣',4,1],['吐氣',4,0],['停一下',4,0]]},calm:{n:'放鬆 4-7-8',seq:[['吸氣',4,1],['憋氣',7,1],['吐氣',8,0]]},custom:{n:'自訂節奏'}};
+const BR_MUSIC={none:'無音樂',pad:'🎹 柔和和弦',ocean:'🌊 海浪',rain:'🌧️ 雨聲',chimes:'🎐 風鈴'};
+/* 柔和背景音樂：全部即時合成；breath() 讓音量跟著吸吐起伏 */
+function makeMusic(kind,vol){
+  const a=SND.ac(),master=a.createGain(),t0=a.currentTime;master.gain.setValueAtTime(.0001,t0);master.gain.linearRampToValueAtTime(vol,t0+2.5);master.connect(a.destination);
+  const srcs=[],timers=[];let level=vol;
+  const noiseSrc=()=>{const n=a.sampleRate*4,b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+.02*w)/1.02;c[i]=kind==='rain'?w:last*3.5;}
+    const sN=a.createBufferSource();sN.buffer=b;sN.loop=true;sN.start();srcs.push(sN);return sN;};
+  if(kind==='pad'){
+    const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1000;lp.connect(master);
+    const chords=[[130.8,196,261.6,329.6,392],[110,164.8,220,261.6,329.6],[87.3,130.8,174.6,220,261.6],[98,146.8,196,246.9,293.7]];let ci=0;
+    const vs=chords[0].map((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type=i<2?'sine':'triangle';o.detune.value=(i%2?5:-5);g.gain.value=i<2?.09:.045;o.frequency.value=f;o.connect(g).connect(lp);o.start();srcs.push(o);return o;});
+    const next=()=>{ci=(ci+1)%chords.length;vs.forEach((o,i)=>o.frequency.setTargetAtTime(chords[ci][i],a.currentTime,1.5));};
+    timers.push(setInterval(next,9000));
+  }else if(kind==='ocean'){
+    const sN=noiseSrc(),lp=a.createBiquadFilter(),g=a.createGain(),lfo=a.createOscillator(),lg=a.createGain();
+    lp.type='lowpass';lp.frequency.value=700;g.gain.value=.35;lfo.frequency.value=.09;lg.gain.value=.3;lfo.connect(lg).connect(g.gain);lfo.start();srcs.push(lfo);
+    sN.connect(lp).connect(g).connect(master);
+  }else if(kind==='rain'){
+    const sN=noiseSrc(),bp=a.createBiquadFilter(),hp=a.createBiquadFilter(),g=a.createGain();
+    bp.type='bandpass';bp.frequency.value=2500;bp.Q.value=.6;hp.type='highpass';hp.frequency.value=400;g.gain.value=.12;sN.connect(hp).connect(bp).connect(g).connect(master);
+  }else if(kind==='chimes'){
+    const notes=[523.3,587.3,659.3,784,880,1046.5,1174.7];
+    const ring=()=>{const f=notes[Math.floor(Math.random()*notes.length)],o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+      o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+3.5);o.connect(g).connect(master);o.start(t);o.stop(t+3.6);
+      timers.push(setTimeout(ring,1200+Math.random()*2600));};
+    ring();
+  }
+  return {
+    breath(big,sec){if(kind==='none')return;const t=a.currentTime;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(master.gain.value,t);master.gain.linearRampToValueAtTime(level*(big?1:.6),t+Math.max(.5,sec));},
+    setVol(v){level=v;const t=a.currentTime;master.gain.cancelScheduledValues(t);master.gain.setTargetAtTime(v,t,.2);},
+    stop(){const t=a.currentTime;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(master.gain.value,t);master.gain.linearRampToValueAtTime(.0001,t+1.2);
+      timers.forEach(x=>{clearInterval(x);clearTimeout(x);});setTimeout(()=>{srcs.forEach(x=>{try{x.stop();}catch(e){}});master.disconnect();},1400);}
+  };
+}
+WIDGETS.breathe={name:'呼吸練習',icon:'🫧',w:360,h:400,init:()=>({p:'easy',custom:{in:4,h1:0,out:6,h2:0},music:'pad',mvol:.5,chime:true,rounds:0}),
 mount(body,s,ctx){
+  if(!s.custom)s.custom={in:4,h1:0,out:6,h2:0};if(s.music==null)s.music='pad';if(s.mvol==null)s.mvol=.5;if(s.chime==null)s.chime=true;if(s.rounds==null)s.rounds=0;
   const t=h('div',{class:'t'},'準備好了嗎？'),n=h('div',{class:'n'});
   const circle=h('div',{class:'br-c'},t,n);
+  const info=h('button',{class:'tm-status',style:'position:absolute;bottom:8px;left:50%;transform:translateX(-50%)',title:'點一下調整',onclick:()=>openSheet()});
   const cyc=h('span',{class:'muted'});
-  const sel=h('select',{class:'inp',style:'width:auto',onchange:()=>{s.p=sel.value;ctx.save();if(on){stop();start();}}},Object.entries(BREATH).map(([k,v])=>h('option',{value:k},v.n)));
+  const sel=h('select',{class:'inp',style:'width:auto',onchange:()=>{s.p=sel.value;ctx.save();restart();render();if(s.p==='custom')openSheet();}},Object.entries(BREATH).map(([k,v])=>h('option',{value:k},v.n)));
   const bGo=h('button',{class:'btn p',onclick:()=>on?stop():start()},'▶ 開始');
-  body.append(h('div',{class:'br-stage'},circle),h('div',{class:'foot'},bGo,sel,h('span',{class:'grow'}),cyc));
-  sel.value=s.p;
-  let on=false,timers=[],count=0;
-  function start(){on=true;count=0;bGo.textContent='⏹ 停止';phase(0);}
-  function stop(){on=false;timers.forEach(clearTimeout);timers=[];circle.style.transition='transform 1s ease';circle.style.transform='scale(.45)';t.textContent='做得很好 👍';n.textContent='';bGo.textContent='▶ 開始';}
+  const sheet=h('div',{class:'tm-sheet'});
+  body.append(h('div',{class:'br-stage'},circle,info),h('div',{class:'foot'},bGo,sel,h('button',{class:'btn sm',onclick:()=>openSheet()},'⚙️ 調整'),h('span',{class:'grow'}),cyc),sheet);
+  let on=false,timers=[],count=0,mus=null;
+  const seq=()=>{if(s.p!=='custom')return BREATH[s.p].seq;const c=s.custom;return [['吸氣',c.in,1],['憋氣',c.h1,1],['吐氣',c.out,0],['停一下',c.h2,0]].filter(x=>x[1]>0);};
+  function render(){sel.value=s.p;const q=seq();
+    info.textContent=[q.map(x=>x[1]).join('-')+' 秒',s.music==='none'?'🔇 無音樂':BR_MUSIC[s.music],s.rounds?`${s.rounds} 輪`:'不限輪數'].join('　·　');}
+  function openSheet(){
+    sheet.innerHTML='';const c=s.custom;
+    const num=(k,lab,min)=>{const i=h('input',{class:'inp',type:'number',min,max:20,value:c[k],style:'width:64px;flex:none',onchange:()=>{c[k]=clamp(Math.round(+i.value||0),min,20);i.value=c[k];if(s.p!=='custom'){s.p='custom';}ctx.save();render();restart();}});
+      return h('label',{class:'br-num'},h('span',{},lab),i,h('span',{class:'muted'},'秒'));};
+    if(s.p!=='custom'){const q=BREATH[s.p].seq;c.in=q[0][1];c.h1=q.find(x=>x[0]==='憋氣')?.[1]||0;c.out=q.find(x=>x[0]==='吐氣')[1];c.h2=q.find(x=>x[0]==='停一下')?.[1]||0;}
+    const mSel=h('select',{class:'inp',onchange:()=>{s.music=mSel.value;ctx.save();render();if(on){mus?.stop();mus=s.music==='none'?null:makeMusic(s.music,s.mvol);}}},Object.entries(BR_MUSIC).map(([k,v])=>h('option',{value:k},v)));mSel.value=s.music;
+    const vol=h('input',{type:'range',min:0,max:100,value:Math.round(s.mvol*100),style:'flex:1',oninput:()=>{s.mvol=vol.value/100;mus?.setVol(s.mvol);vt.textContent=vol.value+'%';ctx.save();}});
+    const vt=h('span',{class:'muted',style:'min-width:3em;text-align:right'},Math.round(s.mvol*100)+'%');
+    const rSel=h('select',{class:'inp',onchange:()=>{s.rounds=+rSel.value;ctx.save();render();}},[[0,'不限'],[3,'3 輪'],[5,'5 輪'],[8,'8 輪'],[10,'10 輪']].map(([v,l])=>h('option',{value:v},l)));rSel.value=s.rounds;
+    const ch=h('input',{type:'checkbox',onchange:()=>{s.chime=ch.checked;ctx.save();}});ch.checked=s.chime;
+    let prev=null;
+    sheet.append(
+      h('div',{class:'tm-head'},h('b',{},'🫧 呼吸練習設定'),h('span',{class:'grow'}),h('button',{class:'btn sm p',onclick:()=>sheet.classList.remove('on')},'完成')),
+      h('div',{class:'muted'},'調整秒數會自動切換成「自訂節奏」，憋氣、停一下填 0 表示略過。'),
+      h('div',{class:'br-grid'},num('in','吸氣',1),num('h1','憋氣',0),num('out','吐氣',1),num('h2','停一下',0)),
+      h('label',{class:'tm-row'},h('span',{class:'tm-lab'},'練習輪數'),rSel),
+      h('label',{class:'tm-row'},h('span',{class:'tm-lab'},'背景音樂'),mSel,h('button',{class:'btn sm',onclick:()=>{if(prev){prev.stop();prev=null;return;}if(s.music==='none')return;prev=makeMusic(s.music,s.mvol);setTimeout(()=>{prev?.stop();prev=null;},6000);}},'▶ 試聽')),
+      h('div',{class:'tm-row'},h('span',{class:'tm-lab'},'音樂音量'),vol,vt),
+      h('label',{class:'tm-row chk',style:'cursor:pointer'},ch,'換階段時輕輕響一聲'),
+      h('div',{class:'muted',style:'line-height:1.5'},'音樂會跟著吸氣變大、吐氣變小。'));
+    sheet.classList.add('on');
+  }
+  function start(){on=true;count=0;cyc.textContent='';bGo.textContent='⏹ 停止';if(s.music!=='none'){try{mus=makeMusic(s.music,s.mvol);}catch(e){}}phase(0);}
+  function stop(msg){on=false;timers.forEach(clearTimeout);timers=[];mus?.stop();mus=null;circle.style.transition='transform 1.2s ease';circle.style.transform='scale(.45)';t.textContent=msg||'做得很好 👍';n.textContent='';bGo.textContent='▶ 開始';}
+  function restart(){if(on){timers.forEach(clearTimeout);timers=[];phase(0);}}
   function phase(i){
-    if(!on)return;const seq=BREATH[s.p].seq;if(i>=seq.length){count++;cyc.textContent=`已完成 ${count} 輪`;i=0;}
-    const [label,sec,big]=seq[i];t.textContent=label;
+    if(!on)return;const q=seq();if(!q.length){stop('請設定秒數');return;}
+    if(i>=q.length){count++;cyc.textContent=`已完成 ${count} 輪`;if(s.rounds&&count>=s.rounds){stop(`完成 ${count} 輪，做得很好 🌿`);return;}i=0;}
+    const [label,sec,big]=q[i];t.textContent=label;
     circle.style.transition=`transform ${sec}s ease-in-out`;circle.style.transform=big?'scale(1)':'scale(.45)';
+    mus?.breath(big,sec);
+    if(s.chime){try{SND.tone(big?660:523,SND.ac().currentTime+.01,1.2,{g:.08,vol:1});}catch(e){}}
     for(let k=0;k<sec;k++)timers.push(setTimeout(()=>{if(on)n.textContent=sec-k;},k*1000));
     timers.push(setTimeout(()=>phase(i+1),sec*1000));
   }
-  cyc.textContent='';
-  return {destroy:()=>{on=false;timers.forEach(clearTimeout);},space:()=>on?stop():start()};
+  render();
+  return {destroy:()=>{on=false;timers.forEach(clearTimeout);mus?.stop();},space:()=>on?stop():start()};
 }};
 
 /* =========================================================
@@ -1343,11 +1541,11 @@ function scenes(){try{return JSON.parse(localStorage.getItem(SCENES_KEY))||{}}ca
 function setScenes(o){try{localStorage.setItem(SCENES_KEY,JSON.stringify(o));}catch(e){toast('儲存失敗：空間不足');}}
 $('#sceneSave').onclick=()=>{
   const n=$('#sceneName').value.trim()||('場景 '+new Date().toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}));
-  const S=scenes();S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
+  const S=scenes();S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
 };
 function loadState(ns){
   [...state.widgets].forEach(w=>{const L=live.get(w.id);L?.api?.destroy?.();L?.el.remove();live.delete(w.id);});
-  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10};
+  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||''};
   applyBg();state.widgets.forEach(mount);updateEmpty();save();
 }
 function renderScenes(){
