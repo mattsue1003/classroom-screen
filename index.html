@@ -209,7 +209,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 /* 轉盤 */
 .wheel-res{text-align:center;font-weight:800;font-size:clamp(16px,6cqw,40px);min-height:1.3em;padding:0 10px 6px}
 /* 攝影機 */
-.cam-wrap{flex:1;min-height:0;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#cfd6de}
+.cam-wrap{position:relative;flex:1;min-height:0;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#cfd6de}
 .cam-wrap .muted{color:#aab4c0}
 .cam-v{width:100%;height:100%;object-fit:contain;display:block}
 /* 便利貼 */
@@ -313,14 +313,14 @@ svg.ui .f,.tico .f{fill:currentColor;stroke:none}
 
 /* 歡迎畫面 */
 #empty{pointer-events:none;gap:0}
-.welcome{pointer-events:auto;width:min(720px,calc(100vw - 32px));padding:34px 32px 28px;border-radius:28px;color:#fff;text-align:center;
+.welcome{pointer-events:auto;width:min(860px,calc(100vw - 32px));padding:34px 32px 28px;border-radius:28px;color:#fff;text-align:center;
   background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.2);
   box-shadow:0 30px 80px -20px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);margin-bottom:70px}
 .welcome .logo{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:20px;background:linear-gradient(145deg,#7c8cff,#4f46e5);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 12px 24px -8px rgba(0,0,0,.5);margin-bottom:14px}
 .welcome .logo svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .welcome h1{font-size:clamp(26px,3.6vw,38px);margin:0 0 6px;font-weight:800;letter-spacing:.06em;text-shadow:none}
 .welcome p{margin:0;font-size:15px;opacity:.82}
-.tpl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0 16px}
+.tpl-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:22px 0 16px}
 .tpl{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 8px 13px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:14.5px;font-weight:700;transition:background .15s,transform .15s}
 .tpl:hover{background:rgba(255,255,255,.2);transform:translateY(-3px)}
 .tpl .mini{display:flex;justify-content:center}
@@ -338,6 +338,44 @@ svg.ui .f,.tico .f{fill:currentColor;stroke:none}
 /* 視窗較矮時，計時器收起快速設定列，把空間留給時間 */
 @container (max-height:250px){.tm-presets{display:none}}
 @container (max-height:150px){.tm-status{display:none}}
+
+/* 我的鏡頭：無框浮動 */
+.win.camwin{background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible;min-width:110px;min-height:110px;z-index:3900!important}
+.win.camwin.active{box-shadow:none}
+.camwin .win-body{display:grid;place-items:center;overflow:visible}
+.camwin .win-head{position:absolute;left:50%;top:-16px;transform:translateX(-50%);height:34px;padding:0 4px 0 8px;gap:2px;border-radius:999px;border:0;background:rgba(17,22,38,.88);z-index:3;opacity:0;pointer-events:none;transition:opacity .15s}
+.camwin .win-head .ttl{display:none}
+.camwin .win-head .tico{width:20px;height:20px;margin-right:4px}
+.camwin .win-head .hb{color:#fff;width:26px;height:26px}
+.camwin .win-head .hb:hover{background:rgba(255,255,255,.18);color:#fff}
+.camwin .mc-bar{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(17,22,38,.88);z-index:3;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap}
+.camwin .mc-bar .btn{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border-radius:999px;padding:5px 11px}
+.camwin .mc-bar .btn.on{background:#4f6ef7}
+.camwin .rs{opacity:0;transition:opacity .15s}
+.camwin .rs::after{border-color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.camwin:hover .win-head,.camwin.active .win-head,.camwin:hover .mc-bar,.camwin.active .mc-bar{opacity:1;pointer-events:auto}
+.camwin:hover .rs,.camwin.active .rs{opacity:1}
+.mc-frame{width:100%;height:100%;overflow:hidden;cursor:grab;background:#10131f;touch-action:none;box-shadow:0 16px 36px -12px rgba(0,0,0,.65),0 0 0 4px rgba(255,255,255,.95)}
+.mc-frame:active{cursor:grabbing}
+.mc-frame video,.mc-frame canvas{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.camwin[data-shape=circle] .mc-frame{border-radius:50%}
+.camwin[data-shape=round] .mc-frame{border-radius:26px}
+.camwin[data-shape=none] .mc-frame{background:transparent;box-shadow:none;overflow:visible}
+.camwin[data-shape=none] .mc-frame canvas{object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+.mc-msg{position:absolute;inset:auto 8px 50% 8px;transform:translateY(50%);text-align:center;color:#fff;font-size:13px;font-weight:600;line-height:1.4;text-shadow:0 1px 4px rgba(0,0,0,.8);cursor:pointer;z-index:2}
+/* 問答牆 */
+.wall-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:8px 12px 12px;align-content:start}
+.wall-c{position:relative;padding:12px 14px;border-radius:14px;font-size:clamp(14px,2.6cqw,19px);font-weight:600;line-height:1.45;word-break:break-word;color:#2b2b2b;box-shadow:0 2px 6px rgba(0,0,0,.08);animation:pop .35s ease}
+.wall-grid.hide .wall-c span{filter:blur(7px);user-select:none}
+.wall-c .wx{position:absolute;right:4px;top:2px;width:22px;height:22px;border-radius:50%;color:rgba(0,0,0,.35);font-size:16px;opacity:0}
+.wall-c:hover .wx{opacity:1}
+.wall-c .wx:hover{background:rgba(0,0,0,.1);color:#000}
+/* 學生端：相機、文字、簽到 */
+.st-cam{width:100%;border-radius:14px;background:#111;aspect-ratio:3/4;object-fit:cover;display:block}
+.st-ta{width:100%;min-height:120px;font-size:19px;padding:12px;border-radius:14px;border:2px solid #d5dde7;resize:vertical;line-height:1.5;font-family:inherit}
+.st-name{width:100%;font-size:24px;text-align:center;padding:12px;border-radius:14px;border:2px solid #d5dde7;font-weight:700;background:#fff}
+.st-done{display:grid;place-items:center;width:84px;height:84px;margin:6px auto 12px;border-radius:50%;background:#10b981;color:#fff}
+.st-done svg{width:46px;height:46px}
 /* 聚光燈 */
 #spot{position:fixed;inset:0;z-index:4500;display:none;cursor:none}
 #spot.on{display:block}
@@ -497,6 +535,8 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
       <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理，不會錄影錄音。</li>
+      <li><b>線上課程</b>：在 Meet、Zoom、Teams 分享「教室螢幕」這個分頁即可。用「螢幕分享」把簡報放進來、「我的鏡頭」疊在角落（可圓形、圓角或去背），「問答牆」「線上簽到」「即時投票」按「複製連結」貼到聊天室，學生點連結就能參與。</li>
+      <li><b>手機當實物投影機</b>：在「攝影機」按「用手機當鏡頭」，手機掃 QR Code 後按「開啟相機」，畫面會直接傳到螢幕上。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
     </ul>
@@ -511,9 +551,10 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
   <div class="lb-card"><div class="lb-qr" id="lbQr"></div>
     <div class="lb-side"><div class="muted">📱 用手機相機掃描 QR Code<br>或開啟這個網址：</div><div class="lb-url" id="lbUrl"></div>
       <div class="muted">再輸入 PIN</div><div class="lb-pin" id="lbPin"></div><div class="muted" id="lbSt"></div>
-      <button class="btn p" data-close style="margin-top:8px">關閉（學生仍可作答）</button></div></div>
+      <button class="btn" id="lbCopy" style="margin-top:8px">複製連結（貼到線上會議聊天室）</button>
+      <button class="btn p" data-close style="margin-top:8px">關閉（學生仍可加入）</button></div></div>
 </div>
-<div id="stu"><div class="st-head">📱 教室螢幕・學生作答<span class="st-dot" id="stDot"></span></div><div class="st-card" id="stMain"></div></div>
+<div id="stu"><div class="st-head">📱 教室螢幕・學生端<span class="st-dot" id="stDot"></span></div><div class="st-card" id="stMain"></div></div>
 <div id="timesUp" title="點一下關閉"><div class="bell"><svg viewBox="0 0 24 24"><path d="M6 17v-6a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21.5h4M12 3V5"/></svg></div><div class="t">時間到！</div><div class="s"></div><div class="s" style="font-size:14px;opacity:.7">點一下或按 Esc 關閉</div></div>
 
 <script>
@@ -566,6 +607,10 @@ const G={
   image:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>',
   camera:'<path d="M4 8h3l1.5-2.5h7L17 8h3v11H4V8z"/><circle cx="12" cy="13.2" r="3.4"/>',
   qr:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2.5v2.5H14zM19 14h1M14 19.5h2M19 18.5v1.5"/>',
+  mycam:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.3c1-2.6 3-4 5.5-4s4.5 1.4 5.5 4"/>',
+  share:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V8M9.5 10L12 7.5l2.5 2.5"/>',
+  wall:'<rect x="3.5" y="4" width="7.5" height="7" rx="1.6"/><rect x="13" y="4" width="7.5" height="7" rx="1.6"/><rect x="3.5" y="13" width="7.5" height="7" rx="1.6"/><path d="M14 15h6M14 18.5h4"/>',
+  checkin:'<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c0-3.5 2.9-6.3 6.5-6.3 1.2 0 2.3.3 3.3.8M14.5 17.5l2.3 2.3 4.2-4.600"/>',
   /* 工作模式用 */
   mute:'<path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
   whisper:'<path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M15.5 9.5a3.6 3.6 0 0 1 0 5"/>',
@@ -578,6 +623,7 @@ const TC={clock:['#6ea0ff','#2563eb'],timer:['#ffa15c','#ea580c'],stopwatch:['#3
   picker:['#ff7d95','#e11d48'],wheel:['#bd8cff','#7c3aed'],groups:['#4fdcA0','#059669'],dice:['#ffc94a','#d97706'],rnum:['#7c9dff','#4f46e5'],coin:['#ffd84d','#ca8a04'],
   noise:['#ff86c4','#db2777'],traffic:['#62e08a','#16a34a'],symbols:['#57c8ff','#0284c7'],agenda:['#b49bff','#6d28d9'],breathe:['#63e6d3','#0d9488'],counter:['#ffa66b','#c2410c'],
   poll:['#8d99ff','#4338ca'],exit:['#ffd35c','#e08a00'],score:['#ffc04a','#b45309'],stars:['#ff9ecb','#be185d'],
+  mycam:['#7fb2ff','#2563eb'],share:['#9aa7ff','#4f46e5'],wall:['#ffb37a','#ea580c'],checkin:['#6fe3b0','#059669'],
   text:['#9fb0c6','#475569'],sticky:['#ffd84d','#d19a00'],draw:['#ff8686','#dc2626'],embed:['#4ddcf0','#0891b2'],image:['#7fe3a0','#15803d'],camera:['#7d8aa3','#1e293b'],qr:['#66758f','#0f172a']};
 function toolIcon(key,grad){const c=grad||TC[key]||['#8d99ff','#4338ca'];
   return h('span',{class:'tico',style:`background:linear-gradient(145deg,${c[0]},${c[1]})`,html:`<svg viewBox="0 0 24 24">${G[key]||G.symbols}</svg>`});}
@@ -1311,6 +1357,7 @@ const LIVE_HOSTS=new Set();
 let bigOwner=null;
 function closeBig(){bigOwner=null;$('#liveBig').classList.remove('open');}
 $('#liveBig').addEventListener('click',e=>{if(e.target.id==='liveBig')closeBig();});
+$('#lbCopy').onclick=()=>bigOwner?.copyLink();
 addEventListener('pagehide',()=>LIVE_HOSTS.forEach(L=>L.quiet()));
 /* 每個開放作答的小工具各自一個房間（PIN）。ad = {payload(), count(), vote(prev,i)} */
 function liveHost(s,ctx,ad){
@@ -1322,20 +1369,24 @@ function liveHost(s,ctx,ad){
   const pinEl=h('b',{class:'lv-pin'}),stEl=h('span',{class:'muted'});
   const bOpen=h('button',{class:'btn sm',title:'暫停或繼續接受學生作答'});
   const ui=h('div',{class:'lv-bar'},qrEl,h('div',{class:'lv-info'},pinEl,stEl),h('span',{class:'grow'}),bOpen,
-    h('button',{class:'btn sm',title:'放大 QR Code 給全班看',onclick:()=>showBig()},'⛶ 放大'));
-  const btn=h('button',{class:'btn sm',title:'讓學生用手機掃 QR Code 作答（不需帳號）',onclick:()=>toggle()});
+    h('button',{class:'btn sm',title:'複製加入連結，可貼到線上會議的聊天室',onclick:()=>copyLink()},'複製連結'),
+    h('button',{class:'btn sm',title:'放大 QR Code 給全班看',onclick:()=>showBig()},'放大'));
+  function copyLink(){if(!s.live?.pin)return;const u=joinUrl(s.live.pin);(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('已複製連結，貼到聊天室給學生')).catch(()=>prompt('複製這個連結給學生：',u));}
+  const LB=ad.labels||['📱 開放學生作答','📱 關閉學生作答'];
+  const btn=h('button',{class:'btn sm',title:ad.tip||'讓學生用手機掃 QR Code 作答（不需帳號）',onclick:()=>toggle()});
   qrEl.onclick=()=>showBig();
   bOpen.onclick=()=>{s.live.open=!s.live.open;ctx.save();paint();sync();};
   const votedN=()=>Object.keys(s.voters).length;
   function status(){
     if(err)return err;
     if(!ready)return '正在開啟房間…';
+    if(ad.status)return ad.status(conns.size)+(s.live.open?'':'・已截止');
     return `${conns.size} 人連線・${votedN()} 人已作答${s.live.open?'':'・已截止'}`;
   }
   function paint(){
     const on=!!s.live?.on;
     ui.style.display=on?'':'none';
-    btn.textContent=on?'📱 關閉學生作答':'📱 開放學生作答';btn.classList.toggle('on',on);
+    btn.textContent=on?LB[1]:LB[0];btn.classList.toggle('on',on);
     if(!on)return;
     pinEl.textContent=ready?'PIN '+s.live.pin:'連線中…';stEl.textContent=status();
     bOpen.textContent=s.live.open?'⏸ 截止':'▶ 繼續';bOpen.classList.toggle('on',!s.live.open);
@@ -1373,6 +1424,7 @@ function liveHost(s,ctx,ad){
       setTimeout(()=>{if(peer===p&&(p.destroyed||p.disconnected)){try{p.destroy();}catch(_){} peer=null;ready=false;start();}},4000);
     });
     p.on('disconnected',()=>setTimeout(()=>{try{if(peer===p&&!p.destroyed)p.reconnect();}catch(_){}},1000));
+    p.on('call',call=>{if(ad.onCall&&s.live?.on)ad.onCall(call);else try{call.close();}catch(_){}});
     p.on('connection',c=>{
       c.on('open',()=>{conns.add(c);paint();});
       c.on('data',d=>onData(c,d));
@@ -1382,11 +1434,12 @@ function liveHost(s,ctx,ad){
   }
   const key=c=>'d'+c._dev;
   function stateFor(c){const k=key(c);const mine=Object.prototype.hasOwnProperty.call(s.voters,k)?s.voters[k]:null;
-    return Object.assign({t:'state'},ad.payload(),{qid:s.qid,open:!!s.live.open,mine});}
+    return Object.assign({t:'state',mine},ad.payload(c),{qid:s.qid,open:!!s.live.open});}
   function send(c,msg){if(c.open)try{c.send(msg);}catch(e){}}
   function onData(c,d){
     if(!d||typeof d!=='object'||!s.live?.on)return;
     if(d.t==='hello'){c._dev=String(d.dev||c.peer).replace(/[^\w-]/g,'').slice(0,40)||c.peer;send(c,stateFor(c));paint();return;}
+    if(d.t!=='vote'&&c._dev&&ad.onMsg){ad.onMsg(c,d);send(c,stateFor(c));paint();return;}
     if(d.t==='vote'&&c._dev){
       const i=Number(d.i);
       if(s.live.open&&d.qid===s.qid&&Number.isInteger(i)&&i>=0&&i<ad.count()){
@@ -1409,7 +1462,7 @@ function liveHost(s,ctx,ad){
     const inst=ctx.inst;if(!inst.max&&inst.h<400){inst.h=Math.min(400,innerHeight-60);place(inst);}
     paint();start();showBig();
   }
-  const api={ui,btn,sync,paint,
+  const api={ui,btn,sync,paint,copyLink,showBig,
     reset(){s.voters={};s.qid++;ctx.save();sync();paint();},
     removeOpt(i){for(const k of Object.keys(s.voters)){const v=s.voters[k];if(v===i)delete s.voters[k];else if(v>i)s.voters[k]=v-1;}ctx.save();sync();},
     quiet(){stopPeer(false);},
@@ -1573,24 +1626,35 @@ mount(body,s,ctx){
 }};
 
 /* ---- 攝影機（實物投影） ---- */
-WIDGETS.camera={name:'攝影機',icon:'📷',w:520,h:400,init:()=>({mirror:false,rot:false,dev:''}),
+WIDGETS.camera={name:'攝影機',icon:'',w:560,h:440,init:()=>({mirror:false,rot:0,dev:''}),
 mount(body,s,ctx){
+  if(s.rot===true)s.rot=180;if(!s.rot)s.rot=0;
   const vid=h('video',{class:'cam-v',autoplay:true,playsinline:true});vid.muted=true;
   const snap=h('canvas',{class:'cam-v',style:'display:none'});
-  const msg=h('div',{class:'fit col',style:'gap:6px'},h('div',{style:'font-size:40px'},'📷'),h('div',{},'可當實物投影機：把作業、課本放在鏡頭下'),h('div',{class:'muted'},'按「開啟」並允許使用相機，影像只在本機顯示'));
+  const hint=h('div',{class:'muted'},'按「開啟」用這台電腦的鏡頭，或按「用手機當鏡頭」掃碼連線');
+  const ico=ui('camera');ico.style.cssText='width:44px;height:44px';
+  const msg=h('div',{class:'fit col',style:'gap:8px'},ico,h('div',{},'實物投影機：把作業、課本放在鏡頭下'),hint);
   const view=h('div',{class:'cam-wrap'},msg);
-  const sel=h('select',{class:'inp',style:'width:auto;max-width:150px;display:none',onchange:()=>{s.dev=sel.value;ctx.save();if(stream)start();}});
+  const sel=h('select',{class:'inp',style:'width:auto;max-width:150px;display:none',onchange:()=>{s.dev=sel.value;ctx.save();if(stream&&!remote)start();}});
   const bGo=h('button',{class:'btn p',onclick:()=>stream?stop():start()},'📷 開啟');
-  const bMir=h('button',{class:'btn sm',title:'左右鏡像（自拍時用）',onclick:()=>{s.mirror=!s.mirror;ctx.save();apply();}},'↔ 鏡像');
-  const bRot=h('button',{class:'btn sm',title:'上下顛倒（鏡頭倒放時用）',onclick:()=>{s.rot=!s.rot;ctx.save();apply();}},'↻ 翻轉');
+  const bMir=h('button',{class:'btn sm',title:'左右鏡像',onclick:()=>{s.mirror=!s.mirror;ctx.save();apply();}},'↔ 鏡像');
+  const bRot=h('button',{class:'btn sm',title:'每按一次旋轉 90 度（手機直放、橫放或鏡頭倒放時用）',onclick:()=>{s.rot=(s.rot+90)%360;ctx.save();apply();}},'↻ 旋轉');
   const bFrz=h('button',{class:'btn sm',onclick:freeze},'⏸ 定格');
-  body.append(view,h('div',{class:'foot'},bGo,bFrz,bMir,bRot,h('span',{class:'grow'}),sel));
-  let stream=null,frozen=false;
+  let stream=null,frozen=false,remote=null;
+  /* 手機當鏡頭：手機掃碼後把相機畫面直接傳到這裡（WebRTC 點對點） */
+  const live=liveHost(s,ctx,{labels:['📱 用手機當鏡頭','📱 關閉手機連線'],tip:'用手機掃 QR Code，把手機相機變成實物投影機',
+    payload:()=>({kind:'cam',q:'手機實物投影機'}),count:()=>0,vote(){},
+    status:n=>remote?'手機畫面傳送中':(n?`${n} 支手機已連線，請在手機上按「開啟相機」`:'等待手機掃碼'),
+    onCall(call){try{call.answer();}catch(e){return;}
+      call.on('stream',st=>{stopTracks();remote=call;stream=st;vid.srcObject=st;frozen=false;view.innerHTML='';view.append(vid,snap);bGo.textContent='⏹ 關閉';closeBig();apply();live.paint();});
+      const end=()=>{if(remote===call){remote=null;stream=null;vid.srcObject=null;stop('手機鏡頭已中斷');live.paint();}};
+      call.on('close',end);call.on('error',end);}});
+  body.append(view,live.ui,h('div',{class:'foot'},bGo,live.btn,bFrz,bMir,bRot,h('span',{class:'grow'}),sel));
   async function start(){
-    stopTracks();msg.lastChild.textContent='連線相機中…';
+    stopTracks();hint.textContent='連線相機中…';
     const want=s.dev?{deviceId:{exact:s.dev},width:{ideal:1920},height:{ideal:1080}}:{width:{ideal:1920},height:{ideal:1080}};
     try{stream=await navigator.mediaDevices.getUserMedia({video:want,audio:false});}
-    catch(e){if(s.dev){s.dev='';ctx.save();return start();}msg.lastChild.textContent='無法使用相機：'+(e.message||e.name);return;}
+    catch(e){if(s.dev){s.dev='';ctx.save();return start();}hint.textContent='無法使用相機：'+(e.message||e.name);return;}
     vid.srcObject=stream;frozen=false;view.innerHTML='';view.append(vid,snap);bGo.textContent='⏹ 關閉';apply();listDevices();
   }
   async function listDevices(){
@@ -1598,16 +1662,19 @@ mount(body,s,ctx){
       ds.forEach((d,i)=>sel.append(h('option',{value:d.deviceId},d.label||('相機 '+(i+1)))));
       const cur=stream?.getVideoTracks()[0]?.getSettings().deviceId;if(cur)sel.value=cur;sel.style.display=ds.length>1?'':'none';}catch(e){}
   }
-  function stopTracks(){stream?.getTracks().forEach(t=>t.stop());stream=null;vid.srcObject=null;}
-  function stop(){stopTracks();frozen=false;bGo.textContent='📷 開啟';view.innerHTML='';msg.lastChild.textContent='相機已關閉';view.append(msg);apply();}
+  function stopTracks(){if(remote){const c=remote;remote=null;try{c.close();}catch(e){}}else stream?.getTracks().forEach(t=>t.stop());stream=null;vid.srcObject=null;}
+  function stop(text){stopTracks();frozen=false;bGo.textContent='📷 開啟';view.innerHTML='';hint.textContent=typeof text==='string'?text:'相機已關閉';view.append(msg);apply();}
   function apply(){
-    const tf=[s.mirror?'scaleX(-1)':'',s.rot?'rotate(180deg)':''].join(' ');vid.style.transform=snap.style.transform=tf;
-    bMir.classList.toggle('on',s.mirror);bRot.classList.toggle('on',s.rot);bFrz.classList.toggle('on',frozen);bFrz.disabled=!stream;
+    const side=s.rot%180!==0,W=view.clientWidth,H=view.clientHeight;
+    [vid,snap].forEach(e=>{e.style.position='absolute';e.style.left='50%';e.style.top='50%';e.style.width=(side?H:W)+'px';e.style.height=(side?W:H)+'px';
+      e.style.transform=`translate(-50%,-50%) rotate(${s.rot}deg)${s.mirror?' scaleX(-1)':''}`;});
+    bMir.classList.toggle('on',s.mirror);bRot.classList.toggle('on',!!s.rot);bFrz.classList.toggle('on',frozen);bFrz.disabled=!stream;
     bFrz.textContent=frozen?'▶ 繼續':'⏸ 定格';snap.style.display=frozen?'':'none';vid.style.display=frozen?'none':'';
   }
   function freeze(){if(!stream)return;if(!frozen){snap.width=vid.videoWidth;snap.height=vid.videoHeight;snap.getContext('2d').drawImage(vid,0,0);}frozen=!frozen;apply();}
   apply();
-  return {destroy:stopTracks,space:freeze};
+  const ro=window.ResizeObserver?new ResizeObserver(()=>apply()):null;ro?.observe(view);
+  return {destroy:()=>{ro?.disconnect();stopTracks();live.destroy();},space:freeze,resize:apply};
 }};
 
 /* ---- 便利貼 ---- */
@@ -1832,6 +1899,147 @@ mount(body,s,ctx){
   render();
 }};
 
+/* ---- 我的鏡頭（浮動頭像，可去背） ---- */
+const SEG_VER='0.1.1675465747',SEG_BASE='https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@'+SEG_VER+'/';
+WIDGETS.mycam={name:'我的鏡頭',icon:'',w:260,h:260,minW:110,minH:110,init:()=>({shape:'circle',nobg:false,mirror:true}),
+mount(body,s,ctx){
+  const el=ctx.el,inst=ctx.inst;el.classList.add('camwin');
+  const vid=h('video',{autoplay:true,playsinline:true});vid.muted=true;
+  const cv=h('canvas');
+  const frame=h('div',{class:'mc-frame'},vid,cv);
+  const msg=h('div',{class:'mc-msg'},'開啟鏡頭中…');
+  const bShape=h('button',{class:'btn sm',title:'切換圓形／圓角',onclick:()=>{s.shape=s.shape==='circle'?'round':'circle';if(s.nobg)s.nobg=false;ctx.save();apply();}});
+  const bBg=h('button',{class:'btn sm',title:'去掉背景，只留下人像',onclick:()=>{s.nobg=!s.nobg;ctx.save();apply();if(s.nobg)startSeg();}},'去背');
+  const bMir=h('button',{class:'btn sm',title:'左右鏡像',onclick:()=>{s.mirror=!s.mirror;ctx.save();apply();}},'鏡像');
+  body.append(frame,msg,h('div',{class:'mc-bar'},bShape,bBg,bMir));
+  // 直接拖曳畫面移動
+  frame.addEventListener('pointerdown',ev=>{
+    if(inst.max)return;ev.preventDefault();frame.setPointerCapture(ev.pointerId);const sx=ev.clientX-inst.x,sy=ev.clientY-inst.y;
+    const mv=e=>{inst.x=clamp(e.clientX-sx,-inst.w+60,innerWidth-60);inst.y=clamp(e.clientY-sy,0,innerHeight-50);place(inst);};
+    const up=()=>{frame.removeEventListener('pointermove',mv);frame.removeEventListener('pointerup',up);frame.removeEventListener('pointercancel',up);ctx.save();};
+    frame.addEventListener('pointermove',mv);frame.addEventListener('pointerup',up);frame.addEventListener('pointercancel',up);
+  });
+  let stream=null,seg=null,segLoading=false,alive=true,busy=false;
+  const say=(t,ms)=>{msg.textContent=t;msg.style.display=t?'':'none';if(ms)setTimeout(()=>{if(msg.textContent===t)msg.style.display='none';},ms);};
+  msg.onclick=()=>{if(!stream)start();};
+  async function start(){
+    say('開啟鏡頭中…');
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:960},height:{ideal:720},facingMode:'user'},audio:false});}
+    catch(e){say('無法使用鏡頭：'+(e.message||e.name)+'。點這裡重試');return;}
+    if(!alive){stream.getTracks().forEach(t=>t.stop());return;}
+    vid.srcObject=stream;say('');apply();if(s.nobg)startSeg();
+  }
+  async function startSeg(){
+    if(seg){loop();return;}if(segLoading)return;segLoading=true;say('載入去背模型…（第一次需要幾秒）');
+    try{await loadScript(SEG_BASE+'selfie_segmentation.js',()=>window.SelfieSegmentation);
+      const g=new SelfieSegmentation({locateFile:f=>SEG_BASE+f});g.setOptions({modelSelection:1});g.onResults(draw);await g.initialize();seg=g;}
+    catch(e){console.warn('seg',e);segLoading=false;s.nobg=false;ctx.save();apply();say('去背模型載入失敗（需要網路）',3000);return;}
+    segLoading=false;say('');loop();
+  }
+  function loop(){
+    if(!alive||!s.nobg||!seg)return;
+    requestAnimationFrame(async()=>{if(vid.readyState>=2&&vid.videoWidth&&!busy){busy=true;try{await seg.send({image:vid});}catch(e){}busy=false;}loop();});
+  }
+  function draw(r){
+    const w=r.image.width,hh=r.image.height;if(cv.width!==w||cv.height!==hh){cv.width=w;cv.height=hh;}
+    const c=cv.getContext('2d');c.save();c.clearRect(0,0,w,hh);
+    try{c.filter='blur(4px)';}catch(e){}c.drawImage(r.segmentationMask,0,0,w,hh);c.filter='none';
+    c.globalCompositeOperation='source-in';c.drawImage(r.image,0,0,w,hh);c.restore();
+  }
+  function apply(){
+    el.dataset.shape=s.nobg?'none':s.shape;
+    vid.style.display=s.nobg&&seg?'none':'';cv.style.display=s.nobg?'':'none';
+    vid.style.transform=cv.style.transform=s.mirror?'scaleX(-1)':'';
+    bShape.textContent=s.shape==='circle'?'圓形':'圓角';bBg.classList.toggle('on',s.nobg);bMir.classList.toggle('on',s.mirror);
+    const r=body.getBoundingClientRect(),side=Math.min(r.width,r.height);
+    if(!s.nobg&&s.shape==='circle'){frame.style.width=frame.style.height=side+'px';}else{frame.style.width=frame.style.height='100%';}
+  }
+  apply();start();
+  return {destroy:()=>{alive=false;stream?.getTracks().forEach(t=>t.stop());try{seg?.close();}catch(e){}},resize:apply};
+}};
+
+/* ---- 螢幕分享（把簡報或其他視窗放進教室螢幕） ---- */
+WIDGETS.share={name:'螢幕分享',icon:'',w:680,h:440,init:()=>({}),
+mount(body,s,ctx){
+  const vid=h('video',{class:'cam-v',autoplay:true,playsinline:true,style:'position:static'});vid.muted=true;
+  const ico=ui('upload');ico.style.cssText='width:44px;height:44px';
+  const hint=h('div',{class:'muted'},'線上課程時，只要分享「教室螢幕」這個分頁，學生就能同時看到簡報、你的鏡頭和所有小工具');
+  const msg=h('div',{class:'fit col',style:'gap:8px;max-width:440px;margin:auto'},ico,h('div',{},'把簡報、文件或其他視窗顯示在這裡'),hint);
+  const view=h('div',{class:'cam-wrap'},msg);
+  const bGo=h('button',{class:'btn p',onclick:()=>stream?stop():start()},'選擇要顯示的視窗');
+  body.append(view,h('div',{class:'foot'},bGo,h('span',{class:'muted'},'可搭配「我的鏡頭」疊在上面')));
+  let stream=null;
+  async function start(){
+    if(!navigator.mediaDevices?.getDisplayMedia){hint.textContent='這個瀏覽器不支援螢幕分享，請改用電腦版 Chrome、Edge 或 Safari';return;}
+    try{stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});}catch(e){if(e.name!=='NotAllowedError')hint.textContent='無法分享：'+(e.message||e.name);return;}
+    stream.getVideoTracks()[0].addEventListener('ended',()=>stop());
+    vid.srcObject=stream;view.innerHTML='';view.append(vid);bGo.textContent='停止顯示';
+  }
+  function stop(){stream?.getTracks().forEach(t=>t.stop());stream=null;vid.srcObject=null;view.innerHTML='';view.append(msg);bGo.textContent='選擇要顯示的視窗';}
+  return {destroy:()=>stream?.getTracks().forEach(t=>t.stop())};
+}};
+
+/* ---- 問答牆（學生用手機或電腦送出文字回應） ---- */
+const WALL_COLORS=['#fff3bf','#d3f9d8','#d0ebff','#ffe3e3','#e5dbff','#ffe8cc'];
+WIDGETS.wall={name:'問答牆',icon:'',w:560,h:460,init:()=>({q:'用一句話說說：今天學到什麼？',items:[],hide:false}),
+mount(body,s,ctx){
+  if(!Array.isArray(s.items))s.items=[];
+  const qEl=h('input',{class:'bare',style:'text-align:left;padding:12px 14px 6px',value:s.q,placeholder:'輸入要問學生的問題',onchange:()=>{s.q=qEl.value;ctx.save();live.sync();}});
+  const grid=h('div',{class:'wall-grid'}),tot=h('span',{class:'muted'});
+  const bHide=h('button',{class:'btn sm',title:'先把回應蓋起來，收齊後再一起公布',onclick:()=>{s.hide=!s.hide;ctx.save();render();}});
+  const live=liveHost(s,ctx,{labels:['📱 開放學生回應','📱 關閉學生回應'],tip:'學生掃 QR Code 或點連結，就能輸入文字回應',
+    payload:c=>({kind:'wall',q:s.q,sent:s.items.filter(i=>i.dev===c._dev).length,max:5}),count:()=>0,vote(){},
+    status:n=>`${n} 人連線・${s.items.length} 則回應`,
+    onMsg(c,d){
+      if(d.t!=='text'||!s.live.open||d.qid!==s.qid)return;
+      const t=String(d.text||'').replace(/\s+/g,' ').trim().slice(0,200);if(!t)return;
+      if(s.items.filter(i=>i.dev===c._dev).length>=5)return;
+      s.items.push({id:uid(),t,dev:c._dev});ctx.save();render();
+    }});
+  const add=h('input',{class:'inp',style:'flex:1;min-width:90px',placeholder:'老師也可以在這裡代填，按 Enter',onkeydown:e=>{if(e.key==='Enter'&&add.value.trim()){s.items.push({id:uid(),t:add.value.trim().slice(0,200),dev:'teacher'});add.value='';ctx.save();render();}}});
+  body.append(qEl,live.ui,grid,h('div',{class:'foot'},live.btn,bHide,h('button',{class:'btn sm',onclick:()=>{if(!s.items.length||confirm('清空所有回應？')){s.items=[];live.reset();render();}}},'清空'),add,tot));
+  function render(){
+    grid.innerHTML='';grid.classList.toggle('hide',!!s.hide);
+    s.items.forEach((it,i)=>grid.append(h('div',{class:'wall-c',style:`background:${WALL_COLORS[i%WALL_COLORS.length]}`},h('span',{},it.t),
+      h('button',{class:'wx',title:'刪除這則',onclick:()=>{s.items=s.items.filter(x=>x.id!==it.id);ctx.save();render();live.sync();}},'×'))));
+    if(!s.items.length)grid.append(h('div',{class:'muted',style:'grid-column:1/-1;text-align:center;padding:30px 10px'},'還沒有回應。按下方「開放學生回應」，學生掃碼或點連結就能作答。'));
+    bHide.textContent=s.hide?'公布回應':'先蓋住';bHide.classList.toggle('on',!!s.hide);tot.textContent=`${s.items.length} 則`;
+    grid.scrollTop=grid.scrollHeight;
+  }
+  render();
+  return {destroy:()=>live.destroy()};
+}};
+
+/* ---- 線上簽到 ---- */
+WIDGETS.checkin={name:'線上簽到',icon:'',w:420,h:460,init:()=>({list:{}}),
+mount(body,s,ctx){
+  if(!s.list||typeof s.list!=='object')s.list={};
+  const big=h('div',{class:'big days-n',style:'font-size:clamp(36px,16cqw,96px)'}),sub=h('div',{class:'days-s'},'人已簽到');
+  const grid=h('div',{class:'star-grid',style:'grid-template-columns:repeat(auto-fill,minmax(170px,1fr))'});
+  const names=()=>Object.values(s.list).sort((a,b)=>a.at-b.at).map(x=>x.n);
+  const live=liveHost(s,ctx,{labels:['📱 開放簽到','📱 關閉簽到'],tip:'學生掃 QR Code 或點連結，輸入名字就完成簽到',
+    payload:c=>({kind:'checkin',q:'上課簽到',mine:s.list[c._dev]?.n||null}),count:()=>0,vote(){},
+    status:n=>`${n} 人連線・${Object.keys(s.list).length} 人已簽到`,
+    onMsg(c,d){
+      if(d.t!=='checkin'||!s.live.open)return;
+      const n=String(d.name||'').replace(/\s+/g,' ').trim().slice(0,20);if(!n)return;
+      s.list[c._dev]={n,at:s.list[c._dev]?.at||Date.now()};ctx.save();render();
+    }});
+  body.append(h('div',{style:'display:flex;align-items:baseline;justify-content:center;gap:10px;padding:12px 10px 4px;flex:none'},big,sub),live.ui,grid,
+    h('div',{class:'foot'},live.btn,
+      h('button',{class:'btn sm',title:'把簽到的名字存成班級名單，抽籤、轉盤、分組、獎勵星星都能用',onclick:()=>{const L=names();if(!L.length)return toast('還沒有人簽到');const n=(prompt('名單名稱（例如：11/11 線上課）')||'').trim();if(!n)return;const R=rosters();R[n]=L.join('\n');setRosters(R);const k=applyRosterAll(n);toast('已存成名單「'+n+'」'+(k?`，並套用到 ${k} 個工具`:''));}},'💾 存成班級名單'),
+      h('button',{class:'btn sm',onclick:()=>{const L=names();if(!L.length)return toast('還沒有人簽到');(navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject()).then(()=>toast('已複製 '+L.length+' 個名字')).catch(()=>prompt('複製名單：',L.join('、')));}},'複製'),
+      h('button',{class:'btn sm',onclick:()=>{if(!Object.keys(s.list).length||confirm('清空簽到紀錄？')){s.list={};live.reset();render();}}},'清空')));
+  function render(){
+    const L=Object.entries(s.list).sort((a,b)=>a[1].at-b[1].at);big.textContent=L.length;grid.innerHTML='';
+    L.forEach(([k,v])=>grid.append(h('div',{class:'star-c',style:'cursor:default'},h('span',{class:'nm'},v.n),h('span',{class:'muted'},new Date(v.at).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})),
+      h('button',{class:'mn',title:'移除',onclick:()=>{delete s.list[k];ctx.save();render();live.sync();}},'×'))));
+    if(!L.length)grid.append(h('div',{class:'muted',style:'grid-column:1/-1;text-align:center;padding:20px 10px'},'按下方「開放簽到」，學生掃碼或點連結輸入名字。'));
+  }
+  render();
+  return {destroy:()=>live.destroy()};
+}};
+
 /* =========================================================
    工具列
    ========================================================= */
@@ -1840,7 +2048,8 @@ const CATS=[
   ['隨機',['picker','wheel','groups','dice','coin','rnum']],
   ['課堂管理',['noise','traffic','symbols','agenda','breathe']],
   ['互動回饋',['poll','exit','score','stars','counter']],
-  ['內容與展示',['text','sticky','draw','embed','image','camera','qr']]];
+  ['內容與展示',['text','sticky','draw','embed','image','camera','qr']],
+  ['線上課程',['mycam','share','wall','checkin']]];
 const tools=$('#tools');
 CATS.forEach(([cat,keys],ci)=>{
   if(ci)tools.append(h('span',{class:'tsep'}));
@@ -1855,7 +2064,8 @@ Object.entries({btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'
 $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
 const TEMPLATES=[['上課開場','時鐘、流程、倒數',['clock','agenda','timer','symbols']],['小組活動','分組、計時、計分',['groups','timer','score','noise']],
-  ['互動問答','抽籤、轉盤、投票',['picker','wheel','poll','timer']],['安靜自習','倒數、音量、提醒',['timer','noise','symbols','text']]];
+  ['互動問答','抽籤、轉盤、投票',['picker','wheel','poll','timer']],['安靜自習','倒數、音量、提醒',['timer','noise','symbols','text']],
+  ['線上課程','鏡頭、簡報、問答',['share','wall','checkin','mycam']]];
 $('#tplGrid').append(...TEMPLATES.map(([n,d,keys])=>h('button',{class:'tpl',onclick:()=>{keys.forEach(k=>addWidget(k));arrange();toast('已建立「'+n+'」版面，可自由拖曳調整');}},
   h('span',{class:'mini'},keys.map(k=>toolIcon(k))),n,h('small',{},d))));
 /* 聚光燈 */
@@ -1870,7 +2080,8 @@ $('#btnSpot').onclick=()=>spotOn(!spot.classList.contains('on'));
 $('#btnArrange').onclick=arrange;
 /* 自動排列：依目前位置排序，平鋪在工具列上方 */
 function arrange(){
-  const ws=state.widgets.slice().sort((a,b)=>(a.y-b.y)||(a.x-b.x));const n=ws.length;if(!n)return;
+  const ws=state.widgets.filter(w=>w.type!=='mycam').sort((a,b)=>(a.y-b.y)||(a.x-b.x));const n=ws.length;if(!n)return;
+  state.widgets.filter(w=>w.type==='mycam').forEach((w,i)=>{w.max=false;w.x=innerWidth-w.w-24-i*30;w.y=Math.max(10,innerHeight-w.h-130);place(w);});
   const gap=10,W=Math.max(300,innerWidth-gap*2),H=Math.max(240,innerHeight-gap*2-(bar.classList.contains('hidden')?0:Math.max(80,innerHeight-bar.getBoundingClientRect().top)));
   let cols=1,best=-1;for(let c=1;c<=n;c++){const r=Math.ceil(n/c),cw=(W-gap*(c-1))/c,ch=(H-gap*(r-1))/r,sc=Math.min(cw/1.35,ch);if(sc>best){best=sc;cols=c;}}
   const rows=Math.ceil(n/cols),cw=(W-gap*(cols-1))/cols,ch=(H-gap*(rows-1))/rows;
@@ -1986,7 +2197,7 @@ function startStudent(pin0){
     setTimeout(()=>inp.focus(),50);
   }
   function join(pin){
-    if(S){S.dead=true;clearTimeout(S.retryT);try{S.peer?.destroy();}catch(e){}}
+    if(S){S.dead=true;clearTimeout(S.retryT);stopCam(S);try{S.peer?.destroy();}catch(e){}}
     S={pin,gen:0,tries:0,joined:false,st:null,pending:null,dead:false};
     msg('🔌','連線中…');connect();
   }
@@ -2000,7 +2211,7 @@ function startStudent(pin0){
     peer.on('open',()=>{
       if(!live())return;
       const c=peer.connect(LIVE_PREFIX+me.pin,{reliable:true});me.conn=c;
-      c.on('open',()=>{clearTimeout(guard);if(!live())return;me.tries=0;me.joined=true;dot.classList.add('ok');c.send({t:'hello',dev});});
+      c.on('open',()=>{clearTimeout(guard);if(!live())return;me.tries=0;me.joined=true;dot.classList.add('ok');c.send({t:'hello',dev});if(me.cam)setTimeout(()=>callCam(me),400);});
       c.on('data',d=>{if(live())onData(d);});
       c.on('close',()=>{if(live()&&!me.ended)retry();});
     });
@@ -2019,11 +2230,66 @@ function startStudent(pin0){
     if(!d||typeof d!=='object')return;
     if(d.t==='state'){
       S.st=d;S.pending=null;renderQ();
-    }else if(d.t==='end'){S.ended=true;dot.classList.remove('ok');try{S.peer?.destroy();}catch(e){}
-      msg('🙌','老師已結束這一題的作答，謝謝參與！',h('button',{class:'btn st-big',onclick:()=>join(S.pin)},'重新加入'),h('button',{class:'btn st-big',onclick:()=>{S.dead=true;askPin();}},'輸入其他 PIN'));}
+    }else if(d.t==='end'){S.ended=true;stopCam(S);dot.classList.remove('ok');try{S.peer?.destroy();}catch(e){}
+      msg('🙌','老師已結束這個活動，謝謝參與！',h('button',{class:'btn st-big',onclick:()=>join(S.pin)},'重新加入'),h('button',{class:'btn st-big',onclick:()=>{S.dead=true;askPin();}},'輸入其他 PIN'));}
+  }
+  /* 相機：把手機畫面傳給老師 */
+  function stopCam(me){me=me||S;if(!me?.cam)return;try{me.cam.call?.close();}catch(e){}me.cam.stream.getTracks().forEach(t=>t.stop());me.cam=null;}
+  async function startCam(facing){
+    const me=S;stopCam(me);let stream;
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1920},height:{ideal:1080}},audio:false});}
+    catch(e){toast('無法使用相機：'+(e.name==='NotAllowedError'?'請允許使用相機':(e.message||e.name)));return;}
+    if(S!==me||me.dead){stream.getTracks().forEach(t=>t.stop());return;}
+    me.cam={stream,facing,call:null};callCam(me);me.sig='';renderQ();
+  }
+  function callCam(me){if(!me.cam||!me.peer||me.peer.destroyed)return;try{me.cam.call?.close();}catch(e){}try{me.cam.call=me.peer.call(LIVE_PREFIX+me.pin,me.cam.stream);}catch(e){}}
+  function renderCam(st,note){
+    main.innerHTML='';main.append(h('h2',{class:'st-q',style:'text-align:center'},'手機實物投影機'));
+    if(!S.cam){
+      main.append(h('div',{class:'st-note',style:'margin:0 0 6px'},'把手機架在課本或作業上方，畫面會出現在老師的螢幕上。'),
+        h('button',{class:'btn p st-big',disabled:!!note,onclick:()=>startCam('environment')},'開啟相機'));
+    }else{
+      const v=h('video',{class:'st-cam',autoplay:true,playsinline:true});v.muted=true;v.srcObject=S.cam.stream;
+      main.append(v,h('button',{class:'btn st-big',onclick:()=>startCam(S.cam.facing==='environment'?'user':'environment')},'切換前／後鏡頭'),
+        h('button',{class:'btn d st-big',onclick:()=>{stopCam();S.sig='';renderQ();}},'停止傳送'));
+    }
+    main.append(h('div',{class:'st-note'+(S.cam&&!note?' ok':'')},note||(S.cam?'傳送中，請保持這個畫面開著':'影像只會直接傳到老師的螢幕，不會被儲存')));
+  }
+  function renderWall(st,note){
+    main.innerHTML='';
+    const left=Math.max(0,(st.max||5)-(st.sent||0));
+    const ta=h('textarea',{class:'st-ta',maxlength:200,placeholder:'在這裡輸入你的回應…'});ta.value=S.draft||'';ta.oninput=()=>{S.draft=ta.value;};
+    const go=()=>{const t=ta.value.trim();if(!t)return toast('還沒有輸入內容');if(!st.open||!S.conn?.open)return;
+      try{S.conn.send({t:'text',qid:st.qid,text:t});}catch(e){return;}S.draft='';ta.value='';navigator.vibrate?.(30);toast('已送出！');};
+    const dis=!st.open||!!note||!left;
+    main.append(h('h2',{class:'st-q'},String(st.q||'')),ta,h('button',{class:'btn p st-big',disabled:dis,onclick:go},'送出'),
+      h('div',{class:'st-note'+(st.sent&&!note?' ok':'')},note||(!st.open?'老師已截止回應':!left?`已送出 ${st.sent} 則，達到上限`:st.sent?`已送出 ${st.sent} 則，還可以再送 ${left} 則`:'送出後會出現在老師的螢幕上')));
+    ta.disabled=dis;
+  }
+  function renderCheckin(st,note){
+    main.innerHTML='';let saved='';try{saved=localStorage.getItem('classroomscreen.myname')||'';}catch(e){}
+    if(st.mine&&!S.editName){
+      const ok=h('div',{class:'st-done'});ok.append(ui('check'));
+      main.append(ok,h('h2',{class:'st-q',style:'text-align:center'},'簽到完成'),h('div',{class:'st-note ok',style:'margin-top:0;font-size:20px'},st.mine),
+        h('button',{class:'btn st-big',onclick:()=>{S.editName=true;S.sig='';renderQ();}},'名字打錯了，修改'));
+      return;
+    }
+    const inp=h('input',{class:'st-name',maxlength:20,placeholder:'你的名字',value:S.draft||st.mine||saved});inp.oninput=()=>{S.draft=inp.value;};
+    const go=()=>{const n=inp.value.trim();if(!n)return toast('請輸入名字');if(!st.open||!S.conn?.open)return;
+      try{localStorage.setItem('classroomscreen.myname',n);}catch(e){}S.editName=false;try{S.conn.send({t:'checkin',name:n});}catch(e){}};
+    inp.onkeydown=e=>{if(e.key==='Enter')go();};
+    main.append(h('h2',{class:'st-q',style:'text-align:center'},String(st.q||'上課簽到')),inp,h('button',{class:'btn p st-big',disabled:!st.open||!!note,onclick:go},'簽到'),
+      h('div',{class:'st-note'},note||(!st.open?'老師已截止簽到':'輸入名字後按「簽到」')));
   }
   function renderQ(note){
-    const st=S.st;if(!st)return;main.innerHTML='';
+    const st=S.st;if(!st)return;
+    if(st.kind==='cam'||st.kind==='wall'||st.kind==='checkin'){
+      // 內容沒變就不重畫，避免打字到一半被清掉
+      const sig=JSON.stringify([st.kind,st.q,st.open,st.sent,st.mine,st.qid,note||'',!!S.cam,!!S.editName]);
+      if(sig===S.sig&&main.firstChild)return;S.sig=sig;
+      return st.kind==='cam'?renderCam(st,note):st.kind==='wall'?renderWall(st,note):renderCheckin(st,note);
+    }
+    main.innerHTML='';
     const emo=st.kind==='exit';const sel=S.pending!=null?S.pending:st.mine;
     const grid=h('div',{class:'st-opts'+(emo?' emo':'')});
     (st.opts||[]).forEach((o,i)=>{
