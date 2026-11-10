@@ -116,7 +116,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid #ccd;border-bottom-wid
 /* ---------- 各小工具 ---------- */
 .clock-time{font-size:clamp(28px,10cqw,160px)}
 .clock-date{font-size:clamp(12px,3cqw,28px);color:var(--muted);margin-top:6px}
-.analog{width:min(100%,100cqh);aspect-ratio:1}
+.analog{display:block;flex:none}
 .timer-disp{font-size:clamp(32px,14cqw,200px);transition:color .2s}
 .timer-disp.alarm{color:var(--danger);animation:blink .6s steps(2) infinite}
 @keyframes blink{50%{opacity:.25}}
@@ -507,9 +507,12 @@ mount(body,s,ctx){
     }else drawAnalog(d);
   }
   function drawAnalog(d){
-    const r=cv.getBoundingClientRect(),sz=Math.max(60,Math.min(r.width,r.height))*devicePixelRatio;
+    // 依可用空間（扣掉內距）決定錶面大小，避免被上下裁切
+    const cs=getComputedStyle(disp),aw=disp.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),ah=disp.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    const css=Math.max(40,Math.floor(Math.min(aw,ah)));cv.style.width=cv.style.height=css+'px';
+    const sz=Math.round(css*devicePixelRatio);
     cv.width=cv.height=sz;const c=cv.getContext('2d'),R=sz/2;c.translate(R,R);
-    c.fillStyle='#fff';c.beginPath();c.arc(0,0,R-2,0,7);c.fill();c.lineWidth=sz*.02;c.strokeStyle='#222';c.stroke();
+    c.fillStyle='#fff';c.beginPath();c.arc(0,0,R-sz*.012-1,0,7);c.fill();c.lineWidth=sz*.02;c.strokeStyle='#222';c.stroke();
     for(let i=0;i<60;i++){c.save();c.rotate(i*Math.PI/30);c.beginPath();c.moveTo(0,-R*.9);c.lineTo(0,-R*(i%5?.85:.78));c.lineWidth=sz*(i%5?.008:.02);c.stroke();c.restore();}
     const hand=(a,len,w,col)=>{c.save();c.rotate(a);c.beginPath();c.moveTo(0,R*.1);c.lineTo(0,-R*len);c.lineWidth=w;c.lineCap='round';c.strokeStyle=col;c.stroke();c.restore();};
     const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
