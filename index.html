@@ -603,6 +603,10 @@ body.has-min #undo{bottom:146px}
 .sl-drop b{font-size:17px}
 .sl-tip{font-size:12.5px;line-height:1.6;max-width:520px}
 .sl-view.over{outline:3px dashed var(--accent,#2a7de1);outline-offset:-10px}
+.sl-page{transition:transform .3s ease}
+.sl-spot{position:absolute;inset:0;pointer-events:none;z-index:2;display:none}
+.st-tools{display:flex;gap:8px;margin-top:8px}
+.st-tools .btn{flex:1;padding:10px;font-size:15px;border-radius:12px;justify-content:center}
 .sl-laser{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#ff3b3b 34%,rgba(255,40,40,.4) 58%,transparent 72%);box-shadow:0 0 18px 6px rgba(255,30,30,.5);pointer-events:none;display:none;z-index:3}
 .win-body:fullscreen{background:#111}
 .win-body:fullscreen .sl-view{background:#111}
@@ -617,6 +621,36 @@ body.has-min #undo{bottom:146px}
 .st-navs{display:flex;gap:10px;margin-top:12px}
 .st-navs .btn{flex:1;padding:22px 10px;font-size:20px;border-radius:16px;justify-content:center}
 .st-pgn{text-align:center;font-size:15px;margin-top:10px;color:var(--muted)}
+
+/* 工具列位置：下／上／左／右 */
+body[data-bar=top] #bar{top:14px;bottom:auto}
+body[data-bar=top] #bar.hidden{transform:translateX(-50%) translateY(-130%)}
+body[data-bar=left] #bar,body[data-bar=right] #bar{flex-direction:column;top:50%;bottom:auto;left:12px;transform:translateY(-50%);max-height:calc(100vh - 20px);max-width:none;padding:8px 6px;gap:2px}
+body[data-bar=right] #bar{left:auto;right:12px}
+body[data-bar=left] #bar.hidden{transform:translate(-140%,-50%)}
+body[data-bar=right] #bar.hidden{transform:translate(140%,-50%)}
+body[data-bar=left] #bar .tools,body[data-bar=right] #bar .tools{flex-direction:column;overflow-x:hidden;overflow-y:auto;padding:4px 0;min-height:60px;gap:2px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12px,#000 calc(100% - 12px),transparent);mask-image:linear-gradient(180deg,transparent,#000 12px,#000 calc(100% - 12px),transparent)}
+body[data-bar=left] #bar .sep,body[data-bar=right] #bar .sep{width:auto;height:1px;margin:4px 6px}
+body[data-bar=left] #tools .tsep,body[data-bar=right] #tools .tsep{width:auto;height:1px;margin:6px 8px;flex:none}
+body[data-bar=left] .tb,body[data-bar=right] .tb{min-width:50px;padding:3px 2px;font-size:0;gap:0}
+body[data-bar=top] #barToggle{top:14px;bottom:auto}
+body[data-bar=left] #barToggle{left:14px;right:auto}
+body[data-bar=top] .panel{top:96px;max-height:calc(100vh - 110px)}
+body[data-bar=right] .panel{right:84px}
+body:not([data-bar=bottom]) #undo{bottom:24px}
+body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
+.barpos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.barpos .btn{justify-content:center}
+.mgrip{pointer-events:auto;display:grid;place-items:center;width:22px;height:36px;border-radius:10px;cursor:grab;color:var(--w-muted,#8a93a3);background:var(--w-bg,#fff);border:1px solid rgba(0,0,0,.1);box-shadow:0 8px 20px -8px rgba(0,0,0,.4);font-size:13px;letter-spacing:-2px;touch-action:none;user-select:none}
+.mgrip:active{cursor:grabbing}
+/* 手機遙控的游標 */
+#rcCursor{position:fixed;left:0;top:0;width:30px;height:30px;pointer-events:none;z-index:99999;display:none;transform:translate(-4px,-3px);filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+#rcCursor.laser{width:24px;height:24px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#ff3b3b 34%,rgba(255,40,40,.4) 58%,transparent 72%);box-shadow:0 0 20px 8px rgba(255,30,30,.5);filter:none}
+#rcCursor.laser svg{display:none}
+#rcCursor.tap::after{content:'';position:absolute;left:-14px;top:-14px;width:40px;height:40px;border-radius:50%;border:3px solid rgba(42,125,225,.8);animation:rcTap .4s ease-out forwards}
+@keyframes rcTap{from{transform:scale(.3);opacity:1}to{transform:scale(1.2);opacity:0}}
+.st-track{position:relative;width:100%;height:min(46vh,340px);border-radius:16px;background:linear-gradient(160deg,#2a2f3a,#1b1f27);touch-action:none;user-select:none;-webkit-user-select:none;display:grid;place-items:center;color:#9aa3b5;font-size:14px;text-align:center;line-height:1.7}
+.st-track.act{background:linear-gradient(160deg,#323a4a,#20252f)}
 </style>
 </head>
 <body>
@@ -653,6 +687,7 @@ body.has-min #undo{bottom:146px}
   <div class="sep"></div>
   <div class="tools" id="tools"></div>
   <div class="sep"></div>
+  <button class="tb" id="btnRemote" title="手機遙控"><span class="i">📱</span>遙控</button>
   <button class="tb" id="btnPen" title="畫筆：在整個螢幕上畫圖 (P)"><span class="i">🖍️</span>畫筆</button>
   <button class="tb" id="btnSpot" title="聚光燈：只照亮滑鼠附近，其他變暗 (S)"><span class="i"></span>聚光燈</button>
   <button class="tb" id="btnArrange" title="自動排列所有視窗"><span class="i">🪟</span>排列</button>
@@ -676,6 +711,8 @@ body.has-min #undo{bottom:146px}
   <div class="pbody">
     <div class="pn-sub">風格主題</div>
     <div class="themes" id="themes"></div>
+    <div class="pn-sub">工具列位置</div>
+    <div class="barpos" id="barPos"></div>
     <div class="pn-sub">背景</div>
     <div class="swatches" id="swatches"></div>
     <div class="row"><input class="inp grow" id="bgUrl" placeholder="圖片網址 https://…"><button class="btn p" id="bgUrlGo">套用</button></div>
@@ -711,7 +748,9 @@ body.has-min #undo{bottom:146px}
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
       <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛，也能另外換背景。</li>
       <li><b>簡報/PDF</b>：直接開電腦裡的 PDF（PowerPoint 先另存成 PDF），用 ← → 鍵、簡報翻頁器或空白鍵翻頁，可在投影片上畫重點、全螢幕放映。也能貼 Canva、Google 簡報、.pptx 網址。按「📱 手機遙控」掃 QR Code，手機就是翻頁器和雷射筆。</li>
-      <li><b>縮小視窗</b>：按視窗右上角的 — 把它收到下方（或按 M），點下方的標籤就還原。</li>
+      <li><b>縮小視窗</b>：按視窗右上角的 — 把它收到下方（或按 M），點標籤就還原；拖曳標籤左邊的 ⋮⋮ 可以移動位置。</li>
+      <li><b>手機遙控</b>：按工具列的「遙控」掃 QR Code，手機就是觸控板：滑動移動游標、點一下＝點擊、兩指滑動捲動，也能切換雷射筆、聚光燈，並翻簡報頁。</li>
+      <li><b>工具列位置</b>：在「外觀」可以把工具列放在下方、上方、左側或右側。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
@@ -1007,6 +1046,17 @@ $('#themes').append(...Object.entries(THEMES).map(([k,T])=>{
 $('#bgUrlGo').onclick=()=>{const u=$('#bgUrl').value.trim();if(u)setBg(`url("${u}")`);};
 $('#bgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>3*1024*1024)toast('圖片較大，可能無法儲存');const r=new FileReader();r.onload=()=>setBg(`url("${r.result}")`);r.readAsDataURL(f);e.target.value='';};
 $('#bgGrid').onclick=()=>{state.grid=!state.grid;applyBg();save();};
+const BAR_POS=[['bottom','下方'],['top','上方'],['left','左側'],['right','右側']];
+function nudgeFromBar(){const r=bar.getBoundingClientRect(),k=document.body.dataset.bar;
+  state.widgets.forEach(w=>{if(w.min||w.max)return;
+    if(k==='top'&&w.y<r.bottom+6)w.y=Math.round(r.bottom+8);
+    if(k==='bottom'&&w.y+w.h>r.top-6)w.y=Math.max(8,Math.round(r.top-8-w.h));
+    if(k==='left'&&w.x<r.right+6)w.x=Math.round(r.right+8);
+    if(k==='right'&&w.x+w.w>r.left-6)w.x=Math.max(8,Math.round(r.left-8-w.w));
+    place(w);});save();}
+function applyBarPos(){const k=BAR_POS.some(b=>b[0]===state.barPos)?state.barPos:'bottom';document.body.dataset.bar=k;
+  $$('#barPos .btn').forEach(b=>b.classList.toggle('p',b.dataset.k===k));}
+$('#barPos').append(...BAR_POS.map(([k,t])=>h('button',{class:'btn sm','data-k':k,onclick:()=>{state.barPos=k;applyBarPos();save();renderTray();toast('工具列已移到'+t);setTimeout(nudgeFromBar,380);}},t)));
 
 /* ---------- 視窗管理 ---------- */
 const live=new Map(); // id -> {el,api}
@@ -1033,11 +1083,23 @@ function setMin(inst,on){
 function renderTray(){
   const tray=$('#minTray');if(!tray)return;tray.innerHTML='';
   const ms=state.widgets.filter(w=>w.min);
+  if(ms.length){const g=h('span',{class:'mgrip',title:'拖曳移動位置（雙擊回到預設位置）'},'⋮⋮');tray.append(g);
+    g.addEventListener('dblclick',()=>{state.trayPos=null;save();renderTray();});
+    g.addEventListener('pointerdown',e=>{e.preventDefault();try{g.setPointerCapture(e.pointerId);}catch(_){}const r=tray.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;
+      const mv=ev=>{state.trayPos=[ev.clientX-dx,ev.clientY-dy];placeTray(tray);};
+      const up=()=>{g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);save();};
+      g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up);});}
   ms.forEach(w=>{const t=live.get(w.id)?.el.querySelector('.ttl')?.textContent||WIDGETS[w.type].name;
     tray.append(h('button',{class:'mchip',title:'還原「'+t+'」',onclick:()=>setMin(w,false)},toolIcon(w.type),h('span',{class:'t'},t)));});
   if(ms.length>1)tray.append(h('button',{class:'mchip all',title:'還原全部縮小的視窗',onclick:()=>ms.forEach(w=>setMin(w,false))},'全部還原'));
-  const hid=document.getElementById('bar')?.classList.contains('hidden');tray.style.bottom=hid?'14px':'';
+  placeTray(tray);
   document.body.classList.toggle('has-min',ms.length>0);
+}
+function placeTray(tray){
+  if(Array.isArray(state.trayPos)){const r=tray.getBoundingClientRect();
+    Object.assign(tray.style,{left:clamp(state.trayPos[0],4,Math.max(4,innerWidth-Math.min(r.width,innerWidth)-4))+'px',top:clamp(state.trayPos[1],4,innerHeight-44)+'px',bottom:'auto',transform:'none',justifyContent:'flex-start'});return;}
+  const hid=document.getElementById('bar')?.classList.contains('hidden'),side=document.body.dataset.bar||'bottom';
+  Object.assign(tray.style,{left:'',top:'',transform:'',justifyContent:'',bottom:(hid||side!=='bottom')?'14px':''});
 }
 let lastRemoved=null,undoT;
 function closeWidget(id){
@@ -1531,7 +1593,7 @@ mount(body,s,ctx){
   const file=h('input',{type:'file',accept:'.pdf,application/pdf,.ppt,.pptx,.pps,.ppsx,.key,.odp,.doc,.docx',hidden:true,onchange:e=>{const f=e.target.files[0];e.target.value='';if(f)openFile(f);}});
   body.append(view,foot,file);
   let doc=null,task=null,dead=false,mode='',ink={},inkPage=0,drew=false,mute=false,inkT,thumb='',aspect=16/9,penColor='#e5484d',pageEl=null,cv=null,ic=null,laser=null,laserT,D=null,pen=false,rT,loadId=0;
-  const remoteLast=new Map();let seenPhone=false;
+  const remoteLast=new Map();let seenPhone=false,spotEl=null,zoom={z:1,x:.5,y:.5};
   /* 手機遙控 */
   let live=null;live=liveHost(s,ctx,{labels:['📱 手機遙控','📱 關閉遙控'],tip:'用手機掃 QR Code，手機就變成翻頁器和雷射筆',
     payload:()=>({kind:'remote',q:s.name||'簡報',page:s.page,n:doc?doc.numPages:0,img:thumb,ar:aspect}),count:()=>0,vote(){},
@@ -1545,6 +1607,8 @@ mount(body,s,ctx){
         const p=d.s?null:remoteLast.get(c);D.set({color:String(d.c||'#e5484d').slice(0,9)});D.stroke(p||[x,y],[x,y]);D.set({color:penColor});
         remoteLast.set(c,[x,y]);drew=true;clearTimeout(inkT);inkT=setTimeout(persistInk,800);return true;}
       if(d.t==='clear'){clearPage();return true;}
+      if(d.t==='zoom'){const z=+d.z,x=+d.x,y=+d.y;zoom={z:z>=1&&z<=5?z:1,x:x>=0&&x<=1?x:.5,y:y>=0&&y<=1?y:.5};applyZoom();return true;}
+      if(d.t==='spot'){showSpot(+d.x,+d.y,+d.r);return true;}
       return false;}});
   const bPrev=h('button',{class:'btn sm',title:'上一頁（← 或翻頁器）',onclick:()=>nav(-1)},ui('prev'));
   const bNext=h('button',{class:'btn sm',title:'下一頁（→、空白鍵或翻頁器）',onclick:()=>nav(1)},ui('next'));
@@ -1632,8 +1696,8 @@ mount(body,s,ctx){
   }
   function build(){
     view.innerHTML='';
-    pageEl=h('div',{class:'sl-page'});cv=h('canvas');ic=h('canvas',{class:'sl-ink'});laser=h('div',{class:'sl-laser'});
-    pageEl.append(cv,ic,laser);
+    pageEl=h('div',{class:'sl-page'});cv=h('canvas');ic=h('canvas',{class:'sl-ink'});laser=h('div',{class:'sl-laser'});spotEl=h('div',{class:'sl-spot'});
+    pageEl.append(cv,ic,spotEl,laser);
     view.append(pageEl,
       h('button',{class:'sl-nav l',title:'上一頁',onclick:()=>nav(-1)},h('span',{},ui('prev'))),
       h('button',{class:'sl-nav r',title:'下一頁',onclick:()=>nav(1)},h('span',{},ui('next'))));
@@ -1658,11 +1722,12 @@ mount(body,s,ctx){
     D.fit();
     if(inkPage!==n){
       if(inkPage){if(drew)ink[inkPage]=D.toData();else delete ink[inkPage];}
+      zoom={z:1,x:.5,y:.5};applyZoom();if(spotEl)spotEl.style.display='none';
       mute=true;D.clear();mute=false;drew=!!ink[n];if(ink[n])D.fromData(ink[n]);inkPage=n;
       // 給手機遙控器的小縮圖
       const tw=Math.min(560,off.width),tc=document.createElement('canvas');tc.width=tw;tc.height=Math.round(off.height*tw/off.width);
       const tx=tc.getContext('2d');tx.fillStyle='#fff';tx.fillRect(0,0,tc.width,tc.height);tx.drawImage(off,0,0,tc.width,tc.height);
-      thumb=tc.toDataURL('image/jpeg',.72);live.sync();
+      thumb=tc.toDataURL('image/jpeg',.72);live.sync();try{RC.api?.sync();}catch(e){}
     }
     pg.value=n;pg.max=doc.numPages;of.textContent='/ '+doc.numPages;
     bPrev.disabled=n<=1;bNext.disabled=n>=doc.numPages;
@@ -1672,6 +1737,13 @@ mount(body,s,ctx){
   function setPen(on){pen=!!on;view.classList.toggle('pen',pen);bPen.classList.toggle('on',pen);dots.forEach(x=>x.style.display=pen?'':'none');bClr.style.display=pen||drew?'':'none';}
   function clearPage(){if(!D)return;mute=true;D.clear();mute=false;drew=false;delete ink[s.page];persistInk();}
   function persistInk(){if(D&&inkPage){if(drew)ink[inkPage]=D.toData();else delete ink[inkPage];}if(s.fid)FDB.put(s.fid+'#ink',ink).catch(()=>{});}
+  function applyZoom(){if(!pageEl)return;pageEl.style.transformOrigin=`${zoom.x*100}% ${zoom.y*100}%`;pageEl.style.transform=zoom.z>1?`scale(${zoom.z})`:'';}
+  function showSpot(x,y,r){
+    if(!spotEl)return;
+    if(!(x>=0&&x<=1&&y>=0&&y<=1)){spotEl.style.display='none';return;}
+    const R=Math.round((r>0&&r<1?r:.18)*pageEl.clientWidth);
+    spotEl.style.display='block';spotEl.style.background=`radial-gradient(circle at ${x*100}% ${y*100}%,transparent ${R}px,rgba(0,0,0,.8) ${R+3}px)`;
+  }
   function showLaser(x,y){
     if(!laser)return;clearTimeout(laserT);
     if(!(x>=0&&x<=1&&y>=0&&y<=1)){laserT=setTimeout(()=>{laser.style.display='none';},500);return;}
@@ -1687,7 +1759,7 @@ mount(body,s,ctx){
     if(s.url){openUrl();return;}
     empty();
   })();
-  return {nav,space:()=>nav(1),resize(){clearTimeout(rT);rT=setTimeout(()=>{if(doc&&!dead)renderPage();},120);},destroy(){dead=true;clearTimeout(inkT);persistInk();ro.disconnect();live.destroy();stopDoc();}};
+  return {nav,info:()=>doc?{page:s.page,n:doc.numPages}:null,space:()=>nav(1),resize(){clearTimeout(rT);rT=setTimeout(()=>{if(doc&&!dead)renderPage();},120);},destroy(){dead=true;clearTimeout(inkT);persistInk();ro.disconnect();live.destroy();stopDoc();}};
 }};
 
 /* ---- QR Code ---- */
@@ -2490,7 +2562,7 @@ $('#toolCats').append(...CATS.map(([cat,keys])=>h('div',{class:'cat'},h('h4',{},
   h('div',{class:'cat-grid'},keys.map(k=>h('button',{class:'tile',onclick:()=>{addWidget(k);closePanels();}},toolIcon(k),WIDGETS[k].name))))));
 $('#btnAll').onclick=e=>togglePanel('#pnTools',e.currentTarget);
 /* 系統按鈕：換成線條圖示，文字改為提示 */
-Object.entries({btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'],btnArrange:['layout','自動排列所有視窗 (A)'],btnBg:['palette','外觀：風格主題與背景'],btnScenes:['layers','場景：儲存與載入版面'],btnFull:['full','全螢幕 (F)'],btnHelp:['help','使用說明 (?)'],btnHide:['down']})
+Object.entries({btnRemote:['phone','手機遙控：手機當滑鼠、雷射筆、聚光燈和翻頁器'],btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'],btnArrange:['layout','自動排列所有視窗 (A)'],btnBg:['palette','外觀：風格主題與背景'],btnScenes:['layers','場景：儲存與載入版面'],btnFull:['full','全螢幕 (F)'],btnHelp:['help','使用說明 (?)'],btnHide:['down']})
   .forEach(([id,[ic,tip]])=>{const b=$('#'+id);if(!b)return;b.classList.add('sys');const lab=b.textContent.trim();b.innerHTML='';b.append(h('span',{class:'i'},ui(ic)));if(tip||!b.title)b.title=tip||lab;b.setAttribute('aria-label',b.title);});
 $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
@@ -2512,18 +2584,21 @@ $('#btnArrange').onclick=arrange;
 /* 自動排列：依目前位置排序，平鋪在工具列上方 */
 function arrange(){
   const ws=state.widgets.filter(w=>w.type!=='mycam'&&!w.min).sort((a,b)=>(a.y-b.y)||(a.x-b.x));const n=ws.length;if(!n)return;
-  state.widgets.filter(w=>w.type==='mycam'&&!w.min).forEach((w,i)=>{w.max=false;w.x=innerWidth-w.w-24-i*30;w.y=Math.max(10,innerHeight-w.h-130);place(w);});
-  const gap=10,W=Math.max(300,innerWidth-gap*2),H=Math.max(240,innerHeight-gap*2-(bar.classList.contains('hidden')?0:Math.max(80,innerHeight-bar.getBoundingClientRect().top)));
+  const gap=10,side=document.body.dataset.bar||'bottom',hid=bar.classList.contains('hidden'),br=bar.getBoundingClientRect();
+  let ox=0,oy=0,aw=innerWidth,ah=innerHeight;
+  if(!hid){if(side==='bottom')ah=Math.min(ah,br.top);else if(side==='top'){oy=br.bottom;ah-=br.bottom;}else if(side==='left'){ox=br.right;aw-=br.right;}else aw=Math.min(aw,br.left);}
+  state.widgets.filter(w=>w.type==='mycam'&&!w.min).forEach((w,i)=>{w.max=false;w.x=ox+aw-w.w-24-i*30;w.y=Math.max(oy+10,oy+ah-w.h-20);place(w);});
+  const W=Math.max(300,aw-gap*2),H=Math.max(240,ah-gap*2);
   let cols=1,best=-1;for(let c=1;c<=n;c++){const r=Math.ceil(n/c),cw=(W-gap*(c-1))/c,ch=(H-gap*(r-1))/r,sc=Math.min(cw/1.35,ch);if(sc>best){best=sc;cols=c;}}
   const rows=Math.ceil(n/cols),cw=(W-gap*(cols-1))/cols,ch=(H-gap*(rows-1))/rows;
-  ws.forEach((w,i)=>{w.max=false;w.x=Math.round(gap+(i%cols)*(cw+gap));w.y=Math.round(gap+Math.floor(i/cols)*(ch+gap));w.w=Math.max(160,Math.round(cw));w.h=Math.max(120,Math.round(ch));place(w);live.get(w.id)?.api?.resize?.();});
+  ws.forEach((w,i)=>{w.max=false;w.x=Math.round(ox+gap+(i%cols)*(cw+gap));w.y=Math.round(oy+gap+Math.floor(i/cols)*(ch+gap));w.w=Math.max(160,Math.round(cw));w.h=Math.max(120,Math.round(ch));place(w);live.get(w.id)?.api?.resize?.();});
   save();
 }
 // 滾輪橫向捲動工具列
-tools.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){tools.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
+tools.addEventListener('wheel',e=>{if(/left|right/.test(document.body.dataset.bar||''))return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){tools.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
 
 /* 面板開關 */
-function closePanels(){$$('.panel.open,.modal.open').forEach(p=>p.classList.remove('open'));$$('#bar .tb.on').forEach(b=>{if(b.id!=='btnPen'&&b.id!=='btnSpot')b.classList.remove('on');});}
+function closePanels(){$$('.panel.open,.modal.open').forEach(p=>p.classList.remove('open'));$$('#bar .tb.on').forEach(b=>{if(b.id!=='btnPen'&&b.id!=='btnSpot'&&b.id!=='btnRemote')b.classList.remove('on');});}
 function togglePanel(id,btn){const p=$(id),was=p.classList.contains('open');closePanels();if(!was){p.classList.add('open');btn?.classList.add('on');}}
 $('#btnBg').onclick=e=>togglePanel('#pnBg',e.currentTarget);
 $('#btnScenes').onclick=e=>{renderScenes();togglePanel('#pnScenes',e.currentTarget);};
@@ -2608,6 +2683,7 @@ document.addEventListener('keydown',e=>{
   if(k==='f')toggleFull();else if(k==='h')toggleBar();else if(k==='p')penOn(!ov.classList.contains('on'));else if(k==='a')arrange();else if(k==='s')spotOn(!spot.classList.contains('on'));else if((e.key==='Delete'||e.key==='Backspace')&&activeId&&state.widgets.some(w=>w.id===activeId)){e.preventDefault();closeWidget(activeId);activeId=null;}else if(e.key==='?')$('#help').classList.toggle('open');
 });
 addEventListener('resize',()=>{
+  {const t=$('#minTray');if(t&&state.trayPos)placeTray(t);}
   state.widgets.forEach(w=>{if(!w.max){w.x=clamp(w.x,-w.w+80,innerWidth-80);w.y=clamp(w.y,0,innerHeight-40);place(w);}live.get(w.id)?.api?.resize?.();});
   if(ov.classList.contains('on'))OD.fit();
 });
@@ -2718,6 +2794,43 @@ function startStudent(pin0){
     main.append(h('h2',{class:'st-q',style:'text-align:center'},String(st.q||'上課簽到')),inp,h('button',{class:'btn p st-big',disabled:!st.open||!!note,onclick:go},'簽到'),
       h('div',{class:'st-note'},note||(!st.open?'老師已截止簽到':'輸入名字後按「簽到」')));
   }
+  /* 遙控整個畫面：觸控板 */
+  function renderMouse(st,note){
+    let M=S.ms;
+    if(!M||M.root.parentNode!==main){
+      main.innerHTML='';M=S.ms={mode:st.mode||'mouse'};
+      const pad=h('div',{class:'st-track'});M.pad=pad;
+      const modes=[['mouse','滑鼠'],['laser','雷射筆'],['spot','聚光燈']];
+      const mb=modes.map(([k,t])=>h('button',{class:'btn',onclick:()=>{M.mode=k;send({t:'mode',m:k});seg();}},t));
+      const tools=h('div',{class:'st-tools'});
+      const tb=(t,f)=>h('button',{class:'btn',onclick:()=>{f();navigator.vibrate?.(15);}},t);
+      function seg(){mb.forEach((b,i)=>{const on=modes[i][0]===M.mode;b.classList.toggle('on',on);b.classList.toggle('p',on);});
+        tools.innerHTML='';
+        if(M.mode==='mouse')tools.append(tb('點一下',()=>send({t:'click'})),tb('▲ 捲動',()=>send({t:'scroll',dy:-160})),tb('▼ 捲動',()=>send({t:'scroll',dy:160})),tb('關閉選單',()=>send({t:'esc'})));
+        if(M.mode==='spot')tools.append(tb('－ 小',()=>send({t:'spotR',d:-1})),tb('＋ 大',()=>send({t:'spotR',d:1})));
+        pad.textContent=M.mode==='mouse'?'滑動＝移動游標\n點一下＝點擊　兩指滑動＝捲動':M.mode==='laser'?'滑動＝移動雷射筆':'滑動＝移動聚光燈';
+        pad.style.whiteSpace='pre-line';}
+      M.seg=seg;
+      const prev=h('button',{class:'btn',onclick:()=>{send({t:'nav',d:-1});navigator.vibrate?.(20);}},'◀ 上一頁');
+      const next=h('button',{class:'btn p',onclick:()=>{send({t:'nav',d:1});navigator.vibrate?.(20);}},'下一頁 ▶');
+      M.pgn=h('div',{class:'st-pgn'});M.note=h('div',{class:'st-note'});
+      M.root=h('div',{},h('h2',{class:'st-q',style:'text-align:center;margin-bottom:10px'},'遙控教室螢幕'),h('div',{class:'st-seg'},...mb),pad,tools,h('div',{class:'st-navs'},prev,next),M.pgn,M.note);
+      main.append(M.root);seg();
+      /* 觸控板：相對移動、點一下＝點擊、兩指＝捲動 */
+      const pts=new Map();let acc=[0,0],accS=0,t0=0,moved=0,timer=null,multi=false;
+      const flush=()=>{timer=null;if(acc[0]||acc[1]){send({t:'move',dx:Math.round(acc[0]*10)/10,dy:Math.round(acc[1]*10)/10});acc=[0,0];}if(accS){send({t:'scroll',dy:Math.round(accS*2)});accS=0;}};
+      const queue=()=>{if(!timer)timer=setTimeout(flush,30);};
+      pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);pad.classList.add('act');
+        if(pts.size===1){t0=Date.now();moved=0;multi=false;}else multi=true;});
+      pad.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p[0],dy=e.clientY-p[1];pts.set(e.pointerId,[e.clientX,e.clientY]);moved+=Math.abs(dx)+Math.abs(dy);
+        if(pts.size>=2){accS+=-dy/pts.size;}else{acc[0]+=dx;acc[1]+=dy;}queue();});
+      const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size)return;pad.classList.remove('act');flush();
+        if(!multi&&moved<10&&Date.now()-t0<300&&M.mode==='mouse'){send({t:'click'});navigator.vibrate?.(12);}};
+      pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
+    }
+    M.pgn.textContent=st.n?`第 ${st.page} 頁 / 共 ${st.n} 頁`:'';
+    M.note.className='st-note'+(note?'':' ok');M.note.textContent=note||'畫面上的游標會跟著你的手指移動';
+  }
   /* 簡報遙控器 */
   function renderRemote(st,note){
     let R=S.rm;
@@ -2726,24 +2839,42 @@ function startStudent(pin0){
       R=S.rm={mode:'laser',color:'#e5484d'};
       const pad=h('div',{class:'st-pad'}),dotp=h('div',{class:'dotp'});R.pad=pad;R.dotp=dotp;
       const title=h('h2',{class:'st-q',style:'text-align:center;margin-bottom:10px'});R.title=title;
-      const bL=h('button',{class:'btn'},'雷射筆'),bP=h('button',{class:'btn'},'畫筆'),bC=h('button',{class:'btn'},'清除');
-      const seg=()=>{bL.classList.toggle('on',R.mode==='laser');bP.classList.toggle('on',R.mode==='pen');bL.classList.toggle('p',R.mode==='laser');bP.classList.toggle('p',R.mode==='pen');};
-      bL.onclick=()=>{R.mode='laser';seg();};bP.onclick=()=>{R.mode='pen';seg();};bC.onclick=()=>send({t:'clear'});seg();
+      R.zoom=1;R.zx=.5;R.zy=.5;R.sr=.18;R.sx=-1;R.sy=-1;
+      const modes=[['laser','雷射筆'],['pen','畫筆'],['zoom','放大'],['spot','聚光燈']];
+      const mb=modes.map(([k,t])=>h('button',{class:'btn',onclick:()=>{if(R.mode==='spot'&&k!=='spot'){R.sx=-1;send({t:'spot',x:-1,y:-1});}R.mode=k;seg();}},t));
+      const tools=h('div',{class:'st-tools'});
+      const sendZoom=()=>send({t:'zoom',z:R.zoom,x:R.zx,y:R.zy});
+      const sendSpot=()=>send({t:'spot',x:R.sx,y:R.sy,r:R.sr});
+      const tb=(t,f)=>h('button',{class:'btn',onclick:()=>{f();navigator.vibrate?.(15);seg();}},t);
+      R.seg=seg;
+      function seg(){
+        mb.forEach((b,i)=>{const on=modes[i][0]===R.mode;b.classList.toggle('on',on);b.classList.toggle('p',on);});
+        tools.innerHTML='';
+        if(R.mode==='pen')tools.append(tb('清除這頁筆跡',()=>send({t:'clear'})));
+        if(R.mode==='zoom')tools.append(tb('－ 縮小',()=>{R.zoom=Math.max(1,R.zoom-.5);sendZoom();}),h('span',{class:'st-pgn',style:'margin:0;align-self:center;min-width:3em'},R.zoom.toFixed(1)+'×'),tb('＋ 放大',()=>{R.zoom=Math.min(4,R.zoom+.5);sendZoom();}),tb('還原',()=>{R.zoom=1;sendZoom();}));
+        if(R.mode==='spot')tools.append(tb('－ 小',()=>{R.sr=Math.max(.06,R.sr-.04);if(R.sx>=0)sendSpot();}),tb('＋ 大',()=>{R.sr=Math.min(.45,R.sr+.04);if(R.sx>=0)sendSpot();}),tb('關閉',()=>{R.sx=-1;R.dotp.style.display='none';sendSpot();}));
+        R.hint=R.mode==='zoom'?'點縮圖上想放大的位置，再用 ＋ － 調整':R.mode==='spot'?'按住滑動移動聚光燈，放開後會停留':R.mode==='pen'?'在縮圖上畫，線會出現在老師的投影片上':'按住滑動＝雷射筆';
+        if(R.note&&!R.noteBusy)R.note.textContent=R.hint;
+      }
       const prev=h('button',{class:'btn st-nb',onclick:()=>{send({t:'nav',d:-1});navigator.vibrate?.(20);}},'◀ 上一頁');
       const next=h('button',{class:'btn p st-nb',onclick:()=>{send({t:'nav',d:1});navigator.vibrate?.(20);}},'下一頁 ▶');
       R.pgn=h('div',{class:'st-pgn'});R.note=h('div',{class:'st-note'});R.prev=prev;R.next=next;
-      R.root=h('div',{},title,pad,h('div',{class:'st-seg'},bL,bP,bC),h('div',{class:'st-navs'},prev,next),R.pgn,R.note);
-      main.append(R.root);
+      R.root=h('div',{},title,pad,h('div',{class:'st-seg'},...mb),tools,h('div',{class:'st-navs'},prev,next),R.pgn,R.note);
+      main.append(R.root);seg();
       let last=0,q=null,down=false;
       const pos=e=>{const r=pad.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))];};
       const flush=()=>{if(q){send(q);q=null;}last=Date.now();};
       const out=(m,urgent)=>{if(urgent||m.s){q=null;send(m);last=Date.now();return;}q=m;if(Date.now()-last>30)flush();else setTimeout(flush,30);};
       pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}down=true;const [x,y]=pos(e);
         dotp.style.display='block';dotp.style.left=x*100+'%';dotp.style.top=y*100+'%';
+        if(R.mode==='zoom'){R.zx=x;R.zy=y;if(R.zoom<2)R.zoom=2;sendZoom();seg();return;}
+        if(R.mode==='spot'){R.sx=x;R.sy=y;sendSpot();return;}
         out(R.mode==='pen'?{t:'ink',x,y,s:1,c:R.color}:{t:'ptr',x,y},true);});
       pad.addEventListener('pointermove',e=>{if(!down)return;const [x,y]=pos(e);dotp.style.left=x*100+'%';dotp.style.top=y*100+'%';
+        if(R.mode==='zoom')return;
+        if(R.mode==='spot'){R.sx=x;R.sy=y;out({t:'spot',x,y,r:R.sr});return;}
         out(R.mode==='pen'?{t:'ink',x,y,c:R.color}:{t:'ptr',x,y});});
-      const up=()=>{if(!down)return;down=false;dotp.style.display='none';flush();if(R.mode==='laser')send({t:'ptr',x:-1,y:-1});};
+      const up=()=>{if(!down)return;down=false;if(R.mode!=='spot')dotp.style.display='none';flush();if(R.mode==='laser')send({t:'ptr',x:-1,y:-1});};
       pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
     }
     R.title.textContent=String(st.q||'簡報遙控器');
@@ -2751,12 +2882,14 @@ function startStudent(pin0){
     else if(R.imgSrc!==''){R.imgSrc='';R.pad.innerHTML='';R.pad.append(h('div',{class:'ph'},st.n?'載入中…':'老師的簡報還沒開啟 PDF'),R.dotp);}
     R.pgn.textContent=st.n?`第 ${st.page} 頁 / 共 ${st.n} 頁`:'';
     R.prev.disabled=!st.n||st.page<=1||!!note;R.next.disabled=!st.n||st.page>=st.n||!!note;
-    R.note.className='st-note'+(note?'':' ok');R.note.textContent=note||'在畫面上按住滑動＝雷射筆；切到「畫筆」可直接畫在老師的投影片上';
+    R.noteBusy=!!note;R.note.className='st-note'+(note?'':' ok');R.note.textContent=note||R.hint||'';
+    if(R.lastPage!==st.page){const first=R.lastPage===undefined;R.lastPage=st.page;if(!first){R.zoom=1;R.sx=-1;R.dotp.style.display='none';R.seg();}}
   }
   function send(m){try{if(S?.conn?.open)S.conn.send(m);}catch(e){}}
   function renderQ(note){
     const st=S.st;if(!st)return;
     if(st.kind==='remote')return renderRemote(st,note);
+    if(st.kind==='mouse')return renderMouse(st,note);
     if(st.kind==='cam'||st.kind==='wall'||st.kind==='checkin'){
       // 內容沒變就不重畫，避免打字到一半被清掉
       const sig=JSON.stringify([st.kind,st.q,st.open,st.sent,st.mine,st.qid,note||'',!!S.cam,!!S.editName]);
@@ -2779,13 +2912,72 @@ function startStudent(pin0){
   if(/^\d{6}$/.test(pin0))join(pin0);else askPin('',pin0);
 }
 
+
+/* ---------- 手機遙控整個畫面：滑鼠、雷射筆、聚光燈、翻頁 ---------- */
+const RC={api:null,cur:null,x:0,y:0,mode:'mouse',seen:false,hideT:0};
+function rcTarget(){const c=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.nav);return c.find(w=>w.id===activeId)||c.sort((a,b)=>b.z-a.z)[0];}
+function rcInfo(){const t=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.info?.());const w=t.find(x=>x.id===activeId)||t.sort((a,b)=>b.z-a.z)[0];return w?live.get(w.id).api.info():null;}
+function rcShow(){
+  const c=RC.cur;c.style.display=RC.mode==='spot'?'none':'block';c.style.left=RC.x+'px';c.style.top=RC.y+'px';
+  if(RC.mode==='spot'){spX=RC.x;spY=RC.y;spDraw();}
+  clearTimeout(RC.hideT);if(RC.mode!=='spot')RC.hideT=setTimeout(()=>{c.style.display='none';},RC.mode==='laser'?2500:8000);
+}
+function rcSetMode(m){
+  if(!['mouse','laser','spot'].includes(m))return;
+  const was=RC.mode;RC.mode=m;RC.cur.classList.toggle('laser',m==='laser');
+  if(m==='spot'){if(!spot.classList.contains('on'))spotOn(true);spLock=true;spot.style.cursor='default';spX=RC.x;spY=RC.y;spDraw();RC.cur.style.display='none';}
+  else{if(was==='spot'&&spot.classList.contains('on'))spotOn(false);rcShow();}
+}
+function rcClick(){
+  const x=RC.x,y=RC.y;RC.cur.style.display='none';const el=document.elementFromPoint(x,y);rcShow();
+  RC.cur.classList.remove('tap');void RC.cur.offsetWidth;RC.cur.classList.add('tap');
+  if(!el)return;
+  const o={clientX:x,clientY:y,bubbles:true,cancelable:true,view:window,pointerId:77,isPrimary:true,button:0};
+  const fire=(T,t)=>{try{el.dispatchEvent(new T(t,o));}catch(e){}};
+  fire(PointerEvent,'pointerdown');fire(MouseEvent,'mousedown');
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)||el.isContentEditable)el.focus();
+  fire(PointerEvent,'pointerup');fire(MouseEvent,'mouseup');fire(MouseEvent,'click');
+}
+function rcScroll(dy){
+  RC.cur.style.display='none';let e=document.elementFromPoint(RC.x,RC.y);rcShow();
+  while(e&&e!==document.body){const cs=getComputedStyle(e);if(e.scrollHeight>e.clientHeight+2&&/(auto|scroll)/.test(cs.overflowY)){e.scrollBy(0,dy);return;}e=e.parentElement;}
+}
+function rcNav(d){const t=rcTarget();if(t&&live.get(t.id).api.nav(d))return;
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:d>0?'ArrowRight':'ArrowLeft',bubbles:true}));}
+function rcInit(){
+  if(!state.remote||typeof state.remote!=='object')state.remote={};
+  RC.x=innerWidth/2;RC.y=innerHeight/2;
+  RC.cur=h('div',{id:'rcCursor',html:'<svg viewBox="0 0 24 24" width="30" height="30"><path d="M4 2.5l15.5 11.2-6.9 1.1 4 7.3-3 1.6-4-7.4-5.6 4.6z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>'});
+  document.body.append(RC.cur);
+  const btn=$('#btnRemote');
+  const ctx={save,setTitle(){},inst:{max:true,h:9999},el:document.body,remove(){}};
+  RC.api=liveHost(state.remote,ctx,{labels:['手機遙控','關閉手機遙控'],tip:'用手機掃 QR Code，手機就是遙控滑鼠和簡報筆',
+    payload:()=>{const i=rcInfo();return {kind:'mouse',q:'遙控教室螢幕',mode:RC.mode,page:i?.page||0,n:i?.n||0};},count:()=>0,vote(){},
+    status:n=>{btn.classList.toggle('on',!!state.remote.live?.on);
+      if(n&&!RC.seen){RC.seen=true;if(bigOwner===RC.api)setTimeout(closeBig,600);rcShow();}
+      if(!n){RC.seen=false;RC.cur.style.display='none';if(RC.mode==='spot'&&spot.classList.contains('on'))spotOn(false);RC.mode='mouse';RC.cur.classList.remove('laser');}
+      return n?`${n} 支手機遙控中`:'用手機掃 QR Code，手機就是遙控滑鼠和簡報筆';},
+    onRaw(c,d){
+      if(d.t==='move'){const dx=+d.dx||0,dy=+d.dy||0,m=Math.hypot(dx,dy),k=1.4+Math.min(3,m/10);
+        RC.x=clamp(RC.x+dx*k,0,innerWidth-2);RC.y=clamp(RC.y+dy*k,0,innerHeight-2);rcShow();return true;}
+      if(d.t==='click'){if(RC.mode==='mouse')rcClick();return true;}
+      if(d.t==='scroll'){rcScroll(clamp(+d.dy||0,-400,400));return true;}
+      if(d.t==='mode'){rcSetMode(String(d.m));RC.api.sync();return true;}
+      if(d.t==='spotR'){spR=clamp(spR+(+d.d||0)*30,60,Math.max(innerWidth,innerHeight)/2);spDraw();return true;}
+      if(d.t==='nav'){rcNav(d.d>0?1:-1);setTimeout(()=>RC.api.sync(),300);return true;}
+      if(d.t==='esc'){closePanels();closeBig();return true;}
+      return false;}});
+  btn.onclick=()=>{RC.api.btn.click();btn.classList.toggle('on',!!state.remote.live?.on);if(!state.remote.live?.on){RC.cur.style.display='none';if(RC.mode==='spot')spotOn(false);RC.mode='mouse';}};
+  btn.classList.toggle('on',!!state.remote.live?.on);
+}
+
 /* ---------- 啟動 ---------- */
 if(IS_STUDENT){startStudent((JOIN_PARAM||'').replace(/\D/g,''));}
 else{
-applyTheme();applyBg();
+applyTheme();applyBg();applyBarPos();
 state.widgets.forEach(w=>{if(!(w.w>=120))w.w=360;if(!(w.h>=100))w.h=260;});
 state.widgets.forEach(mount);
-updateEmpty();renderTray();cleanFiles();
+updateEmpty();renderTray();cleanFiles();rcInit();
 localStorage.setItem('classroomscreen.seen','1');
 }
 </script>
