@@ -1551,7 +1551,7 @@ function liveHost(s,ctx,ad){
   }
   function paint(){
     const on=!!s.live?.on;
-    ui.style.display=on?'':'none';
+    ui.style.display=on&&!(ad.hideBar&&ad.hideBar())?'':'none';
     btn.textContent=on?LB[1]:LB[0];btn.classList.toggle('on',on);
     if(!on)return;
     pinEl.textContent=ready?'PIN '+s.live.pin:'連線中…';stEl.textContent=status();
@@ -1810,6 +1810,7 @@ mount(body,s,ctx){
   /* 手機當鏡頭：手機掃碼後把相機畫面直接傳到這裡（WebRTC 點對點） */
   const live=liveHost(s,ctx,{labels:['📱 用手機當鏡頭','📱 關閉手機連線'],tip:'用手機掃 QR Code，把手機相機變成實物投影機',
     payload:()=>({kind:'cam',q:'手機實物投影機'}),count:()=>0,vote(){},
+    hideBar:()=>!!remote,
     status:n=>remote?'手機畫面傳送中':(n?`${n} 支手機已連線，請在手機上按「開啟相機」`:'等待手機掃碼'),
     onCall(call){try{call.answer();}catch(e){return;}
       call.on('stream',st=>{stopTracks();remote=call;stream=st;vid.srcObject=st;frozen=false;view.innerHTML='';view.append(vid,snap);bGo.textContent='⏹ 關閉';closeBig();apply();live.paint();});
