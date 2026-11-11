@@ -665,7 +665,7 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>移動 / 縮放</b>：拖曳標題列移動，拉右下角調整大小；點 ⤢ 可放大到全螢幕，再點一次還原。</li>
       <li><b>畫筆</b>：在所有小工具上方直接畫圖、圈重點，Esc 關閉。</li>
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
-      <li><b>外觀</b>：工具列的調色盤可切換五種風格：玻璃光感、夜間深色、黑板教室、童趣繽紛、簡約紙本，也能另外換背景。</li>
+      <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛、簡約紙本，也能另外換背景。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
@@ -932,23 +932,26 @@ const PLAY_BG='radial-gradient(rgba(43,45,66,.13) 2px,transparent 2.6px) 0 0/30p
 const PAPER_BG='repeating-linear-gradient(0deg,rgba(120,95,60,.06) 0 1px,transparent 1px 34px),radial-gradient(ellipse at 50% 0%,#fbf7ef,transparent 70%),#efe7d8';
 const NIGHT_BG=MESH('#3b5bdb','#9c36b5','#0b7285','#1c1f3a','#090b14');
 const THEMES={
+  paper:{n:'簡約紙本',font:'Noto+Serif+TC:wght@500;700',bg:()=>PAPER_BG,pv:[PAPER_BG,'#fffdf8','#f3ece0','rgba(255,253,248,.95)']},
   glass:{n:'玻璃光感',bg:()=>BG_PRESETS[0],pv:[BG_PRESETS[0],'rgba(255,255,255,.95)','#f2f4f8','rgba(16,20,38,.75)']},
   dark:{n:'夜間深色',dk:1,bg:()=>NIGHT_BG,pv:[NIGHT_BG,'#161b2a','#222a3f','rgba(10,13,24,.9)']},
   chalk:{n:'黑板教室',dk:1,font:'LXGW+WenKai+TC:wght@400;700',bg:()=>CHALK_BG,pv:[CHALK_BG,'#2d4b3e','#8b5a2b','#8a5a33']},
-  playful:{n:'童趣繽紛',font:'Huninn',bg:()=>PLAY_BG,pv:[PLAY_BG,'#fff','#ffd6e0','#fff']},
-  paper:{n:'簡約紙本',font:'Noto+Serif+TC:wght@500;700',bg:()=>PAPER_BG,pv:[PAPER_BG,'#fffdf8','#f3ece0','rgba(255,253,248,.95)']}
+  playful:{n:'童趣繽紛',font:'Huninn',bg:()=>PLAY_BG,pv:[PLAY_BG,'#fff','#ffd6e0','#fff']}
 };
+const DEFAULT_THEME='paper';
 const _fonts=new Set();
 function loadFont(f){if(!f||_fonts.has(f))return;_fonts.add(f);document.head.append(h('link',{rel:'stylesheet',href:`https://fonts.googleapis.com/css2?family=${f}&display=swap`}));}
 function applyTheme(){
-  const k=THEMES[state.theme]?state.theme:'glass',T=THEMES[k];
+  // 沒選過主題（新使用者或舊版資料）時，預設用簡約紙本
+  if(!THEMES[state.theme]){state.theme=DEFAULT_THEME;state.bg=THEMES[DEFAULT_THEME].bg();save();}
+  const k=state.theme,T=THEMES[k];
   document.body.dataset.theme=k;document.body.classList.toggle('dk',!!T.dk);loadFont(T.font);
   $$('.thm').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
 }
 function setTheme(k){state.theme=k;state.bg=THEMES[k].bg();applyTheme();applyBg();save();live.forEach(L=>L.api?.resize?.());toast('已切換為「'+THEMES[k].n+'」風格');}
 $('#themes').append(...Object.entries(THEMES).map(([k,T])=>{
   const pv=h('span',{class:'pv',style:`background:${T.pv[0]}`},h('i',{style:`background:${T.pv[1]};box-shadow:0 2px 6px rgba(0,0,0,.25)`}),h('b',{style:`background:${T.pv[2]}`}),h('u',{style:`background:${T.pv[3]}`}));
-  return h('button',{class:'thm','data-k':k,onclick:()=>setTheme(k)},pv,T.n);}));
+  return h('button',{class:'thm','data-k':k,onclick:()=>setTheme(k)},pv,T.n+(k===DEFAULT_THEME?'（預設）':''));}));
 (function buildSwatches(){
   const box=$('#swatches');
   BG_PRESETS.forEach(v=>box.append(h('div',{class:'sw','data-v':v,style:'background:'+v,onclick:()=>setBg(v)})));
@@ -2297,11 +2300,11 @@ function scenes(){try{return JSON.parse(localStorage.getItem(SCENES_KEY))||{}}ca
 function setScenes(o){try{localStorage.setItem(SCENES_KEY,JSON.stringify(o));}catch(e){toast('儲存失敗：空間不足');}}
 $('#sceneSave').onclick=()=>{
   const n=$('#sceneName').value.trim()||('場景 '+new Date().toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}));
-  const S=scenes();S[n]={bg:state.bg,theme:state.theme||'glass',grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
+  const S=scenes();S[n]={bg:state.bg,theme:state.theme||DEFAULT_THEME,grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
 };
 function loadState(ns){
   [...state.widgets].forEach(w=>{const L=live.get(w.id);L?.api?.destroy?.();L?.el.remove();live.delete(w.id);});
-  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||'',theme:ns.theme||state.theme||'glass'};
+  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||'',theme:ns.theme||state.theme||DEFAULT_THEME};
   applyTheme();applyBg();state.widgets.forEach(mount);updateEmpty();save();
 }
 function renderScenes(){
@@ -2309,7 +2312,7 @@ function renderScenes(){
   if(!names.length){box.append(h('div',{class:'muted'},'還沒有儲存的場景'));return;}
   names.forEach(n=>box.append(h('div',{class:'scene'},h('span',{class:'n'},n),h('span',{class:'tag'},(S[n].widgets||[]).length+' 個'),
     h('button',{class:'btn sm p',onclick:()=>{loadState(S[n]);closePanels();toast('已載入「'+n+'」');}},'載入'),
-    h('button',{class:'btn sm',title:'用目前版面覆蓋',onclick:()=>{S[n]={bg:state.bg,theme:state.theme||'glass',grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);renderScenes();toast('已更新「'+n+'」');}},'覆蓋'),
+    h('button',{class:'btn sm',title:'用目前版面覆蓋',onclick:()=>{S[n]={bg:state.bg,theme:state.theme||DEFAULT_THEME,grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);renderScenes();toast('已更新「'+n+'」');}},'覆蓋'),
     h('button',{class:'btn sm d',onclick:()=>{if(confirm('刪除場景「'+n+'」？')){delete S[n];setScenes(S);renderScenes();}}},'✕'))));
 }
 $('#exportBtn').onclick=()=>{
