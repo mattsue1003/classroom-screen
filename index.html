@@ -573,6 +573,50 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
 .st-big{display:flex;width:100%;margin-top:12px;padding:16px;font-size:20px;border-radius:14px}
 .st-msg{text-align:center;font-size:18px;line-height:1.6;padding:10px 0}
 .st-msg .e{font-size:56px;display:block;margin-bottom:6px}
+
+/* 縮小的視窗 */
+.win.min{display:none!important}
+#minTray{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);z-index:4900;pointer-events:none}
+#minTray:empty{display:none}
+.mchip{pointer-events:auto;display:flex;align-items:center;gap:7px;height:36px;padding:0 13px 0 5px;border-radius:999px;background:var(--w-bg,#fff);color:var(--w-text,#1b2430);border:1px solid rgba(0,0,0,.1);box-shadow:0 8px 20px -8px rgba(0,0,0,.4);font-size:13px;font-weight:600;cursor:pointer;max-width:220px;font-family:inherit}
+.mchip:hover{transform:translateY(-2px)}
+.mchip .tico{width:26px;height:26px;border-radius:50%}
+.mchip span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mchip.all{padding:0 13px;color:var(--w-muted,#6b7684)}
+body.has-min #undo{bottom:146px}
+/* 簡報／PDF */
+.sl-view{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.06);overflow:hidden}
+.sl-page{position:relative;background:#fff;box-shadow:0 6px 22px -6px rgba(0,0,0,.35);flex:none}
+.sl-page canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sl-ink{pointer-events:none;touch-action:none}
+.sl-view.pen .sl-ink{pointer-events:auto;cursor:crosshair}
+.sl-nav{position:absolute;top:0;bottom:0;width:15%;max-width:90px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer;border:0;background:none;z-index:2;padding:0}
+.sl-nav.l{left:0}.sl-nav.r{right:0}
+.sl-view:hover .sl-nav{opacity:1}
+.sl-view.pen .sl-nav{display:none}
+.sl-nav span{width:42px;height:42px;border-radius:50%;background:rgba(20,24,32,.55);color:#fff;display:grid;place-items:center}
+.sl-nav svg{width:22px;height:22px}
+.sl-pg{width:58px;text-align:center;padding:4px 6px}
+.sl-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;text-align:center;width:100%;height:100%}
+.sl-drop .tico{width:58px;height:58px;border-radius:18px}
+.sl-drop .tico svg{width:34px;height:34px}
+.sl-drop b{font-size:17px}
+.sl-tip{font-size:12.5px;line-height:1.6;max-width:520px}
+.sl-view.over{outline:3px dashed var(--accent,#2a7de1);outline-offset:-10px}
+.sl-laser{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#ff3b3b 34%,rgba(255,40,40,.4) 58%,transparent 72%);box-shadow:0 0 18px 6px rgba(255,30,30,.5);pointer-events:none;display:none;z-index:3}
+.win-body:fullscreen{background:#111}
+.win-body:fullscreen .sl-view{background:#111}
+.win-body:fullscreen .sl-laser{width:30px;height:30px;margin:-15px 0 0 -15px}
+/* 手機遙控器 */
+.st-pad{position:relative;width:100%;border-radius:14px;overflow:hidden;background:#20242c;touch-action:none;user-select:none;-webkit-user-select:none}
+.st-pad img{display:block;width:100%;height:auto;pointer-events:none}
+.st-pad .ph{aspect-ratio:16/9;display:grid;place-items:center;color:#aab;font-size:14px}
+.st-pad .dotp{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 12px 4px rgba(255,40,40,.6);display:none;pointer-events:none}
+.st-seg{display:flex;gap:8px;margin-top:12px}
+.st-seg .btn{flex:1;padding:12px;font-size:16px;border-radius:12px;justify-content:center}
+.st-navs{display:flex;gap:10px;margin-top:12px}
+.st-navs .btn{flex:1;padding:22px 10px;font-size:20px;border-radius:16px;justify-content:center}
+.st-pgn{text-align:center;font-size:15px;margin-top:10px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -665,7 +709,9 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>移動 / 縮放</b>：拖曳標題列移動，拉右下角調整大小；點 ⤢ 可放大到全螢幕，再點一次還原。</li>
       <li><b>畫筆</b>：在所有小工具上方直接畫圖、圈重點，Esc 關閉。</li>
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
-      <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛、簡約紙本，也能另外換背景。</li>
+      <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛，也能另外換背景。</li>
+      <li><b>簡報/PDF</b>：直接開電腦裡的 PDF（PowerPoint 先另存成 PDF），用 ← → 鍵、簡報翻頁器或空白鍵翻頁，可在投影片上畫重點、全螢幕放映。也能貼 Canva、Google 簡報、.pptx 網址。按「📱 手機遙控」掃 QR Code，手機就是翻頁器和雷射筆。</li>
+      <li><b>縮小視窗</b>：按視窗右上角的 — 把它收到下方（或按 M），點下方的標籤就還原。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
@@ -682,6 +728,7 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="minTray"></div>
 <div id="undo"><span></span><button class="btn sm" id="undoBtn">↶ 復原</button></div>
 <div class="modal" id="liveBig">
   <div class="lb-card"><div class="lb-qr" id="lbQr"></div>
@@ -739,6 +786,7 @@ const G={
   text:'<path d="M5 6.5V4h14v2.5M12 4v16M9 20h6"/>',
   sticky:'<path d="M5 4h14v10l-5 6H5V4zM14 20v-6h5"/>',
   draw:'<path d="M4 20l1-4L16 5l3 3L8 19l-4 1zM14 7l3 3"/>',
+  slides:'<rect x="3.5" y="4" width="17" height="11.5" rx="1.5"/><path d="M12 15.5V19M8.5 20h7M7.5 12l3-3.2 2.2 2.2 3.6-4"/>',
   embed:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',
   image:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>',
   camera:'<path d="M4 8h3l1.5-2.5h7L17 8h3v11H4V8z"/><circle cx="12" cy="13.2" r="3.4"/>',
@@ -762,7 +810,7 @@ const TC={clock:['#6ea0ff','#2563eb'],timer:['#ffa15c','#ea580c'],stopwatch:['#3
   poll:['#8d99ff','#4338ca'],exit:['#ffd35c','#e08a00'],score:['#ffc04a','#b45309'],stars:['#ff9ecb','#be185d'],
   mycam:['#7fb2ff','#2563eb'],share:['#9aa7ff','#4f46e5'],wall:['#ffb37a','#ea580c'],checkin:['#6fe3b0','#059669'],
   quiz:['#b18cff','#6d28d9'],
-  text:['#9fb0c6','#475569'],sticky:['#ffd84d','#d19a00'],draw:['#ff8686','#dc2626'],embed:['#4ddcf0','#0891b2'],image:['#7fe3a0','#15803d'],camera:['#7d8aa3','#1e293b'],qr:['#66758f','#0f172a']};
+  text:['#9fb0c6','#475569'],sticky:['#ffd84d','#d19a00'],draw:['#ff8686','#dc2626'],embed:['#4ddcf0','#0891b2'],image:['#7fe3a0','#15803d'],camera:['#7d8aa3','#1e293b'],qr:['#66758f','#0f172a'],slides:['#ffb27a','#ea580c']};
 function toolIcon(key,grad){const c=grad||TC[key]||['#8d99ff','#4338ca'];
   return h('span',{class:'tico',style:`background:linear-gradient(145deg,${c[0]},${c[1]})`,html:`<svg viewBox="0 0 24 24">${G[key]||G.symbols}</svg>`});}
 const U={
@@ -786,7 +834,7 @@ const U={
   layout:'<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M12 4.5v15M12 12h8.5"/>',
   full:'<path d="M9 4.5H4.5V9M15 4.5h4.5V9M9 19.5H4.5V15M15 19.5h4.5V15"/>',
   help:'<circle cx="12" cy="12" r="8.5"/><path d="M9.7 9.5a2.4 2.4 0 1 1 3.6 2.1c-.8.5-1.3 1-1.3 1.9"/><circle class="f" cx="12" cy="16.6" r="1"/>',
-  down:'<path d="M6 9.5l6 6 6-6"/>',up:'<path d="M6 14.5l6-6 6 6"/>',
+  down:'<path d="M6 9.5l6 6 6-6"/>',min:'<path d="M6 16.5h12" stroke-width="2.4"/>',prev:'<path d="M14.5 6l-6 6 6 6"/>',next:'<path d="M9.5 6l6 6-6 6"/>',laser:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',up:'<path d="M6 14.5l6-6 6 6"/>',
   pen:'<path d="M9.5 14.5L19 5l2 2-9.5 9.5M4 20c2.2 0 4.5-.8 4.5-3.2 0-1.5-1.2-2.8-2.7-2.8S3.2 15.2 3.2 16.8c0 1.2-.4 2.4-1.2 3"/>',
   spot:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7"/>',music:'<path d="M9 18V6l10-2v12"/><circle cx="6.8" cy="18" r="2.3"/><circle cx="16.8" cy="16" r="2.3"/>',globe:G.embed,
@@ -973,7 +1021,23 @@ function addWidget(type,opts={}){
 }
 function removeWidget(id){
   const L=live.get(id);if(L){L.api?.destroy?.();L.el.remove();live.delete(id);}
-  state.widgets=state.widgets.filter(w=>w.id!==id);save();updateEmpty();
+  state.widgets=state.widgets.filter(w=>w.id!==id);save();updateEmpty();renderTray();
+}
+/* 縮小／還原 */
+function setMin(inst,on){
+  inst.min=!!on;const L=live.get(inst.id);
+  if(L){L.el.classList.toggle('min',inst.min);if(!inst.min){focusWin(inst);requestAnimationFrame(()=>L.api?.resize?.());}}
+  if(inst.min&&activeId===inst.id)activeId=null;
+  save();renderTray();
+}
+function renderTray(){
+  const tray=$('#minTray');if(!tray)return;tray.innerHTML='';
+  const ms=state.widgets.filter(w=>w.min);
+  ms.forEach(w=>{const t=live.get(w.id)?.el.querySelector('.ttl')?.textContent||WIDGETS[w.type].name;
+    tray.append(h('button',{class:'mchip',title:'還原「'+t+'」',onclick:()=>setMin(w,false)},toolIcon(w.type),h('span',{class:'t'},t)));});
+  if(ms.length>1)tray.append(h('button',{class:'mchip all',title:'還原全部縮小的視窗',onclick:()=>ms.forEach(w=>setMin(w,false))},'全部還原'));
+  const hid=document.getElementById('bar')?.classList.contains('hidden');tray.style.bottom=hid?'14px':'';
+  document.body.classList.toggle('has-min',ms.length>0);
 }
 let lastRemoved=null,undoT;
 function closeWidget(id){
@@ -983,7 +1047,7 @@ function closeWidget(id){
   clearTimeout(undoT);undoT=setTimeout(()=>u.classList.remove('show'),6000);
 }
 function undoClose(){
-  if(!lastRemoved)return;const inst=lastRemoved;lastRemoved=null;inst.z=++state.z;
+  if(!lastRemoved)return;const inst=lastRemoved;lastRemoved=null;inst.z=++state.z;inst.min=false;
   state.widgets.push(inst);mount(inst);focusWin(inst);save();updateEmpty();$('#undo').classList.remove('show');
 }
 let activeId=null;
@@ -1006,13 +1070,14 @@ function mount(inst){
   const ttl=h('span',{class:'ttl'},def.name);
   const head=h('div',{class:'win-head'},
     toolIcon(inst.type),ttl,
+    h('button',{class:'hb',title:'縮小到下方（點下方的標籤還原）',onclick:ev=>{ev.stopPropagation();setMin(inst,true);}},ui('min')),
     h('button',{class:'hb',title:'放大 / 還原（也可雙擊標題列）',onclick:ev=>{ev.stopPropagation();inst.max=!inst.max;place(inst);focusWin(inst);save();L.api?.resize?.();}},'⤢'),
     h('button',{class:'hb x',title:'關閉',onclick:ev=>{ev.stopPropagation();closeWidget(inst.id);}},'✕'));
   const rs=h('div',{class:'rs'});
   const el=h('div',{class:'win','data-id':inst.id,style:`--tc:${(TC[inst.type]||['','#4f6ef7'])[1]}`},head,body,rs);
   stage.append(el);
   const L={el,api:null};live.set(inst.id,L);
-  place(inst);
+  place(inst);if(inst.min)el.classList.add('min');
   el.addEventListener('pointerdown',()=>focusWin(inst),{capture:true});
   // 拖曳
   head.addEventListener('pointerdown',ev=>{
@@ -1407,8 +1472,10 @@ mount(body,s,ctx){
 
 /* ---- 嵌入網頁 ---- */
 function toEmbedUrl(u){
+  u=String(u||'').trim();const snip=u.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);if(snip)u=snip[1].replace(/&amp;/g,'&');
   try{
     const url=new URL(u);const host=url.hostname.replace('www.','');
+    if(/\.(pptx?|ppsx?|potx?|docx?|xlsx?)$/i.test(url.pathname)&&!/officeapps\.live\.com$/.test(host))return 'https://view.officeapps.live.com/op/embed.aspx?src='+encodeURIComponent(u);
     const yt=id=>{const t=url.searchParams.get('t')||url.searchParams.get('start');const sec=t?parseInt(String(t).replace(/s$/,''),10):0;return `https://www.youtube.com/embed/${id}${sec?'?start='+sec:''}`;};
     if(host==='youtube.com'||host==='m.youtube.com'){const v=url.searchParams.get('v');if(v)return yt(v);const L=url.searchParams.get('list');if(L)return `https://www.youtube.com/embed/videoseries?list=${L}`;if(url.pathname.startsWith('/live/')||url.pathname.startsWith('/shorts/'))return yt(url.pathname.split('/')[2]);}
     if(host==='youtu.be')return yt(url.pathname.slice(1));
@@ -1425,7 +1492,7 @@ function toEmbedUrl(u){
 const QUICK_LINKS=[['🏁 搶答大作戰','https://mattsue1003.github.io/quiz-rush/']];
 WIDGETS.embed={name:'嵌入網頁',icon:'🌐',w:560,h:380,init:()=>({url:''}),
 mount(body,s,ctx){
-  const inp=h('input',{class:'inp grow',placeholder:'貼上網址：YouTube、Google 簡報、Padlet、Wordwall…',onkeydown:e=>{if(e.key==='Enter')go();}});
+  const inp=h('input',{class:'inp grow',placeholder:'貼上網址或嵌入碼：YouTube、Google 簡報、Canva、Padlet…',onkeydown:e=>{if(e.key==='Enter')go();}});
   const view=h('div',{class:'col',style:'flex:1;min-height:0'});
   const bOpen=h('button',{class:'btn sm',title:'在新分頁開啟',onclick:()=>{if(s.url)open(s.url,'_blank');}},'↗');
   body.append(h('div',{class:'row',style:'padding:8px 10px;border-bottom:1px solid var(--line)'},inp,h('button',{class:'btn p sm',onclick:go},'嵌入'),bOpen),view);
@@ -1442,6 +1509,185 @@ mount(body,s,ctx){
     ctx.setTitle('嵌入：'+(new URL(src).hostname.replace('www.','')));
   }
   render();
+}};
+
+
+/* ---- 簡報／PDF（電腦裡的 PDF 直接開，也可貼 Canva、Google 簡報、PowerPoint 網址；手機可當遙控器） ---- */
+const PDFJS='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/';
+const FDB={db:null,
+  open(){return this.db||(this.db=new Promise((res,rej)=>{const r=indexedDB.open('classroomscreen.files',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>{this.db=null;rej(r.error);};}));},
+  async op(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('f',mode);const rq=fn(tx.objectStore('f'));tx.oncomplete=()=>res(rq?rq.result:undefined);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});},
+  put(k,v){return this.op('readwrite',st=>st.put(v,k));},get(k){return this.op('readonly',st=>st.get(k));},
+  del(k){return this.op('readwrite',st=>st.delete(k));},keys(){return this.op('readonly',st=>st.getAllKeys());}};
+/* 沒有任何視窗或場景再用到的檔案，啟動後清掉 */
+function cleanFiles(){if(!window.indexedDB)return;setTimeout(async()=>{try{
+  const ref=JSON.stringify(state.widgets)+(localStorage.getItem('classroomscreen.scenes.v1')||'');
+  for(const k of await FDB.keys()){const base=String(k).split('#')[0];if(!ref.includes(base))FDB.del(k).catch(()=>{});}
+}catch(e){}},5000);}
+WIDGETS.slides={name:'簡報/PDF',icon:'',w:680,h:480,minW:320,minH:240,init:()=>({fid:'',url:'',name:'',page:1}),
+mount(body,s,ctx){
+  const view=h('div',{class:'sl-view'});
+  const foot=h('div',{class:'foot'});
+  const file=h('input',{type:'file',accept:'.pdf,application/pdf,.ppt,.pptx,.pps,.ppsx,.key,.odp,.doc,.docx',hidden:true,onchange:e=>{const f=e.target.files[0];e.target.value='';if(f)openFile(f);}});
+  body.append(view,foot,file);
+  let doc=null,task=null,dead=false,mode='',ink={},inkPage=0,drew=false,mute=false,inkT,thumb='',aspect=16/9,penColor='#e5484d',pageEl=null,cv=null,ic=null,laser=null,laserT,D=null,pen=false,rT,loadId=0;
+  const remoteLast=new Map();let seenPhone=false;
+  /* 手機遙控 */
+  let live=null;live=liveHost(s,ctx,{labels:['📱 手機遙控','📱 關閉遙控'],tip:'用手機掃 QR Code，手機就變成翻頁器和雷射筆',
+    payload:()=>({kind:'remote',q:s.name||'簡報',page:s.page,n:doc?doc.numPages:0,img:thumb,ar:aspect}),count:()=>0,vote(){},
+    hideBar:()=>!!(live&&live.n>0),
+    status:n=>{if(n&&live&&bigOwner===live&&!seenPhone){seenPhone=true;setTimeout(closeBig,600);}if(!n)seenPhone=false;return n?`${n} 支手機遙控中`:'用手機掃 QR Code 當遙控器';},
+    onRaw(c,d){
+      if(d.t==='nav'){nav(d.d>0?1:-1);return true;}
+      if(d.t==='go'){go(+d.p);return true;}
+      if(d.t==='ptr'){showLaser(d.x,d.y);return true;}
+      if(d.t==='ink'&&D&&pageEl){const x=+d.x,y=+d.y;if(!(x>=0&&x<=1&&y>=0&&y<=1))return true;
+        const p=d.s?null:remoteLast.get(c);D.set({color:String(d.c||'#e5484d').slice(0,9)});D.stroke(p||[x,y],[x,y]);D.set({color:penColor});
+        remoteLast.set(c,[x,y]);drew=true;clearTimeout(inkT);inkT=setTimeout(persistInk,800);return true;}
+      if(d.t==='clear'){clearPage();return true;}
+      return false;}});
+  const bPrev=h('button',{class:'btn sm',title:'上一頁（← 或翻頁器）',onclick:()=>nav(-1)},ui('prev'));
+  const bNext=h('button',{class:'btn sm',title:'下一頁（→、空白鍵或翻頁器）',onclick:()=>nav(1)},ui('next'));
+  const pg=h('input',{class:'inp sl-pg',type:'number',min:1,title:'輸入頁碼跳頁',onchange:()=>go(+pg.value),onkeydown:e=>{if(e.key==='Enter')pg.blur();}});
+  const of=h('span',{class:'muted',style:'font-size:13px'});
+  const bPen=h('button',{class:'btn sm',title:'在投影片上畫重點（每頁分開記住）',onclick:()=>setPen(!pen)},'🖍 畫重點');
+  const cols=['#e5484d','#2a7de1','#ffc21a','#111'];
+  const dots=cols.map(c=>h('span',{class:'dot'+(c===penColor?' on':''),style:`background:${c};border-color:#ccc;width:20px;height:20px;display:none`,onclick:()=>{penColor=c;D?.set({color:c});dots.forEach(x=>x.classList.toggle('on',x===dots[cols.indexOf(c)]));}}));
+  const bClr=h('button',{class:'btn sm',title:'清除這一頁的筆跡',style:'display:none',onclick:()=>clearPage()},'🧹');
+  const bFull=h('button',{class:'btn sm',title:'全螢幕放映（Esc 離開）',onclick:()=>{if(document.fullscreenElement)document.exitFullscreen();else body.requestFullscreen?.().catch(()=>toast('此瀏覽器不支援全螢幕'));}},ui('full'));
+  const bFile=h('button',{class:'btn sm',title:'換一個檔案',onclick:()=>file.click()},'📁');
+  const bClose=h('button',{class:'btn sm',title:'關閉這份簡報，回到選檔畫面',onclick:()=>{s.fid='';s.url='';s.name='';s.page=1;ctx.save();empty();}},'✕');
+  const bExt=h('button',{class:'btn sm',title:'在新分頁開啟',onclick:()=>{if(s.url)open(s.url,'_blank');}},'↗');
+  body.append(live.ui);body.insertBefore(live.ui,foot);
+  /* 拖曳檔案進來 */
+  view.addEventListener('dragover',e=>{if([...(e.dataTransfer?.types||[])].includes('Files')){e.preventDefault();view.classList.add('over');}});
+  view.addEventListener('dragleave',e=>{if(e.target===view)view.classList.remove('over');});
+  view.addEventListener('drop',e=>{view.classList.remove('over');const f=e.dataTransfer?.files?.[0];if(f){e.preventDefault();openFile(f);}});
+  const ro=new ResizeObserver(()=>{clearTimeout(rT);rT=setTimeout(()=>{if(doc&&!dead)renderPage();},120);});ro.observe(view);
+
+  function setFoot(kind){
+    foot.innerHTML='';foot.style.display=kind?'':'none';
+    if(kind==='pdf')foot.append(bPrev,pg,of,bNext,h('span',{class:'tsep',style:'width:1px;height:22px;background:var(--line);margin:0 2px'}),bPen,...dots,bClr,h('span',{class:'grow'}),live.btn,bFull,bFile,bClose);
+    if(kind==='frame')foot.append(h('span',{class:'muted',style:'font-size:12px'},'用簡報裡的按鈕翻頁；空白表示網站不允許嵌入，請按 ↗'),h('span',{class:'grow'}),bFull,bExt,bClose);
+  }
+  function empty(){
+    stopDoc();mode='';view.innerHTML='';setFoot('');ctx.setTitle();
+    const inp=h('input',{class:'inp grow',placeholder:'或貼上網址：Canva、Google 簡報、PDF、.pptx 網址、嵌入碼',onkeydown:e=>{if(e.key==='Enter')goUrl(inp.value);}});
+    view.append(h('div',{class:'sl-drop'},toolIcon('slides'),h('b',{},'把 PDF 拖曳到這裡'),
+      h('button',{class:'btn p',onclick:()=>file.click()},'📁 選擇電腦裡的檔案'),
+      h('div',{class:'row',style:'width:min(100%,520px)'},inp,h('button',{class:'btn sm',onclick:()=>goUrl(inp.value)},'開啟')),
+      h('div',{class:'muted sl-tip'},h('div',{},'PowerPoint：在 PowerPoint 選「檔案 → 另存新檔 → PDF」再開啟，版面和字型最準確。'),
+        h('div',{},'Canva、Google 簡報：貼上公開的分享連結。開啟後可用 ← → 鍵、翻頁器或手機遙控翻頁。'),
+        h('div',{},'檔案只存在這台電腦的瀏覽器，不會上傳。'))));
+  }
+  function msgView(title,lines,withPick=true){
+    stopDoc();mode='';view.innerHTML='';setFoot('');
+    view.append(h('div',{class:'sl-drop'},toolIcon('slides'),h('b',{},title),h('div',{class:'muted sl-tip'},...lines.map(t=>h('div',{},t))),
+      withPick?h('div',{class:'row',style:'justify-content:center'},h('button',{class:'btn p',onclick:()=>file.click()},'📁 選擇檔案'),h('button',{class:'btn',onclick:()=>{s.fid='';s.url='';ctx.save();empty();}},'返回')):null));
+  }
+  function stopDoc(){try{task?.cancel();}catch(e){}task=null;if(doc){persistInk();try{doc.destroy();}catch(e){}}doc=null;thumb='';pageEl=null;D=null;inkPage=0;}
+  async function openFile(f){
+    const isPdf=f.type==='application/pdf'||/\.pdf$/i.test(f.name);
+    if(!isPdf){msgView('瀏覽器沒辦法直接播放「'+f.name+'」',['請在 PowerPoint（或 Keynote）選「檔案 → 另存新檔 → PDF」，再用這裡開啟 PDF（推薦，版面最準確）。','或把檔案上傳到 Google 雲端硬碟用 Google 簡報開啟，再貼上分享連結。']);return;}
+    stopDoc();
+    const fid='f'+uid()+uid();
+    try{await FDB.put(fid,{blob:f,name:f.name});}catch(e){toast('無法存進瀏覽器，重新整理後需要再開一次');}
+    Object.assign(s,{fid,url:'',name:f.name.replace(/\.pdf$/i,''),page:1});ink={};ctx.save();
+    loadPdf(f);
+  }
+  function goUrl(raw){
+    let u=String(raw||'').trim();if(!u)return;
+    const snip=u.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);if(snip)u=snip[1].replace(/&amp;/g,'&');
+    if(!/^https?:/i.test(u))u='https://'+u;
+    stopDoc();Object.assign(s,{url:u,fid:'',name:'',page:s.url===u?s.page:1});ctx.save();openUrl();
+  }
+  function openUrl(){
+    let path='',host='';try{const U=new URL(s.url);path=U.pathname;host=U.hostname.replace('www.','');}catch(e){}
+    if(/\.pdf$/i.test(path)){s.name=decodeURIComponent(path.split('/').pop()).replace(/\.pdf$/i,'');ink={};loadPdf(s.url);return;}
+    frame(toEmbedUrl(s.url),host);
+  }
+  function frame(src,host){
+    stopDoc();mode='frame';view.innerHTML='';
+    view.append(h('iframe',{class:'embed-frame',src,allow:'autoplay; fullscreen; clipboard-write',allowfullscreen:true,referrerpolicy:'no-referrer-when-downgrade'}));
+    setFoot('frame');ctx.setTitle('簡報：'+(host||''));
+  }
+  async function loadPdf(src){
+    const my=++loadId;stopDoc();mode='pdf';view.innerHTML='';setFoot('');
+    view.append(h('div',{class:'muted'},'開啟中…'));
+    try{
+      await loadScript(PDFJS+'build/pdf.min.js',()=>window.pdfjsLib);
+      pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+'build/pdf.worker.min.js';
+      const opt={cMapUrl:PDFJS+'cmaps/',cMapPacked:true,standardFontDataUrl:PDFJS+'standard_fonts/'};
+      if(src instanceof Blob)opt.data=new Uint8Array(await src.arrayBuffer());else opt.url=src;
+      const d=await pdfjsLib.getDocument(opt).promise;
+      if(dead||my!==loadId){d.destroy();return;}
+      if(s.fid){try{ink=(await FDB.get(s.fid+'#ink'))||{};}catch(e){ink={};}}
+      doc=d;s.page=clamp(s.page||1,1,doc.numPages);
+      build();ctx.setTitle(s.name||'簡報');await renderPage();live.sync();
+    }catch(e){
+      console.warn(e);if(dead||my!==loadId)return;
+      if(src instanceof Blob)msgView('這個 PDF 打不開',[e.message||'檔案可能損毀或有密碼保護']);
+      else{let host='';try{host=new URL(s.url).hostname;}catch(_){}frame(s.url,host);}
+    }
+  }
+  function build(){
+    view.innerHTML='';
+    pageEl=h('div',{class:'sl-page'});cv=h('canvas');ic=h('canvas',{class:'sl-ink'});laser=h('div',{class:'sl-laser'});
+    pageEl.append(cv,ic,laser);
+    view.append(pageEl,
+      h('button',{class:'sl-nav l',title:'上一頁',onclick:()=>nav(-1)},h('span',{},ui('prev'))),
+      h('button',{class:'sl-nav r',title:'下一頁',onclick:()=>nav(1)},h('span',{},ui('next'))));
+    D=makeDrawer(ic,{color:penColor,size:4,onChange:()=>{if(mute)return;drew=true;clearTimeout(inkT);inkT=setTimeout(persistInk,700);}});
+    setFoot('pdf');setPen(pen);
+  }
+  async function renderPage(){
+    if(!doc||!pageEl)return;const n=s.page,d0=doc;
+    let page;try{page=await doc.getPage(n);}catch(e){return;}
+    if(dead||doc!==d0||n!==s.page)return;
+    const vw=view.clientWidth-14,vh=view.clientHeight-14;if(vw<30||vh<30)return;
+    const v1=page.getViewport({scale:1});aspect=v1.width/v1.height;
+    const k=Math.min(vw/v1.width,vh/v1.height),dpr=Math.min(2.5,devicePixelRatio||1);
+    const vp=page.getViewport({scale:k*dpr});
+    const off=document.createElement('canvas');off.width=Math.max(1,Math.floor(vp.width));off.height=Math.max(1,Math.floor(vp.height));
+    try{task?.cancel();}catch(e){}
+    const t=page.render({canvasContext:off.getContext('2d'),viewport:vp});task=t;
+    try{await t.promise;}catch(e){return;}
+    if(dead||doc!==d0||n!==s.page)return;
+    cv.width=off.width;cv.height=off.height;cv.getContext('2d').drawImage(off,0,0);
+    pageEl.style.width=Math.floor(v1.width*k)+'px';pageEl.style.height=Math.floor(v1.height*k)+'px';
+    D.fit();
+    if(inkPage!==n){
+      if(inkPage){if(drew)ink[inkPage]=D.toData();else delete ink[inkPage];}
+      mute=true;D.clear();mute=false;drew=!!ink[n];if(ink[n])D.fromData(ink[n]);inkPage=n;
+      // 給手機遙控器的小縮圖
+      const tw=Math.min(560,off.width),tc=document.createElement('canvas');tc.width=tw;tc.height=Math.round(off.height*tw/off.width);
+      const tx=tc.getContext('2d');tx.fillStyle='#fff';tx.fillRect(0,0,tc.width,tc.height);tx.drawImage(off,0,0,tc.width,tc.height);
+      thumb=tc.toDataURL('image/jpeg',.72);live.sync();
+    }
+    pg.value=n;pg.max=doc.numPages;of.textContent='/ '+doc.numPages;
+    bPrev.disabled=n<=1;bNext.disabled=n>=doc.numPages;
+  }
+  function go(n){if(!doc||!Number.isFinite(n))return false;n=clamp(Math.round(n),1,doc.numPages);if(n!==s.page){s.page=n;ctx.save();renderPage();}else pg.value=n;return true;}
+  function nav(d){if(!doc)return false;go(s.page+d);return true;}
+  function setPen(on){pen=!!on;view.classList.toggle('pen',pen);bPen.classList.toggle('on',pen);dots.forEach(x=>x.style.display=pen?'':'none');bClr.style.display=pen||drew?'':'none';}
+  function clearPage(){if(!D)return;mute=true;D.clear();mute=false;drew=false;delete ink[s.page];persistInk();}
+  function persistInk(){if(D&&inkPage){if(drew)ink[inkPage]=D.toData();else delete ink[inkPage];}if(s.fid)FDB.put(s.fid+'#ink',ink).catch(()=>{});}
+  function showLaser(x,y){
+    if(!laser)return;clearTimeout(laserT);
+    if(!(x>=0&&x<=1&&y>=0&&y<=1)){laserT=setTimeout(()=>{laser.style.display='none';},500);return;}
+    laser.style.display='block';laser.style.left=(x*100)+'%';laser.style.top=(y*100)+'%';
+    laserT=setTimeout(()=>{laser.style.display='none';},4000);
+  }
+  /* 啟動：還原上次開的檔案 */
+  (async()=>{
+    if(s.fid){let rec=null;try{rec=await FDB.get(s.fid);}catch(e){}
+      if(dead)return;
+      if(rec?.blob){loadPdf(rec.blob);return;}
+      msgView('找不到「'+(s.name||'上次的檔案')+'」',['檔案存在原本那台電腦的瀏覽器裡（換電腦、清除瀏覽資料或從場景檔匯入時會找不到），請重新選擇檔案。']);return;}
+    if(s.url){openUrl();return;}
+    empty();
+  })();
+  return {nav,space:()=>nav(1),resize(){clearTimeout(rT);rT=setTimeout(()=>{if(doc&&!dead)renderPage();},120);},destroy(){dead=true;clearTimeout(inkT);persistInk();ro.disconnect();live.destroy();stopDoc();}};
 }};
 
 /* ---- QR Code ---- */
@@ -1488,7 +1734,8 @@ function makeDrawer(canvas,opts){
   const end=()=>{if(drawing){drawing=false;opts.onChange?.();}};
   canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('pointerleave',end);
   function draw(a,b){c.globalCompositeOperation=eraser?'destination-out':'source-over';c.strokeStyle=color;c.lineWidth=size*scale()*(eraser?4:1);c.lineCap=c.lineJoin='round';c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.stroke();}
-  return {fit,clear:()=>{c.clearRect(0,0,canvas.width,canvas.height);dirty=false;opts.onChange?.();},set:o=>{if(o.color!=null){color=o.color;eraser=false;}if(o.size!=null)size=o.size;if(o.eraser!=null)eraser=o.eraser;},get eraser(){return eraser},
+  return {fit,stroke:(a,b)=>{dirty=true;const e=eraser;eraser=false;draw([a[0]*canvas.width,a[1]*canvas.height],[b[0]*canvas.width,b[1]*canvas.height]);eraser=e;},
+    clear:()=>{c.clearRect(0,0,canvas.width,canvas.height);dirty=false;opts.onChange?.();},set:o=>{if(o.color!=null){color=o.color;eraser=false;}if(o.size!=null)size=o.size;if(o.eraser!=null)eraser=o.eraser;},get eraser(){return eraser},
     toData:()=>canvas.toDataURL(),fromData:d=>{if(!d)return;const im=new Image();im.onload=()=>{const k=Math.min(canvas.width/im.width,canvas.height/im.height);c.drawImage(im,0,0,im.width*k,im.height*k);dirty=true;};im.src=d;}};
 }
 WIDGETS.draw={name:'小白板',icon:'✏️',w:460,h:360,init:()=>({img:null}),
@@ -1608,6 +1855,7 @@ function liveHost(s,ctx,ad){
   function onData(c,d){
     if(!d||typeof d!=='object'||!s.live?.on)return;
     if(d.t==='hello'){c._dev=String(d.dev||c.peer).replace(/[^\w-]/g,'').slice(0,40)||c.peer;send(c,stateFor(c));paint();return;}
+    if(d.t!=='vote'&&c._dev&&ad.onRaw&&ad.onRaw(c,d)===true)return;
     if(d.t!=='vote'&&c._dev&&ad.onMsg){ad.onMsg(c,d);send(c,stateFor(c));paint();return;}
     if(d.t==='vote'&&c._dev){
       const i=Number(d.i);
@@ -1631,7 +1879,7 @@ function liveHost(s,ctx,ad){
     const inst=ctx.inst;if(!inst.max&&inst.h<400){inst.h=Math.min(400,innerHeight-60);place(inst);}
     paint();start();showBig();
   }
-  const api={ui,btn,sync,paint,copyLink,showBig,
+  const api={ui,btn,sync,paint,copyLink,showBig,get n(){return conns.size;},
     reset(){s.voters={};s.qid++;ctx.save();sync();paint();},
     removeOpt(i){for(const k of Object.keys(s.voters)){const v=s.voters[k];if(v===i)delete s.voters[k];else if(v>i)s.voters[k]=v-1;}ctx.save();sync();},
     quiet(){stopPeer(false);},
@@ -2231,7 +2479,7 @@ const CATS=[
   ['隨機',['picker','wheel','groups','dice','coin','rnum']],
   ['課堂管理',['noise','traffic','symbols','agenda','breathe']],
   ['互動回饋',['quiz','poll','exit','score','stars','counter']],
-  ['內容與展示',['text','sticky','draw','embed','image','camera','qr']],
+  ['內容與展示',['slides','text','sticky','draw','embed','image','camera','qr']],
   ['線上課程',['mycam','share','wall','checkin']]];
 const tools=$('#tools');
 CATS.forEach(([cat,keys],ci)=>{
@@ -2248,7 +2496,7 @@ $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
 const TEMPLATES=[['上課開場','時鐘、流程、倒數',['clock','agenda','timer','symbols']],['小組活動','分組、計時、計分',['groups','timer','score','noise']],
   ['互動問答','搶答、抽籤、投票',['quiz','picker','poll']],['安靜自習','倒數、音量、提醒',['timer','noise','symbols','text']],
-  ['線上課程','鏡頭、簡報、問答',['share','wall','checkin','mycam']]];
+  ['線上課程','鏡頭、簡報、問答',['slides','wall','checkin','mycam']]];
 $('#tplGrid').append(...TEMPLATES.map(([n,d,keys])=>h('button',{class:'tpl',onclick:()=>{keys.forEach(k=>addWidget(k));arrange();toast('已建立「'+n+'」版面，可自由拖曳調整');}},
   h('span',{class:'mini'},keys.map(k=>toolIcon(k))),n,h('small',{},d))));
 /* 聚光燈 */
@@ -2263,8 +2511,8 @@ $('#btnSpot').onclick=()=>spotOn(!spot.classList.contains('on'));
 $('#btnArrange').onclick=arrange;
 /* 自動排列：依目前位置排序，平鋪在工具列上方 */
 function arrange(){
-  const ws=state.widgets.filter(w=>w.type!=='mycam').sort((a,b)=>(a.y-b.y)||(a.x-b.x));const n=ws.length;if(!n)return;
-  state.widgets.filter(w=>w.type==='mycam').forEach((w,i)=>{w.max=false;w.x=innerWidth-w.w-24-i*30;w.y=Math.max(10,innerHeight-w.h-130);place(w);});
+  const ws=state.widgets.filter(w=>w.type!=='mycam'&&!w.min).sort((a,b)=>(a.y-b.y)||(a.x-b.x));const n=ws.length;if(!n)return;
+  state.widgets.filter(w=>w.type==='mycam'&&!w.min).forEach((w,i)=>{w.max=false;w.x=innerWidth-w.w-24-i*30;w.y=Math.max(10,innerHeight-w.h-130);place(w);});
   const gap=10,W=Math.max(300,innerWidth-gap*2),H=Math.max(240,innerHeight-gap*2-(bar.classList.contains('hidden')?0:Math.max(80,innerHeight-bar.getBoundingClientRect().top)));
   let cols=1,best=-1;for(let c=1;c<=n;c++){const r=Math.ceil(n/c),cw=(W-gap*(c-1))/c,ch=(H-gap*(r-1))/r,sc=Math.min(cw/1.35,ch);if(sc>best){best=sc;cols=c;}}
   const rows=Math.ceil(n/cols),cw=(W-gap*(cols-1))/cols,ch=(H-gap*(rows-1))/rows;
@@ -2285,7 +2533,7 @@ $('#help').addEventListener('click',e=>{if(e.target.id==='help')closePanels();})
 $('#btnFull').onclick=toggleFull;
 function toggleFull(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>toast('此瀏覽器不支援全螢幕，請用 F11'));}
 const bar=$('#bar'),barToggle=$('#barToggle');
-function toggleBar(){bar.classList.toggle('hidden');barToggle.classList.toggle('show',bar.classList.contains('hidden'));}
+function toggleBar(){bar.classList.toggle('hidden');barToggle.classList.toggle('show',bar.classList.contains('hidden'));renderTray();}
 $('#btnHide').onclick=toggleBar;barToggle.onclick=toggleBar;
 $('#clearAll').onclick=()=>{if(!state.widgets.length||confirm('確定要移除目前螢幕上的所有小工具？')){[...state.widgets].forEach(w=>removeWidget(w.id));closePanels();}};
 
@@ -2305,7 +2553,7 @@ $('#sceneSave').onclick=()=>{
 function loadState(ns){
   [...state.widgets].forEach(w=>{const L=live.get(w.id);L?.api?.destroy?.();L?.el.remove();live.delete(w.id);});
   state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||'',theme:ns.theme||state.theme||DEFAULT_THEME};
-  applyTheme();applyBg();state.widgets.forEach(mount);updateEmpty();save();
+  applyTheme();applyBg();state.widgets.forEach(mount);updateEmpty();renderTray();save();
 }
 function renderScenes(){
   const box=$('#sceneList');box.innerHTML='';const S=scenes();const names=Object.keys(S).sort((a,b)=>(S[b].at||0)-(S[a].at||0));
@@ -2344,9 +2592,15 @@ document.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
   if((e.metaKey||e.ctrlKey)&&k==='z'&&!typing&&lastRemoved){e.preventDefault();undoClose();return;}
   if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(['ArrowRight','ArrowLeft','PageDown','PageUp','ArrowDown','ArrowUp'].includes(e.key)){
+    const cand=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.nav);
+    const t=cand.find(w=>w.id===activeId)||cand.sort((a,b)=>b.z-a.z)[0];
+    if(t&&live.get(t.id).api.nav(['ArrowRight','PageDown','ArrowDown'].includes(e.key)?1:-1)){e.preventDefault();return;}
+  }
+  if(k==='m'&&activeId){const w=state.widgets.find(x=>x.id===activeId);if(w){setMin(w,true);return;}}
   if(e.key===' '){
     // 空白鍵：操作目前選取的視窗；沒有選取時，找最上層可操作的
-    const cand=state.widgets.filter(w=>live.get(w.id)?.api?.space);
+    const cand=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.space);
     const t=cand.find(w=>w.id===activeId)||cand.sort((a,b)=>b.z-a.z)[0];
     if(t){e.preventDefault();if(e.target.blur)e.target.blur();live.get(t.id).api.space();}
     return;
@@ -2464,8 +2718,45 @@ function startStudent(pin0){
     main.append(h('h2',{class:'st-q',style:'text-align:center'},String(st.q||'上課簽到')),inp,h('button',{class:'btn p st-big',disabled:!st.open||!!note,onclick:go},'簽到'),
       h('div',{class:'st-note'},note||(!st.open?'老師已截止簽到':'輸入名字後按「簽到」')));
   }
+  /* 簡報遙控器 */
+  function renderRemote(st,note){
+    let R=S.rm;
+    if(!R||R.root.parentNode!==main){
+      main.innerHTML='';
+      R=S.rm={mode:'laser',color:'#e5484d'};
+      const pad=h('div',{class:'st-pad'}),dotp=h('div',{class:'dotp'});R.pad=pad;R.dotp=dotp;
+      const title=h('h2',{class:'st-q',style:'text-align:center;margin-bottom:10px'});R.title=title;
+      const bL=h('button',{class:'btn'},'雷射筆'),bP=h('button',{class:'btn'},'畫筆'),bC=h('button',{class:'btn'},'清除');
+      const seg=()=>{bL.classList.toggle('on',R.mode==='laser');bP.classList.toggle('on',R.mode==='pen');bL.classList.toggle('p',R.mode==='laser');bP.classList.toggle('p',R.mode==='pen');};
+      bL.onclick=()=>{R.mode='laser';seg();};bP.onclick=()=>{R.mode='pen';seg();};bC.onclick=()=>send({t:'clear'});seg();
+      const prev=h('button',{class:'btn st-nb',onclick:()=>{send({t:'nav',d:-1});navigator.vibrate?.(20);}},'◀ 上一頁');
+      const next=h('button',{class:'btn p st-nb',onclick:()=>{send({t:'nav',d:1});navigator.vibrate?.(20);}},'下一頁 ▶');
+      R.pgn=h('div',{class:'st-pgn'});R.note=h('div',{class:'st-note'});R.prev=prev;R.next=next;
+      R.root=h('div',{},title,pad,h('div',{class:'st-seg'},bL,bP,bC),h('div',{class:'st-navs'},prev,next),R.pgn,R.note);
+      main.append(R.root);
+      let last=0,q=null,down=false;
+      const pos=e=>{const r=pad.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))];};
+      const flush=()=>{if(q){send(q);q=null;}last=Date.now();};
+      const out=(m,urgent)=>{if(urgent||m.s){q=null;send(m);last=Date.now();return;}q=m;if(Date.now()-last>30)flush();else setTimeout(flush,30);};
+      pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}down=true;const [x,y]=pos(e);
+        dotp.style.display='block';dotp.style.left=x*100+'%';dotp.style.top=y*100+'%';
+        out(R.mode==='pen'?{t:'ink',x,y,s:1,c:R.color}:{t:'ptr',x,y},true);});
+      pad.addEventListener('pointermove',e=>{if(!down)return;const [x,y]=pos(e);dotp.style.left=x*100+'%';dotp.style.top=y*100+'%';
+        out(R.mode==='pen'?{t:'ink',x,y,c:R.color}:{t:'ptr',x,y});});
+      const up=()=>{if(!down)return;down=false;dotp.style.display='none';flush();if(R.mode==='laser')send({t:'ptr',x:-1,y:-1});};
+      pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
+    }
+    R.title.textContent=String(st.q||'簡報遙控器');
+    if(st.n&&st.img){if(R.imgSrc!==st.img){R.imgSrc=st.img;R.pad.innerHTML='';R.pad.append(h('img',{src:st.img,alt:''}),R.dotp);}}
+    else if(R.imgSrc!==''){R.imgSrc='';R.pad.innerHTML='';R.pad.append(h('div',{class:'ph'},st.n?'載入中…':'老師的簡報還沒開啟 PDF'),R.dotp);}
+    R.pgn.textContent=st.n?`第 ${st.page} 頁 / 共 ${st.n} 頁`:'';
+    R.prev.disabled=!st.n||st.page<=1||!!note;R.next.disabled=!st.n||st.page>=st.n||!!note;
+    R.note.className='st-note'+(note?'':' ok');R.note.textContent=note||'在畫面上按住滑動＝雷射筆；切到「畫筆」可直接畫在老師的投影片上';
+  }
+  function send(m){try{if(S?.conn?.open)S.conn.send(m);}catch(e){}}
   function renderQ(note){
     const st=S.st;if(!st)return;
+    if(st.kind==='remote')return renderRemote(st,note);
     if(st.kind==='cam'||st.kind==='wall'||st.kind==='checkin'){
       // 內容沒變就不重畫，避免打字到一半被清掉
       const sig=JSON.stringify([st.kind,st.q,st.open,st.sent,st.mine,st.qid,note||'',!!S.cam,!!S.editName]);
@@ -2494,7 +2785,7 @@ else{
 applyTheme();applyBg();
 state.widgets.forEach(w=>{if(!(w.w>=120))w.w=360;if(!(w.h>=100))w.h=260;});
 state.widgets.forEach(mount);
-updateEmpty();
+updateEmpty();renderTray();cleanFiles();
 localStorage.setItem('classroomscreen.seen','1');
 }
 </script>
