@@ -659,6 +659,12 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
 .st-dots{display:flex;gap:10px;align-items:center;justify-content:center;flex:1}
 .st-dots i{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ccd;display:block}
 .st-dots i.on{box-shadow:0 0 0 3px #2a7de1}
+#rcCursor.penring{width:18px;height:18px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--pc,#e5484d);background:rgba(255,255,255,.35);box-shadow:0 0 0 2px rgba(255,255,255,.8);filter:none}
+#rcCursor.penring svg{display:none}
+.st-track canvas.trace{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:16px}
+.st-pen{display:flex;flex-direction:column;gap:8px;flex:1}
+.st-pen .rowp{display:flex;gap:8px;align-items:center}
+.st-pen .btn{flex:1;padding:9px 6px;font-size:14px;border-radius:12px;justify-content:center}
 </style>
 </head>
 <body>
@@ -1854,16 +1860,25 @@ async function makeQR(el,text){
   }catch(e){el.textContent='QR 需要網路';}
 }
 const LIVE_HOSTS=new Set();
+/* 同一台電腦開了兩個分頁時，避免兩邊搶同一個 PIN（會卡 30 秒才出現 QR Code） */
+const LIVE_BC=('BroadcastChannel' in window)?new BroadcastChannel('classroomscreen.live'):null;
+const LIVE_MINE=new Set();
+if(LIVE_BC)LIVE_BC.addEventListener('message',e=>{const q=e.data&&e.data.q;if(q&&LIVE_MINE.has(q))LIVE_BC.postMessage({a:q});});
+function pinTakenHere(pin){if(!LIVE_BC)return Promise.resolve(false);
+  return new Promise(res=>{const f=e=>{if(e.data&&e.data.a===pin){LIVE_BC.removeEventListener('message',f);res(true);}};
+    LIVE_BC.addEventListener('message',f);LIVE_BC.postMessage({q:pin});setTimeout(()=>{LIVE_BC.removeEventListener('message',f);res(false);},300);});}
 let bigOwner=null;
 function closeBig(){bigOwner=null;$('#liveBig').classList.remove('open');}
 $('#liveBig').addEventListener('click',e=>{if(e.target.id==='liveBig')closeBig();});
 $('#lbCopy').onclick=()=>bigOwner?.copyLink();
 addEventListener('pagehide',()=>LIVE_HOSTS.forEach(L=>L.quiet()));
+addEventListener('online',()=>setTimeout(()=>LIVE_HOSTS.forEach(L=>L.revive()),800));
+addEventListener('pageshow',e=>{if(e.persisted)LIVE_HOSTS.forEach(L=>L.revive());});
 /* 每個開放作答的小工具各自一個房間（PIN）。ad = {payload(), count(), vote(prev,i)} */
 function liveHost(s,ctx,ad){
   if(!s.voters||typeof s.voters!=='object')s.voters={};
   s.qid=s.qid||1;
-  let peer=null,ready=false,err='',dead=false,syncT,qrFor='';
+  let peer=null,ready=false,err='',dead=false,syncT,qrFor='',fails=0,wd=null;
   const conns=new Set();
   const qrEl=h('div',{class:'lv-qr',title:'放大 QR Code 給全班看'});
   const pinEl=h('b',{class:'lv-pin'}),stEl=h('span',{class:'muted'});
@@ -1891,7 +1906,7 @@ function liveHost(s,ctx,ad){
     pinEl.textContent=ready?'PIN '+s.live.pin:'連線中…';stEl.textContent=status();
     bOpen.textContent=s.live.open?'⏸ 截止':'▶ 繼續';bOpen.classList.toggle('on',!s.live.open);
     if(ready&&qrFor!==s.live.pin){qrFor=s.live.pin;makeQR(qrEl,joinUrl(s.live.pin));}
-    if(!ready&&qrFor){qrFor='';qrEl.textContent='…';}
+    if(!ready&&qrFor){qrFor='';qrEl.textContent='連線中';}
     if(bigOwner===api)paintBig();
   }
   let bigQrFor='';
@@ -1908,14 +1923,20 @@ function liveHost(s,ctx,ad){
     try{await loadScript(PEER_SRC,()=>window.Peer);}catch(e){err='連線程式載入失敗（需要網路）';paint();return;}
     if(dead||!s.live?.on||peer)return;
     if(!s.live.pin){s.live.pin=newPin();fresh=true;ctx.save();}
+    else if(!fresh&&await pinTakenHere(s.live.pin)){s.live.pin=newPin();fresh=true;ctx.save();toast('教室螢幕在另一個分頁也開著，這裡改用新的 PIN');}
+    if(dead||!s.live?.on||peer)return;
     const p=new Peer(LIVE_PREFIX+s.live.pin,{debug:0});peer=p;ready=false;
-    p.on('open',()=>{if(peer!==p)return p.destroy();ready=true;err='';paint();});
+    clearTimeout(wd);
+    wd=setTimeout(()=>{if(peer!==p||ready)return;fails++;try{p.destroy();}catch(_){} peer=null;
+      err=fails>=3?'連不上連線伺服器：學校或公司網路可能擋住了，可改用手機熱點再試（仍在重試）':'連線伺服器回應較慢，重試中…';paint();setTimeout(()=>start(attempt,fresh),800);},10000);
+    p.on('open',()=>{if(peer!==p)return p.destroy();clearTimeout(wd);fails=0;ready=true;err='';LIVE_MINE.add(s.live.pin);paint();});
     p.on('error',e=>{
       if(peer!==p)return;
       if(e.type==='unavailable-id'){
         try{p.destroy();}catch(_){} peer=null;
         // 重新整理後要取回原本的 PIN：舊連線還沒釋放時等一下再試；新 PIN 撞號就直接換
-        if(!fresh&&attempt<10){err='正在取回原本的 PIN…';paint();setTimeout(()=>start(attempt+1),2500);}
+        clearTimeout(wd);
+        if(!fresh&&attempt<2){err='正在取回原本的 PIN…';paint();setTimeout(()=>start(attempt+1),1500);}
         else{s.live.pin=newPin();ctx.save();start(0,true);}
         return;
       }
@@ -1923,7 +1944,9 @@ function liveHost(s,ctx,ad){
       console.warn('live',e.type);err='連線服務異常，重試中…';paint();
       setTimeout(()=>{if(peer===p&&(p.destroyed||p.disconnected)){try{p.destroy();}catch(_){} peer=null;ready=false;start();}},4000);
     });
-    p.on('disconnected',()=>setTimeout(()=>{try{if(peer===p&&!p.destroyed)p.reconnect();}catch(_){}},1000));
+    p.on('disconnected',()=>{if(peer!==p)return;ready=false;err='和連線伺服器斷線，重新連線中…';paint();
+      setTimeout(()=>{try{if(peer===p&&!p.destroyed)p.reconnect();}catch(_){}},1000);
+      setTimeout(()=>{if(peer===p&&!ready){try{p.destroy();}catch(_){} peer=null;start();}},9000);});
     p.on('call',call=>{if(ad.onCall&&s.live?.on)ad.onCall(call);else try{call.close();}catch(_){}});
     p.on('connection',c=>{
       c.on('open',()=>{conns.add(c);paint();});
@@ -1952,7 +1975,7 @@ function liveHost(s,ctx,ad){
   }
   function sync(){clearTimeout(syncT);syncT=setTimeout(()=>conns.forEach(c=>send(c,stateFor(c))),150);}
   function stopPeer(sayBye){
-    const p=peer;peer=null;ready=false;qrFor='';
+    const p=peer;peer=null;ready=false;qrFor='';clearTimeout(wd);if(s.live?.pin)LIVE_MINE.delete(s.live.pin);
     if(sayBye)conns.forEach(c=>send(c,{t:'end'}));
     conns.clear();
     if(p)setTimeout(()=>{try{p.destroy();}catch(e){}},sayBye?300:0);
@@ -1967,6 +1990,7 @@ function liveHost(s,ctx,ad){
     reset(){s.voters={};s.qid++;ctx.save();sync();paint();},
     removeOpt(i){for(const k of Object.keys(s.voters)){const v=s.voters[k];if(v===i)delete s.voters[k];else if(v>i)s.voters[k]=v-1;}ctx.save();sync();},
     quiet(){stopPeer(false);},
+    revive(){if(!dead&&s.live?.on&&(!peer||peer.destroyed||!ready)){try{peer?.destroy();}catch(_){} peer=null;ready=false;start();}},
     destroy(){dead=true;LIVE_HOSTS.delete(api);if(bigOwner===api)closeBig();stopPeer(true);}};
   LIVE_HOSTS.add(api);
   paint();
@@ -2741,7 +2765,7 @@ function startStudent(pin0){
       c.on('close',()=>{if(live()&&!me.ended)retry();});
     });
     peer.on('error',e=>{if(!live())return;clearTimeout(guard);
-      if(e.type==='peer-unavailable'&&!me.joined&&me.tries>=2){me.dead=true;try{peer.destroy();}catch(_){}return askPin('找不到 PIN '+me.pin+' 的房間，請確認老師已開放作答、PIN 沒打錯');}
+      if(e.type==='peer-unavailable'&&!me.joined&&me.tries>=6){me.dead=true;try{peer.destroy();}catch(_){}return askPin('找不到 PIN '+me.pin+' 的房間，請確認老師已開放作答、PIN 沒打錯');}
       retry();});
   }
   function retry(){
@@ -2813,7 +2837,8 @@ function startStudent(pin0){
       main.innerHTML='';M=S.ms={mode:st.mode||'mouse'};
       const pad=h('div',{class:'st-track'});M.pad=pad;
       const modes=[['mouse','滑鼠'],['laser','雷射筆'],['pen','畫筆'],['zoom','放大鏡'],['spot','聚光燈']];
-      M.color='#e5484d';M.z=st.z||1;M.ar=st.ar||16/9;
+      M.color='#e5484d';M.z=st.z||1;M.ar=st.ar||16/9;M.pstyle='abs';M.pw=5;
+      M.trace=h('canvas',{class:'trace'});M.tctx=M.trace.getContext('2d');
       const mb=modes.map(([k,t])=>h('button',{class:'btn',onclick:()=>{M.mode=k;if(k==='zoom'&&M.z<2)M.z=2;send({t:'mode',m:k});seg();}},t));
       const tools=h('div',{class:'st-tools'});
       const tb=(t,f)=>h('button',{class:'btn',onclick:()=>{f();navigator.vibrate?.(15);}},t);
@@ -2822,11 +2847,18 @@ function startStudent(pin0){
         if(M.mode==='mouse')tools.append(tb('點一下',()=>send({t:'click'})),tb('▲ 捲動',()=>send({t:'scroll',dy:-160})),tb('▼ 捲動',()=>send({t:'scroll',dy:160})),tb('關閉選單',()=>send({t:'esc'})));
         if(M.mode==='spot')tools.append(tb('－ 小',()=>send({t:'spotR',d:-1})),tb('＋ 大',()=>send({t:'spotR',d:1})));
         if(M.mode==='pen'){const cols=['#e5484d','#2a7de1','#ffc21a','#111111','#ffffff'];
-          tools.append(h('div',{class:'st-dots'},cols.map(c=>{const d=h('i',{class:c===M.color?'on':'',style:'background:'+c});d.onclick=()=>{M.color=c;seg();};return d;})),tb('清除',()=>send({t:'inkClear'})));}
+          const sty=k=>{const b=h('button',{class:'btn'+(M.pstyle===k?' p on':''),onclick:()=>{M.pstyle=k;seg();}},k==='abs'?'直接畫':'精準畫');return b;};
+          const sz=(w,t)=>h('button',{class:'btn'+(M.pw===w?' p on':''),onclick:()=>{M.pw=w;seg();}},t);
+          tools.append(h('div',{class:'st-pen'},
+            h('div',{class:'rowp'},sty('abs'),sty('rel'),sz(3,'細'),sz(6,'中'),sz(12,'粗')),
+            h('div',{class:'rowp'},h('div',{class:'st-dots'},cols.map(c=>{const d=h('i',{class:c===M.color?'on':'',style:'background:'+c});d.onclick=()=>{M.color=c;seg();};return d;})),
+              tb('清除',()=>{send({t:'inkClear'});M.tctx?.clearRect(0,0,M.trace.width,M.trace.height);}))));}
         if(M.mode==='zoom')tools.append(tb('－',()=>{M.z=Math.max(1,M.z-.5);send({t:'zoomZ',z:M.z});seg();}),h('span',{class:'st-pgn',style:'margin:0;align-self:center;min-width:3em'},M.z.toFixed(1)+'×'),tb('＋',()=>{M.z=Math.min(5,M.z+.5);send({t:'zoomZ',z:M.z});seg();}),tb('點一下',()=>send({t:'click'})));
-        pad.classList.toggle('abs',M.mode==='pen');pad.style.aspectRatio=M.mode==='pen'?String(M.ar):'';
-        pad.textContent=M.mode==='mouse'?'滑動＝移動游標\n點一下＝點擊　兩指滑動＝捲動':M.mode==='laser'?'滑動＝移動雷射筆':M.mode==='pen'?'這塊就是老師的整個螢幕\n直接在上面畫':M.mode==='zoom'?'滑動＝移動放大的位置\n點一下＝點擊':'滑動＝移動聚光燈';
-        pad.style.whiteSpace='pre-line';}
+        const absPen=M.mode==='pen'&&M.pstyle==='abs';
+        pad.classList.toggle('abs',absPen);pad.style.aspectRatio=absPen?String(M.ar):'';
+        pad.textContent=M.mode==='mouse'?'滑動＝移動游標\n點一下＝點擊　兩指滑動＝捲動':M.mode==='laser'?'滑動＝移動雷射筆':M.mode==='pen'?(absPen?'這塊就是老師的整個螢幕\n直接在上面畫':'單指滑動＝從筆尖位置畫線（放慢、精準）\n兩指滑動＝移動筆尖，不畫線'):M.mode==='zoom'?'滑動＝移動放大的位置\n點一下＝點擊':'滑動＝移動聚光燈';
+        pad.style.whiteSpace='pre-line';
+        if(absPen){pad.append(M.trace);requestAnimationFrame(()=>{const r=pad.getBoundingClientRect(),dp=devicePixelRatio||1;const W=Math.round(r.width*dp),H=Math.round(r.height*dp);if(M.trace.width!==W||M.trace.height!==H){M.trace.width=W;M.trace.height=H;}});}}
       M.seg=seg;
       const prev=h('button',{class:'btn',onclick:()=>{send({t:'nav',d:-1});navigator.vibrate?.(20);}},'◀ 上一頁');
       const next=h('button',{class:'btn p',onclick:()=>{send({t:'nav',d:1});navigator.vibrate?.(20);}},'下一頁 ▶');
@@ -2838,10 +2870,27 @@ function startStudent(pin0){
       const flush=()=>{timer=null;if(acc[0]||acc[1]){send({t:'move',dx:Math.round(acc[0]*10)/10,dy:Math.round(acc[1]*10)/10});acc=[0,0];}if(accS){send({t:'scroll',dy:Math.round(accS*2)});accS=0;}};
       const queue=()=>{if(!timer)timer=setTimeout(flush,30);};
       const absP=e=>{const r=pad.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))];};
-      let penQ=null,penT=null;const penFlush=()=>{penT=null;if(penQ){send(penQ);penQ=null;}};
-      pad.addEventListener('pointerdown',e=>{if(M.mode!=='pen')return;e.preventDefault();e.stopImmediatePropagation();try{pad.setPointerCapture(e.pointerId);}catch(_){}M.penId=e.pointerId;const [x,y]=absP(e);send({t:'ink',x,y,s:1,c:M.color});},true);
-      pad.addEventListener('pointermove',e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();if(M.penId!==e.pointerId)return;const [x,y]=absP(e);penQ={t:'ink',x,y,c:M.color};if(!penT)penT=setTimeout(penFlush,25);},true);
-      const penUp=e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();if(M.penId===e.pointerId){M.penId=null;clearTimeout(penT);penFlush();}};
+      /* 畫筆：每個點都送出（之前只送最後一點，線會變成折線），30ms 打包一次 */
+      let buf=[],bufStart=0,penT=null,pp=new Map(),rel={dx:0,dy:0,draw:0},lastT=null;
+      const flushAbs=()=>{penT=null;if(buf.length){send({t:'inkp',pts:buf,s:bufStart,c:M.color,w:M.pw});buf=[];bufStart=0;}};
+      const flushRel=()=>{penT=null;if(rel.dx||rel.dy){send({t:'pm',dx:+rel.dx.toFixed(5),dy:+rel.dy.toFixed(5),draw:rel.draw,c:M.color,w:M.pw});rel.dx=rel.dy=0;}};
+      const trace=(a,b)=>{const c=M.tctx,W=M.trace.width,H=M.trace.height;c.strokeStyle=M.color==='#ffffff'?'#c9ced8':M.color;c.lineWidth=Math.max(2,M.pw*(W/900));c.lineCap=c.lineJoin='round';c.beginPath();c.moveTo(a[0]*W,a[1]*H);c.lineTo(b[0]*W,b[1]*H);c.stroke();};
+      pad.addEventListener('pointerdown',e=>{if(M.mode!=='pen')return;e.preventDefault();e.stopImmediatePropagation();try{pad.setPointerCapture(e.pointerId);}catch(_){}
+        pp.set(e.pointerId,[e.clientX,e.clientY]);
+        if(M.pstyle==='abs'){if(pp.size>1)return;M.penId=e.pointerId;const q=absP(e);lastT=q;if(buf.length)flushAbs();buf=[q];bufStart=1;clearTimeout(penT);penT=setTimeout(flushAbs,30);trace(q,q);}
+      },true);
+      pad.addEventListener('pointermove',e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();const old=pp.get(e.pointerId);if(!old)return;
+        const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+        if(M.pstyle==='abs'){if(M.penId!==e.pointerId)return;for(const ce of (evs.length?evs:[e])){const q=absP(ce);buf.push(q);trace(lastT||q,q);lastT=q;}if(!penT)penT=setTimeout(flushAbs,30);pp.set(e.pointerId,[e.clientX,e.clientY]);return;}
+        /* 精準畫：相對移動，手指移動整塊觸控板寬度＝螢幕寬度的一半 */
+        const r=pad.getBoundingClientRect(),draw=pp.size===1?1:0;
+        const k=1/r.width/(pp.size||1);
+        if(rel.draw!==draw&&(rel.dx||rel.dy)){clearTimeout(penT);flushRel();}
+        rel.draw=draw;rel.dx+=(e.clientX-old[0])*k;rel.dy+=(e.clientY-old[1])*k;pp.set(e.pointerId,[e.clientX,e.clientY]);
+        if(!penT)penT=setTimeout(flushRel,25);
+      },true);
+      const penUp=e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();pp.delete(e.pointerId);
+        if(M.pstyle==='abs'){if(M.penId===e.pointerId){M.penId=null;clearTimeout(penT);flushAbs();lastT=null;}}else{clearTimeout(penT);flushRel();}};
       pad.addEventListener('pointerup',penUp,true);pad.addEventListener('pointercancel',penUp,true);
       pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);pad.classList.add('act');
         if(pts.size===1){t0=Date.now();moved=0;multi=false;}else multi=true;});
@@ -2950,7 +2999,7 @@ function rcShow(){
 function rcZoom(){const z=RC.mode==='zoom'?RC.z:1;stage.classList.add('rzoom');stage.style.transformOrigin=`${RC.x}px ${RC.y}px`;stage.style.transform=z>1?`scale(${z})`:'';}
 function rcSetMode(m){
   if(!['mouse','laser','spot','pen','zoom'].includes(m))return;
-  const was=RC.mode;RC.mode=m;RC.cur.classList.toggle('laser',m==='laser');
+  const was=RC.mode;RC.mode=m;RC.cur.classList.toggle('laser',m==='laser');RC.cur.classList.remove('penring');
   if(was==='pen'&&m!=='pen'&&ov.classList.contains('on'))penOn(false);
   if(m==='pen'&&!ov.classList.contains('on'))penOn(true);
   if(m==='pen')RC.cur.style.display='none';
@@ -2996,6 +3045,16 @@ function rcInit(){
         const p=d.s?null:RC.last;OD.set({color:String(d.c||'#e5484d').slice(0,9)});OD.stroke(p||[x,y],[x,y]);RC.last=[x,y];
         RC.x=x*innerWidth;RC.y=y*innerHeight;return true;}
       if(d.t==='inkClear'){OD.clear();return true;}
+      if(d.t==='inkp'){const pts=Array.isArray(d.pts)?d.pts.slice(0,400):[];if(!pts.length)return true;if(!ov.classList.contains('on'))penOn(true);
+        OD.set({color:String(d.c||'#e5484d').slice(0,9),size:clamp(+d.w||5,1,40)});
+        let prev=d.s?null:RC.last;
+        for(const q of pts){const x=+q[0],y=+q[1];if(!(x>=0&&x<=1&&y>=0&&y<=1))continue;OD.stroke(prev||[x,y],[x,y]);prev=[x,y];}
+        RC.last=prev;if(prev){RC.x=prev[0]*innerWidth;RC.y=prev[1]*innerHeight;}return true;}
+      if(d.t==='pm'){if(!ov.classList.contains('on'))penOn(true);
+        const sp=innerWidth*.5,dx=clamp(+d.dx||0,-2,2)*sp,dy=clamp(+d.dy||0,-2,2)*sp;
+        const a=[RC.x/innerWidth,RC.y/innerHeight];RC.x=clamp(RC.x+dx,0,innerWidth-1);RC.y=clamp(RC.y+dy,0,innerHeight-1);
+        if(d.draw){OD.set({color:String(d.c||'#e5484d').slice(0,9),size:clamp(+d.w||5,1,40)});OD.stroke(a,[RC.x/innerWidth,RC.y/innerHeight]);}
+        RC.cur.style.setProperty('--pc',String(d.c||'#e5484d').slice(0,9));RC.cur.classList.add('penring');RC.cur.style.display='block';RC.cur.style.left=RC.x+'px';RC.cur.style.top=RC.y+'px';return true;}
       if(d.t==='zoomZ'){RC.z=clamp(+d.z||1,1,5);rcZoom();RC.api.sync();return true;}
       if(d.t==='scroll'){rcScroll(clamp(+d.dy||0,-400,400));return true;}
       if(d.t==='mode'){rcSetMode(String(d.m));RC.api.sync();return true;}
