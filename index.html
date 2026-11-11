@@ -653,6 +653,12 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
 .st-track.act{background:linear-gradient(160deg,#323a4a,#20252f)}
 .swatches.bgimgs{grid-template-columns:repeat(3,1fr)}
 .swatches.bgimgs .sw{aspect-ratio:16/9}
+#stage.rzoom{transition:transform .25s ease}
+.st-track.abs{height:auto;max-height:52vh;background:#fdfcf8;color:#9aa3b5;box-shadow:inset 0 0 0 2px #d8dee8}
+.st-seg{flex-wrap:wrap}
+.st-dots{display:flex;gap:10px;align-items:center;justify-content:center;flex:1}
+.st-dots i{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ccd;display:block}
+.st-dots i.on{box-shadow:0 0 0 3px #2a7de1}
 </style>
 </head>
 <body>
@@ -753,7 +759,7 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
       <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛，也能另外換背景。</li>
       <li><b>簡報/PDF</b>：直接開電腦裡的 PDF（PowerPoint 先另存成 PDF），用 ← → 鍵、簡報翻頁器或空白鍵翻頁，可在投影片上畫重點、全螢幕放映。也能貼 Canva、Google 簡報、.pptx 網址。按「📱 手機遙控」掃 QR Code，手機就是翻頁器和雷射筆。</li>
       <li><b>縮小視窗</b>：按視窗右上角的 — 把它收到下方（或按 M），點標籤就還原；拖曳標籤左邊的 ⋮⋮ 可以移動位置。</li>
-      <li><b>手機遙控</b>：按工具列的「遙控」掃 QR Code，手機就是觸控板：滑動移動游標、點一下＝點擊、兩指滑動捲動，也能切換雷射筆、聚光燈，並翻簡報頁。</li>
+      <li><b>手機遙控</b>：按工具列的「遙控」掃 QR Code，手機就是觸控板：滑動移動游標、點一下＝點擊、兩指滑動捲動，也能切換雷射筆、畫筆（直接畫在整個螢幕上）、放大鏡、聚光燈，並翻簡報頁。</li>
       <li><b>工具列位置</b>：在「外觀」可以把工具列放在下方、上方、左側或右側。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
@@ -2806,15 +2812,20 @@ function startStudent(pin0){
     if(!M||M.root.parentNode!==main){
       main.innerHTML='';M=S.ms={mode:st.mode||'mouse'};
       const pad=h('div',{class:'st-track'});M.pad=pad;
-      const modes=[['mouse','滑鼠'],['laser','雷射筆'],['spot','聚光燈']];
-      const mb=modes.map(([k,t])=>h('button',{class:'btn',onclick:()=>{M.mode=k;send({t:'mode',m:k});seg();}},t));
+      const modes=[['mouse','滑鼠'],['laser','雷射筆'],['pen','畫筆'],['zoom','放大鏡'],['spot','聚光燈']];
+      M.color='#e5484d';M.z=st.z||1;M.ar=st.ar||16/9;
+      const mb=modes.map(([k,t])=>h('button',{class:'btn',onclick:()=>{M.mode=k;if(k==='zoom'&&M.z<2)M.z=2;send({t:'mode',m:k});seg();}},t));
       const tools=h('div',{class:'st-tools'});
       const tb=(t,f)=>h('button',{class:'btn',onclick:()=>{f();navigator.vibrate?.(15);}},t);
       function seg(){mb.forEach((b,i)=>{const on=modes[i][0]===M.mode;b.classList.toggle('on',on);b.classList.toggle('p',on);});
         tools.innerHTML='';
         if(M.mode==='mouse')tools.append(tb('點一下',()=>send({t:'click'})),tb('▲ 捲動',()=>send({t:'scroll',dy:-160})),tb('▼ 捲動',()=>send({t:'scroll',dy:160})),tb('關閉選單',()=>send({t:'esc'})));
         if(M.mode==='spot')tools.append(tb('－ 小',()=>send({t:'spotR',d:-1})),tb('＋ 大',()=>send({t:'spotR',d:1})));
-        pad.textContent=M.mode==='mouse'?'滑動＝移動游標\n點一下＝點擊　兩指滑動＝捲動':M.mode==='laser'?'滑動＝移動雷射筆':'滑動＝移動聚光燈';
+        if(M.mode==='pen'){const cols=['#e5484d','#2a7de1','#ffc21a','#111111','#ffffff'];
+          tools.append(h('div',{class:'st-dots'},cols.map(c=>{const d=h('i',{class:c===M.color?'on':'',style:'background:'+c});d.onclick=()=>{M.color=c;seg();};return d;})),tb('清除',()=>send({t:'inkClear'})));}
+        if(M.mode==='zoom')tools.append(tb('－',()=>{M.z=Math.max(1,M.z-.5);send({t:'zoomZ',z:M.z});seg();}),h('span',{class:'st-pgn',style:'margin:0;align-self:center;min-width:3em'},M.z.toFixed(1)+'×'),tb('＋',()=>{M.z=Math.min(5,M.z+.5);send({t:'zoomZ',z:M.z});seg();}),tb('點一下',()=>send({t:'click'})));
+        pad.classList.toggle('abs',M.mode==='pen');pad.style.aspectRatio=M.mode==='pen'?String(M.ar):'';
+        pad.textContent=M.mode==='mouse'?'滑動＝移動游標\n點一下＝點擊　兩指滑動＝捲動':M.mode==='laser'?'滑動＝移動雷射筆':M.mode==='pen'?'這塊就是老師的整個螢幕\n直接在上面畫':M.mode==='zoom'?'滑動＝移動放大的位置\n點一下＝點擊':'滑動＝移動聚光燈';
         pad.style.whiteSpace='pre-line';}
       M.seg=seg;
       const prev=h('button',{class:'btn',onclick:()=>{send({t:'nav',d:-1});navigator.vibrate?.(20);}},'◀ 上一頁');
@@ -2826,15 +2837,22 @@ function startStudent(pin0){
       const pts=new Map();let acc=[0,0],accS=0,t0=0,moved=0,timer=null,multi=false;
       const flush=()=>{timer=null;if(acc[0]||acc[1]){send({t:'move',dx:Math.round(acc[0]*10)/10,dy:Math.round(acc[1]*10)/10});acc=[0,0];}if(accS){send({t:'scroll',dy:Math.round(accS*2)});accS=0;}};
       const queue=()=>{if(!timer)timer=setTimeout(flush,30);};
+      const absP=e=>{const r=pad.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))];};
+      let penQ=null,penT=null;const penFlush=()=>{penT=null;if(penQ){send(penQ);penQ=null;}};
+      pad.addEventListener('pointerdown',e=>{if(M.mode!=='pen')return;e.preventDefault();e.stopImmediatePropagation();try{pad.setPointerCapture(e.pointerId);}catch(_){}M.penId=e.pointerId;const [x,y]=absP(e);send({t:'ink',x,y,s:1,c:M.color});},true);
+      pad.addEventListener('pointermove',e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();if(M.penId!==e.pointerId)return;const [x,y]=absP(e);penQ={t:'ink',x,y,c:M.color};if(!penT)penT=setTimeout(penFlush,25);},true);
+      const penUp=e=>{if(M.mode!=='pen')return;e.stopImmediatePropagation();if(M.penId===e.pointerId){M.penId=null;clearTimeout(penT);penFlush();}};
+      pad.addEventListener('pointerup',penUp,true);pad.addEventListener('pointercancel',penUp,true);
       pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);pad.classList.add('act');
         if(pts.size===1){t0=Date.now();moved=0;multi=false;}else multi=true;});
       pad.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p[0],dy=e.clientY-p[1];pts.set(e.pointerId,[e.clientX,e.clientY]);moved+=Math.abs(dx)+Math.abs(dy);
         if(pts.size>=2){accS+=-dy/pts.size;}else{acc[0]+=dx;acc[1]+=dy;}queue();});
       const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size)return;pad.classList.remove('act');flush();
-        if(!multi&&moved<10&&Date.now()-t0<300&&M.mode==='mouse'){send({t:'click'});navigator.vibrate?.(12);}};
+        if(!multi&&moved<10&&Date.now()-t0<300&&(M.mode==='mouse'||M.mode==='zoom')){send({t:'click'});navigator.vibrate?.(12);}};
       pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
     }
     M.pgn.textContent=st.n?`第 ${st.page} 頁 / 共 ${st.n} 頁`:'';
+    if(st.ar&&Math.abs(st.ar-M.ar)>.01){M.ar=st.ar;M.seg();}
     M.note.className='st-note'+(note?'':' ok');M.note.textContent=note||'畫面上的游標會跟著你的手指移動';
   }
   /* 簡報遙控器 */
@@ -2920,17 +2938,24 @@ function startStudent(pin0){
 
 
 /* ---------- 手機遙控整個畫面：滑鼠、雷射筆、聚光燈、翻頁 ---------- */
-const RC={api:null,cur:null,x:0,y:0,mode:'mouse',seen:false,hideT:0};
+const RC={api:null,cur:null,x:0,y:0,mode:'mouse',seen:false,hideT:0,z:1,last:null};
 function rcTarget(){const c=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.nav);return c.find(w=>w.id===activeId)||c.sort((a,b)=>b.z-a.z)[0];}
 function rcInfo(){const t=state.widgets.filter(w=>!w.min&&live.get(w.id)?.api?.info?.());const w=t.find(x=>x.id===activeId)||t.sort((a,b)=>b.z-a.z)[0];return w?live.get(w.id).api.info():null;}
 function rcShow(){
-  const c=RC.cur;c.style.display=RC.mode==='spot'?'none':'block';c.style.left=RC.x+'px';c.style.top=RC.y+'px';
+  const c=RC.cur;c.style.display=(RC.mode==='spot'||RC.mode==='pen')?'none':'block';c.style.left=RC.x+'px';c.style.top=RC.y+'px';
   if(RC.mode==='spot'){spX=RC.x;spY=RC.y;spDraw();}
+  if(RC.mode==='zoom')rcZoom();
   clearTimeout(RC.hideT);if(RC.mode!=='spot')RC.hideT=setTimeout(()=>{c.style.display='none';},RC.mode==='laser'?2500:8000);
 }
+function rcZoom(){const z=RC.mode==='zoom'?RC.z:1;stage.classList.add('rzoom');stage.style.transformOrigin=`${RC.x}px ${RC.y}px`;stage.style.transform=z>1?`scale(${z})`:'';}
 function rcSetMode(m){
-  if(!['mouse','laser','spot'].includes(m))return;
+  if(!['mouse','laser','spot','pen','zoom'].includes(m))return;
   const was=RC.mode;RC.mode=m;RC.cur.classList.toggle('laser',m==='laser');
+  if(was==='pen'&&m!=='pen'&&ov.classList.contains('on'))penOn(false);
+  if(m==='pen'&&!ov.classList.contains('on'))penOn(true);
+  if(m==='pen')RC.cur.style.display='none';
+  if(m==='zoom'){if(RC.z<2)RC.z=2;}else if(was==='zoom'){RC.z=1;}
+  rcZoom();
   if(m==='spot'){if(!spot.classList.contains('on'))spotOn(true);spLock=true;spot.style.cursor='default';spX=RC.x;spY=RC.y;spDraw();RC.cur.style.display='none';}
   else{if(was==='spot'&&spot.classList.contains('on'))spotOn(false);rcShow();}
 }
@@ -2958,22 +2983,27 @@ function rcInit(){
   const btn=$('#btnRemote');
   const ctx={save,setTitle(){},inst:{max:true,h:9999},el:document.body,remove(){}};
   RC.api=liveHost(state.remote,ctx,{labels:['手機遙控','關閉手機遙控'],tip:'用手機掃 QR Code，手機就是遙控滑鼠和簡報筆',
-    payload:()=>{const i=rcInfo();return {kind:'mouse',q:'遙控教室螢幕',mode:RC.mode,page:i?.page||0,n:i?.n||0};},count:()=>0,vote(){},
+    payload:()=>{const i=rcInfo();return {kind:'mouse',q:'遙控教室螢幕',mode:RC.mode,page:i?.page||0,n:i?.n||0,ar:innerWidth/innerHeight,z:RC.z};},count:()=>0,vote(){},
     status:n=>{btn.classList.toggle('on',!!state.remote.live?.on);
       if(n&&!RC.seen){RC.seen=true;if(bigOwner===RC.api)setTimeout(closeBig,600);rcShow();}
-      if(!n){RC.seen=false;RC.cur.style.display='none';if(RC.mode==='spot'&&spot.classList.contains('on'))spotOn(false);RC.mode='mouse';RC.cur.classList.remove('laser');}
+      if(!n){RC.seen=false;RC.cur.style.display='none';rcSetMode('mouse');}
       return n?`${n} 支手機遙控中`:'用手機掃 QR Code，手機就是遙控滑鼠和簡報筆';},
     onRaw(c,d){
       if(d.t==='move'){const dx=+d.dx||0,dy=+d.dy||0,m=Math.hypot(dx,dy),k=1.4+Math.min(3,m/10);
         RC.x=clamp(RC.x+dx*k,0,innerWidth-2);RC.y=clamp(RC.y+dy*k,0,innerHeight-2);rcShow();return true;}
-      if(d.t==='click'){if(RC.mode==='mouse')rcClick();return true;}
+      if(d.t==='click'){if(RC.mode==='mouse'||RC.mode==='zoom')rcClick();return true;}
+      if(d.t==='ink'){const x=+d.x,y=+d.y;if(!(x>=0&&x<=1&&y>=0&&y<=1))return true;if(!ov.classList.contains('on'))penOn(true);
+        const p=d.s?null:RC.last;OD.set({color:String(d.c||'#e5484d').slice(0,9)});OD.stroke(p||[x,y],[x,y]);RC.last=[x,y];
+        RC.x=x*innerWidth;RC.y=y*innerHeight;return true;}
+      if(d.t==='inkClear'){OD.clear();return true;}
+      if(d.t==='zoomZ'){RC.z=clamp(+d.z||1,1,5);rcZoom();RC.api.sync();return true;}
       if(d.t==='scroll'){rcScroll(clamp(+d.dy||0,-400,400));return true;}
       if(d.t==='mode'){rcSetMode(String(d.m));RC.api.sync();return true;}
       if(d.t==='spotR'){spR=clamp(spR+(+d.d||0)*30,60,Math.max(innerWidth,innerHeight)/2);spDraw();return true;}
       if(d.t==='nav'){rcNav(d.d>0?1:-1);setTimeout(()=>RC.api.sync(),300);return true;}
       if(d.t==='esc'){closePanels();closeBig();return true;}
       return false;}});
-  btn.onclick=()=>{RC.api.btn.click();btn.classList.toggle('on',!!state.remote.live?.on);if(!state.remote.live?.on){RC.cur.style.display='none';if(RC.mode==='spot')spotOn(false);RC.mode='mouse';}};
+  btn.onclick=()=>{RC.api.btn.click();btn.classList.toggle('on',!!state.remote.live?.on);if(!state.remote.live?.on){RC.cur.style.display='none';rcSetMode('mouse');}};
   btn.classList.toggle('on',!!state.remote.live?.on);
 }
 
