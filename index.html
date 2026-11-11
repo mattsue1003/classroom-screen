@@ -651,6 +651,8 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
 @keyframes rcTap{from{transform:scale(.3);opacity:1}to{transform:scale(1.2);opacity:0}}
 .st-track{position:relative;width:100%;height:min(46vh,340px);border-radius:16px;background:linear-gradient(160deg,#2a2f3a,#1b1f27);touch-action:none;user-select:none;-webkit-user-select:none;display:grid;place-items:center;color:#9aa3b5;font-size:14px;text-align:center;line-height:1.7}
 .st-track.act{background:linear-gradient(160deg,#323a4a,#20252f)}
+.swatches.bgimgs{grid-template-columns:repeat(3,1fr)}
+.swatches.bgimgs .sw{aspect-ratio:16/9}
 </style>
 </head>
 <body>
@@ -713,7 +715,9 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
     <div class="themes" id="themes"></div>
     <div class="pn-sub">工具列位置</div>
     <div class="barpos" id="barPos"></div>
-    <div class="pn-sub">背景</div>
+    <div class="pn-sub">插畫背景</div>
+    <div class="swatches bgimgs" id="bgImgs"></div>
+    <div class="pn-sub">漸層與純色</div>
     <div class="swatches" id="swatches"></div>
     <div class="row"><input class="inp grow" id="bgUrl" placeholder="圖片網址 https://…"><button class="btn p" id="bgUrlGo">套用</button></div>
     <div class="row"><label class="btn grow">📁 上傳圖片<input type="file" id="bgFile" accept="image/*" hidden></label><button class="btn" id="bgGrid">格線</button></div>
@@ -1039,7 +1043,9 @@ function setTheme(k){state.theme=k;state.bg=THEMES[k].bg();applyTheme();applyBg(
 $('#themes').append(...Object.entries(THEMES).map(([k,T])=>{
   const pv=h('span',{class:'pv',style:`background:${T.pv[0]}`},h('i',{style:`background:${T.pv[1]};box-shadow:0 2px 6px rgba(0,0,0,.25)`}),h('b',{style:`background:${T.pv[2]}`}),h('u',{style:`background:${T.pv[3]}`}));
   return h('button',{class:'thm','data-k':k,onclick:()=>setTheme(k)},pv,T.n+(k===DEFAULT_THEME?'（預設）':''));}));
+const BG_IMAGES=[['forest','水彩森林'],['desk','木紋書桌'],['sky','藍天白雲'],['paper','粉彩紙雕'],['night','夜空星光'],['chalk','黑板塗鴉']];
 (function buildSwatches(){
+  $('#bgImgs').append(...BG_IMAGES.map(([k,t])=>{const v=`url("bg/${k}.webp")`;return h('div',{class:'sw','data-v':v,title:t,style:`background:url("bg/${k}-s.webp") center/cover`,onclick:()=>setBg(v)});}));
   const box=$('#swatches');
   BG_PRESETS.forEach(v=>box.append(h('div',{class:'sw','data-v':v,style:'background:'+v,onclick:()=>setBg(v)})));
 })();
