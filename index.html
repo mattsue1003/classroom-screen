@@ -22,7 +22,7 @@ button{cursor:pointer;border:0;background:none}
 button:focus-visible,input:focus-visible,[contenteditable]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
 /* ---------- 舞台與背景 ---------- */
-#stage{position:fixed;inset:0;overflow:hidden;background:var(--bg,linear-gradient(135deg,#1e3c72,#2a5298));background-size:cover;background-position:center;transition:background .4s}
+#stage{position:fixed;inset:0;overflow:hidden;background:var(--bg,linear-gradient(135deg,#1e3c72,#2a5298));background-position:center;transition:background .4s}
 #stage.grid::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
 #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:rgba(255,255,255,.75);text-align:center;pointer-events:none;padding:20px}
 #empty h1{font-size:clamp(22px,4vw,40px);margin:0;font-weight:700;letter-spacing:.04em;text-shadow:0 2px 10px rgba(0,0,0,.3)}
@@ -376,6 +376,137 @@ svg.ui .f,.tico .f{fill:currentColor;stroke:none}
 .st-name{width:100%;font-size:24px;text-align:center;padding:12px;border-radius:14px;border:2px solid #d5dde7;font-weight:700;background:#fff}
 .st-done{display:grid;place-items:center;width:84px;height:84px;margin:6px auto 12px;border-radius:50%;background:#10b981;color:#fff}
 .st-done svg{width:46px;height:46px}
+
+/* =====================================================
+   主題：玻璃光感（預設）、夜間深色、黑板教室、童趣繽紛、簡約紙本
+   ===================================================== */
+#stage.img{background-size:cover}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.thm{display:flex;flex-direction:column;gap:6px;padding:6px 6px 8px;border-radius:14px;background:#f5f7fb;font-size:13px;font-weight:700;color:#27324a;text-align:center;border:2px solid transparent;transition:transform .12s}
+.thm:hover{transform:translateY(-2px)}
+.thm.on{border-color:var(--accent);background:#eef2ff}
+.thm .pv{position:relative;height:62px;border-radius:9px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.thm .pv i{position:absolute;left:12%;top:14%;width:60%;height:50%;border-radius:5px}
+.thm .pv b{position:absolute;left:12%;top:14%;width:60%;height:12%;border-radius:5px 5px 0 0}
+.thm .pv u{position:absolute;left:20%;right:20%;bottom:7%;height:12%;border-radius:4px}
+.pn-sub{margin:4px 0 -4px;font-size:12px;letter-spacing:.12em;color:#8a94a6;font-weight:700}
+
+/* ---- 深色表面（夜間、黑板共用）---- */
+body.dk .win:not(.camwin){background:var(--w-bg);border-color:var(--w-line)}
+body.dk .win-head{background:var(--w-head);border-bottom-color:var(--w-line)}
+body.dk .win-head .ttl{color:var(--w-text)}
+body.dk .win-head .hb{color:var(--w-muted)}
+body.dk .win-head .hb:hover{color:var(--w-text);background:var(--w-btn)}
+body.dk .win-body{color:var(--w-text)}
+body.dk .btn{background:var(--w-btn);color:var(--w-text);box-shadow:none}
+body.dk .btn:hover{background:var(--w-btn-h)}
+body.dk .btn.p,body.dk .btn.on{background:var(--tc,var(--accent));color:#fff}
+body.dk .btn.d{background:rgba(255,99,99,.16);color:#ff9b9b}
+body.dk .foot{background:var(--w-foot);border-top-color:var(--w-line)}
+body.dk .inp{background:var(--w-inp);color:var(--w-text);border-color:var(--w-line)}
+body.dk .inp::placeholder,body.dk .bare::placeholder,body.dk textarea::placeholder{color:var(--w-muted)}
+body.dk .muted,body.dk .tm-lab,body.dk .br-num,body.dk .days-s,body.dk .cat h4,body.dk .pn-sub{color:var(--w-muted)}
+body.dk .tag{background:var(--w-btn);color:var(--w-text)}
+body.dk .panel,body.dk .card,body.dk .tm-sheet,body.dk #liveBig .lb-card{background:var(--w-bg);color:var(--w-text)}
+body.dk .panel h3{border-bottom-color:var(--w-line)}
+body.dk .tile,body.dk .thm,body.dk .sym,body.dk .exit-b,body.dk .star-c,body.dk .team,body.dk .grp .g,body.dk .poll-bar,body.dk .meter,body.dk .cnt-b:not(.plus),body.dk .img-view,body.dk .scene,body.dk .tm-status,body.dk .lv-bar{background:var(--w-card);color:var(--w-text);border-color:var(--w-line)}
+body.dk .tile:hover,body.dk .star-c:hover,body.dk .sym.on,body.dk .task.dragging,body.dk .thm.on{background:var(--w-btn-h)}
+body.dk .tile,body.dk .thm{color:var(--w-text)}
+body.dk .task{border-bottom-color:var(--w-line)}
+body.dk .team .nm,body.dk .task .t,body.dk .bare,body.dk .tm-row{color:var(--w-text)}
+body.dk .team .pm{background:var(--w-btn);color:var(--w-text)}
+body.dk .poll-bar span{color:var(--w-text);text-shadow:none}
+body.dk .star-c .mn:hover{background:var(--w-btn-h);color:var(--w-text)}
+body.dk kbd{background:var(--w-btn);border-color:var(--w-line);color:var(--w-text)}
+body.dk .grp .g h4{color:var(--w-text)}
+
+/* ---- 夜間深色 ---- */
+body[data-theme=dark]{--w-bg:#161b2a;--w-head:#1b2133;--w-card:#222a3f;--w-btn:#2a3249;--w-btn-h:#353f5c;--w-inp:#10141f;--w-foot:#131827;--w-line:rgba(255,255,255,.08);--w-text:#e8ecf6;--w-muted:#97a2ba;--bar:rgba(10,13,24,.82)}
+body[data-theme=dark] .win:not(.camwin){border:1px solid rgba(255,255,255,.08);box-shadow:0 22px 50px -14px rgba(0,0,0,.8),0 0 0 1px rgba(0,0,0,.4)}
+body[data-theme=dark] .win.active:not(.camwin){box-shadow:0 22px 50px -14px rgba(0,0,0,.8),0 0 0 2px var(--tc),0 0 28px -4px var(--tc)}
+body[data-theme=dark] .timer-disp,body[data-theme=dark] .clock-time{text-shadow:0 0 24px rgba(120,150,255,.35)}
+
+/* ---- 黑板教室 ---- */
+body[data-theme=chalk]{--w-bg:#2d4b3e;--w-head:#284438;--w-card:rgba(255,255,255,.07);--w-btn:rgba(255,255,255,.1);--w-btn-h:rgba(255,255,255,.18);--w-inp:rgba(0,0,0,.18);--w-foot:#29463a;--w-line:rgba(255,255,255,.16);--w-text:#f6f3e8;--w-muted:#c3d4c8;--accent:#e9c46a;
+  --bar:linear-gradient(#8a5a33,#6b4325)}
+body[data-theme=chalk],body[data-theme=chalk] button,body[data-theme=chalk] input,body[data-theme=chalk] select,body[data-theme=chalk] textarea{font-family:"LXGW WenKai TC",var(--font)}
+body[data-theme=chalk] .win:not(.camwin){border:7px solid #8b5a2b;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 18px 36px -12px rgba(0,0,0,.6),0 2px 0 #5e3a1a;
+  background-image:radial-gradient(ellipse at 25% 15%,rgba(255,255,255,.06),transparent 55%),radial-gradient(ellipse at 80% 85%,rgba(255,255,255,.04),transparent 50%)}
+body[data-theme=chalk] .win.active:not(.camwin){box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 18px 36px -12px rgba(0,0,0,.6),0 0 0 3px #e9c46a}
+body[data-theme=chalk] .win-head{border-bottom:2px dashed rgba(255,255,255,.22)}
+body[data-theme=chalk] .win-head .ttl{font-size:16px;letter-spacing:.06em}
+body[data-theme=chalk] .btn{border:1.5px solid rgba(255,255,255,.28);border-radius:10px}
+body[data-theme=chalk] .btn.p,body[data-theme=chalk] .btn.on{background:#f6f3e8;color:#24473a;border-color:#f6f3e8}
+body[data-theme=chalk] .big,body[data-theme=chalk] .pick-out,body[data-theme=chalk] .days-n{color:#f6f3e8;text-shadow:0 0 1px rgba(255,255,255,.6),1px 1px 0 rgba(255,255,255,.08)}
+body[data-theme=chalk] .days-n{color:#ffd166}
+body[data-theme=chalk] #bar{border:2px solid #4a2c14;box-shadow:0 16px 36px -10px rgba(0,0,0,.65),inset 0 2px 0 rgba(255,255,255,.18)}
+body[data-theme=chalk] .tb{color:#fff6e6}
+body[data-theme=chalk] .tb .i{background:rgba(0,0,0,.18)}
+body[data-theme=chalk] .tico{filter:saturate(.75)}
+body[data-theme=chalk] .draw-cv{background:#2d4b3e}
+body[data-theme=chalk] .welcome{background:rgba(45,75,62,.9);border:7px solid #8b5a2b;border-radius:14px}
+
+/* ---- 童趣繽紛 ---- */
+body[data-theme=playful]{--ink:#2b2d42;--accent:#ff6b6b;--bar:#fff}
+body[data-theme=playful],body[data-theme=playful] button,body[data-theme=playful] input,body[data-theme=playful] select,body[data-theme=playful] textarea{font-family:"Huninn",var(--font)}
+body[data-theme=playful] .win:not(.camwin){background:#fff;border:3px solid #2b2d42;border-radius:24px;box-shadow:7px 7px 0 #2b2d42;backdrop-filter:none}
+body[data-theme=playful] .win.active:not(.camwin){box-shadow:7px 7px 0 var(--tc)}
+body[data-theme=playful] .win-head{height:48px;background:color-mix(in srgb,var(--tc) 16%,#fff);border-bottom:3px solid #2b2d42}
+body[data-theme=playful] .win-head .ttl{font-size:16px;color:#2b2d42}
+body[data-theme=playful] .win-head .hb{color:#2b2d42}
+body[data-theme=playful] .btn{border:2px solid #2b2d42;box-shadow:0 3px 0 #2b2d42;border-radius:14px;color:#2b2d42;background:#fff}
+body[data-theme=playful] .btn:hover{background:#fff7e6}
+body[data-theme=playful] .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2b2d42}
+body[data-theme=playful] .btn.p,body[data-theme=playful] .btn.on{background:var(--tc,var(--accent));color:#fff;box-shadow:0 3px 0 #2b2d42}
+body[data-theme=playful] .foot{background:#fffaf0;border-top:3px solid #2b2d42}
+body[data-theme=playful] .inp{border:2px solid #2b2d42;border-radius:14px}
+body[data-theme=playful] .tile,body[data-theme=playful] .sym,body[data-theme=playful] .exit-b,body[data-theme=playful] .star-c,body[data-theme=playful] .team{border:2px solid #2b2d42;box-shadow:0 3px 0 #2b2d42}
+body[data-theme=playful] .panel,body[data-theme=playful] .card{border:3px solid #2b2d42;box-shadow:8px 8px 0 #2b2d42}
+body[data-theme=playful] #bar{background:#fff;border:3px solid #2b2d42;box-shadow:0 6px 0 #2b2d42;backdrop-filter:none}
+body[data-theme=playful] .tb{color:#2b2d42}
+body[data-theme=playful] .tb:hover{color:#000}
+body[data-theme=playful] .tb .i{background:#fff3d6;color:#2b2d42;border:2px solid #2b2d42}
+body[data-theme=playful] .tb .tico{border:2px solid #2b2d42;box-shadow:0 3px 0 #2b2d42}
+body[data-theme=playful] #bar .sep,body[data-theme=playful] #tools .tsep{background:rgba(43,45,66,.25)}
+body[data-theme=playful] #barToggle{background:#fff;color:#2b2d42;border:3px solid #2b2d42}
+body[data-theme=playful] .big{color:#2b2d42}
+
+/* ---- 簡約紙本 ---- */
+body[data-theme=paper]{--ink:#3a3026;--accent:#7a5c3e;--muted:#8c7d6b;--bar:rgba(255,253,248,.92)}
+body[data-theme=paper] .win-head .ttl,body[data-theme=paper] .panel h3,body[data-theme=paper] .welcome h1,body[data-theme=paper] .big,body[data-theme=paper] .pick-out,body[data-theme=paper] .days-n,body[data-theme=paper] .sym-big .t{font-family:"Noto Serif TC",serif}
+body[data-theme=paper] .win:not(.camwin){background:#fffdf8;border:1px solid #e3d9c6;border-radius:6px;box-shadow:0 1px 2px rgba(80,60,30,.08),0 10px 24px -14px rgba(80,60,30,.35);backdrop-filter:none}
+body[data-theme=paper] .win.active:not(.camwin){box-shadow:0 1px 2px rgba(80,60,30,.08),0 14px 30px -14px rgba(80,60,30,.45),0 0 0 2px #b08a5e}
+body[data-theme=paper] .win-head{background:#fffdf8;border-bottom:1px solid #ece3d2}
+body[data-theme=paper] .win-head .ttl{color:#3a3026;font-weight:700}
+body[data-theme=paper] .win-head .tico{filter:saturate(.45) brightness(1.02)}
+body[data-theme=paper] .btn{background:transparent;color:#4a3b2c;border:1px solid #d9ccb5;box-shadow:none;border-radius:8px}
+body[data-theme=paper] .btn:hover{background:#f6efe2}
+body[data-theme=paper] .btn.p,body[data-theme=paper] .btn.on{background:#5b4636;color:#fffdf8;border-color:#5b4636;box-shadow:none}
+body[data-theme=paper] .foot{background:#fbf7ef;border-top-color:#ece3d2}
+body[data-theme=paper] .inp{border-color:#ddd1bb;border-radius:8px;background:#fffefb}
+body[data-theme=paper] .tile,body[data-theme=paper] .sym,body[data-theme=paper] .exit-b,body[data-theme=paper] .star-c,body[data-theme=paper] .team,body[data-theme=paper] .thm{background:#f7f1e6}
+body[data-theme=paper] .panel,body[data-theme=paper] .card{background:#fffdf8;border-radius:10px}
+body[data-theme=paper] .big,body[data-theme=paper] .days-n{color:#3a3026}
+body[data-theme=paper] #bar{background:rgba(255,253,248,.94);border:1px solid #e3d9c6;box-shadow:0 12px 30px -14px rgba(80,60,30,.45)}
+body[data-theme=paper] .tb{color:#5b4a38}
+body[data-theme=paper] .tb:hover{color:#2b2118}
+body[data-theme=paper] .tb .i{background:#f3ece0;color:#5b4a38}
+body[data-theme=paper] .tico{filter:saturate(.5)}
+body[data-theme=paper] #bar .sep,body[data-theme=paper] #tools .tsep{background:#e3d9c6}
+body[data-theme=paper] #btnAll .i{background:#5b4636;color:#fffdf8;box-shadow:none}
+body[data-theme=chalk] #btnAll .i{background:#f6f3e8;color:#24473a}
+body[data-theme=paper] #barToggle{background:#fffdf8;color:#5b4a38;border-color:#e3d9c6}
+
+/* 淺色主題的歡迎畫面 */
+body[data-theme=playful] .welcome,body[data-theme=paper] .welcome{color:#2b2d42;background:rgba(255,255,255,.92);border:3px solid #2b2d42;box-shadow:10px 10px 0 #2b2d42}
+body[data-theme=paper] .welcome{color:#3a3026;border:1px solid #e3d9c6;box-shadow:0 20px 50px -24px rgba(80,60,30,.5);border-radius:12px}
+body[data-theme=playful] .tpl,body[data-theme=paper] .tpl{color:inherit;background:#fff;border:2px solid #2b2d42;box-shadow:0 4px 0 #2b2d42}
+body[data-theme=paper] .tpl{background:#f8f2e7;border:1px solid #e3d9c6;box-shadow:none}
+body[data-theme=playful] .tpl:hover{background:#fff7e6}
+body[data-theme=paper] .tpl:hover{background:#f1e8d8}
+body[data-theme=playful] .welcome kbd,body[data-theme=paper] .welcome kbd{background:#f3ece0;border-color:#d9ccb5;color:inherit}
+body[data-theme=playful] .welcome .logo{background:linear-gradient(145deg,#ff8f8f,#ff6b6b);border:3px solid #2b2d42;box-shadow:0 4px 0 #2b2d42}
+body[data-theme=paper] .welcome .logo{background:#5b4636;box-shadow:none}
 /* 聚光燈 */
 #spot{position:fixed;inset:0;z-index:4500;display:none;cursor:none}
 #spot.on{display:block}
@@ -497,8 +628,11 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
 
 <!-- 背景面板 -->
 <div class="panel" id="pnBg">
-  <h3>🎨 背景 <span class="grow"></span><button class="hb btn sm" data-close>✕</button></h3>
+  <h3>🎨 外觀 <span class="grow"></span><button class="hb btn sm" data-close>✕</button></h3>
   <div class="pbody">
+    <div class="pn-sub">風格主題</div>
+    <div class="themes" id="themes"></div>
+    <div class="pn-sub">背景</div>
     <div class="swatches" id="swatches"></div>
     <div class="row"><input class="inp grow" id="bgUrl" placeholder="圖片網址 https://…"><button class="btn p" id="bgUrlGo">套用</button></div>
     <div class="row"><label class="btn grow">📁 上傳圖片<input type="file" id="bgFile" accept="image/*" hidden></label><button class="btn" id="bgGrid">格線</button></div>
@@ -531,6 +665,7 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>移動 / 縮放</b>：拖曳標題列移動，拉右下角調整大小；點 ⤢ 可放大到全螢幕，再點一次還原。</li>
       <li><b>畫筆</b>：在所有小工具上方直接畫圖、圈重點，Esc 關閉。</li>
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
+      <li><b>外觀</b>：工具列的調色盤可切換五種風格：玻璃光感、夜間深色、黑板教室、童趣繽紛、簡約紙本，也能另外換背景。</li>
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
@@ -764,7 +899,11 @@ const KEY='classroomscreen.v1', SCENES_KEY='classroomscreen.scenes.v1';
 const MESH=(a,b,c,d,base)=>`radial-gradient(at 12% 18%,${a} 0,transparent 46%),radial-gradient(at 88% 12%,${b} 0,transparent 42%),radial-gradient(at 72% 92%,${c} 0,transparent 46%),radial-gradient(at 8% 88%,${d} 0,transparent 50%),${base}`;
 const OLD_DEFAULT_BG='linear-gradient(135deg,#1e3c72,#2a5298)';
 const BG_PRESETS=[
-  MESH('#4f6ef7','#a855f7','#06b6d4','#1e3a8a','#151b3a'),MESH('#f97316','#ec4899','#8b5cf6','#be123c','#3b1030'),MESH('#10b981','#22d3ee','#84cc16','#065f46','#0b2b2a'),
+  MESH('#4f6ef7','#a855f7','#06b6d4','#1e3a8a','#151b3a'),
+  'radial-gradient(ellipse at 22% 18%,rgba(255,255,255,.08),transparent 46%),radial-gradient(ellipse at 78% 72%,rgba(255,255,255,.06),transparent 42%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.35),transparent 60%),#21392f',
+  'radial-gradient(rgba(43,45,66,.13) 2px,transparent 2.6px) 0 0/30px 30px,linear-gradient(135deg,#fff1c9 0%,#ffe0ec 48%,#d7efff 100%)',
+  'repeating-linear-gradient(0deg,rgba(120,95,60,.06) 0 1px,transparent 1px 34px),radial-gradient(ellipse at 50% 0%,#fbf7ef,transparent 70%),#efe7d8',
+  MESH('#f97316','#ec4899','#8b5cf6','#be123c','#3b1030'),MESH('#10b981','#22d3ee','#84cc16','#065f46','#0b2b2a'),
   MESH('#38bdf8','#818cf8','#34d399','#0369a1','#0c2340'),MESH('#fda4af','#fcd34d','#a5b4fc','#f9a8d4','#fff1f2'),MESH('#bae6fd','#ddd6fe','#bbf7d0','#fde68a','#f8fafc'),
   'linear-gradient(135deg,#1e3c72,#2a5298)','linear-gradient(135deg,#0f2027,#203a43,#2c5364)','linear-gradient(135deg,#134e5e,#71b280)',
   'linear-gradient(135deg,#42275a,#734b6d)','linear-gradient(135deg,#c33764,#1d2671)','linear-gradient(135deg,#ff9966,#ff5e62)',
@@ -782,10 +921,34 @@ const stage=$('#stage');
 function applyBg(){
   const v=state.bg||BG_PRESETS[0];
   stage.style.setProperty('--bg', v.startsWith('url(')||v.startsWith('linear')?v:v);
-  stage.classList.toggle('grid',!!state.grid);
+  stage.classList.toggle('grid',!!state.grid);stage.classList.toggle('img',v.startsWith('url('));
   $$('.sw').forEach(s=>s.classList.toggle('on',s.dataset.v===v));
 }
 function setBg(v){state.bg=v;applyBg();save();}
+
+/* ---------- 風格主題 ---------- */
+const CHALK_BG='radial-gradient(ellipse at 22% 18%,rgba(255,255,255,.08),transparent 46%),radial-gradient(ellipse at 78% 72%,rgba(255,255,255,.06),transparent 42%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.35),transparent 60%),#21392f';
+const PLAY_BG='radial-gradient(rgba(43,45,66,.13) 2px,transparent 2.6px) 0 0/30px 30px,linear-gradient(135deg,#fff1c9 0%,#ffe0ec 48%,#d7efff 100%)';
+const PAPER_BG='repeating-linear-gradient(0deg,rgba(120,95,60,.06) 0 1px,transparent 1px 34px),radial-gradient(ellipse at 50% 0%,#fbf7ef,transparent 70%),#efe7d8';
+const NIGHT_BG=MESH('#3b5bdb','#9c36b5','#0b7285','#1c1f3a','#090b14');
+const THEMES={
+  glass:{n:'玻璃光感',bg:()=>BG_PRESETS[0],pv:[BG_PRESETS[0],'rgba(255,255,255,.95)','#f2f4f8','rgba(16,20,38,.75)']},
+  dark:{n:'夜間深色',dk:1,bg:()=>NIGHT_BG,pv:[NIGHT_BG,'#161b2a','#222a3f','rgba(10,13,24,.9)']},
+  chalk:{n:'黑板教室',dk:1,font:'LXGW+WenKai+TC:wght@400;700',bg:()=>CHALK_BG,pv:[CHALK_BG,'#2d4b3e','#8b5a2b','#8a5a33']},
+  playful:{n:'童趣繽紛',font:'Huninn',bg:()=>PLAY_BG,pv:[PLAY_BG,'#fff','#ffd6e0','#fff']},
+  paper:{n:'簡約紙本',font:'Noto+Serif+TC:wght@500;700',bg:()=>PAPER_BG,pv:[PAPER_BG,'#fffdf8','#f3ece0','rgba(255,253,248,.95)']}
+};
+const _fonts=new Set();
+function loadFont(f){if(!f||_fonts.has(f))return;_fonts.add(f);document.head.append(h('link',{rel:'stylesheet',href:`https://fonts.googleapis.com/css2?family=${f}&display=swap`}));}
+function applyTheme(){
+  const k=THEMES[state.theme]?state.theme:'glass',T=THEMES[k];
+  document.body.dataset.theme=k;document.body.classList.toggle('dk',!!T.dk);loadFont(T.font);
+  $$('.thm').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+}
+function setTheme(k){state.theme=k;state.bg=THEMES[k].bg();applyTheme();applyBg();save();live.forEach(L=>L.api?.resize?.());toast('已切換為「'+THEMES[k].n+'」風格');}
+$('#themes').append(...Object.entries(THEMES).map(([k,T])=>{
+  const pv=h('span',{class:'pv',style:`background:${T.pv[0]}`},h('i',{style:`background:${T.pv[1]};box-shadow:0 2px 6px rgba(0,0,0,.25)`}),h('b',{style:`background:${T.pv[2]}`}),h('u',{style:`background:${T.pv[3]}`}));
+  return h('button',{class:'thm','data-k':k,onclick:()=>setTheme(k)},pv,T.n);}));
 (function buildSwatches(){
   const box=$('#swatches');
   BG_PRESETS.forEach(v=>box.append(h('div',{class:'sw','data-v':v,style:'background:'+v,onclick:()=>setBg(v)})));
@@ -2075,7 +2238,7 @@ $('#toolCats').append(...CATS.map(([cat,keys])=>h('div',{class:'cat'},h('h4',{},
   h('div',{class:'cat-grid'},keys.map(k=>h('button',{class:'tile',onclick:()=>{addWidget(k);closePanels();}},toolIcon(k),WIDGETS[k].name))))));
 $('#btnAll').onclick=e=>togglePanel('#pnTools',e.currentTarget);
 /* 系統按鈕：換成線條圖示，文字改為提示 */
-Object.entries({btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'],btnArrange:['layout','自動排列所有視窗 (A)'],btnBg:['palette','背景'],btnScenes:['layers','場景：儲存與載入版面'],btnFull:['full','全螢幕 (F)'],btnHelp:['help','使用說明 (?)'],btnHide:['down']})
+Object.entries({btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'],btnArrange:['layout','自動排列所有視窗 (A)'],btnBg:['palette','外觀：風格主題與背景'],btnScenes:['layers','場景：儲存與載入版面'],btnFull:['full','全螢幕 (F)'],btnHelp:['help','使用說明 (?)'],btnHide:['down']})
   .forEach(([id,[ic,tip]])=>{const b=$('#'+id);if(!b)return;b.classList.add('sys');const lab=b.textContent.trim();b.innerHTML='';b.append(h('span',{class:'i'},ui(ic)));if(tip||!b.title)b.title=tip||lab;b.setAttribute('aria-label',b.title);});
 $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
@@ -2133,19 +2296,19 @@ function scenes(){try{return JSON.parse(localStorage.getItem(SCENES_KEY))||{}}ca
 function setScenes(o){try{localStorage.setItem(SCENES_KEY,JSON.stringify(o));}catch(e){toast('儲存失敗：空間不足');}}
 $('#sceneSave').onclick=()=>{
   const n=$('#sceneName').value.trim()||('場景 '+new Date().toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}));
-  const S=scenes();S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
+  const S=scenes();S[n]={bg:state.bg,theme:state.theme||'glass',grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);$('#sceneName').value='';renderScenes();toast('已儲存場景「'+n+'」');
 };
 function loadState(ns){
   [...state.widgets].forEach(w=>{const L=live.get(w.id);L?.api?.destroy?.();L?.el.remove();live.delete(w.id);});
-  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||''};
-  applyBg();state.widgets.forEach(mount);updateEmpty();save();
+  state={bg:ns.bg||BG_PRESETS[0],grid:!!ns.grid,widgets:(ns.widgets||[]).map(w=>({...w,id:uid()})),z:ns.z||10,roster:ns.roster||state.roster||'',theme:ns.theme||state.theme||'glass'};
+  applyTheme();applyBg();state.widgets.forEach(mount);updateEmpty();save();
 }
 function renderScenes(){
   const box=$('#sceneList');box.innerHTML='';const S=scenes();const names=Object.keys(S).sort((a,b)=>(S[b].at||0)-(S[a].at||0));
   if(!names.length){box.append(h('div',{class:'muted'},'還沒有儲存的場景'));return;}
   names.forEach(n=>box.append(h('div',{class:'scene'},h('span',{class:'n'},n),h('span',{class:'tag'},(S[n].widgets||[]).length+' 個'),
     h('button',{class:'btn sm p',onclick:()=>{loadState(S[n]);closePanels();toast('已載入「'+n+'」');}},'載入'),
-    h('button',{class:'btn sm',title:'用目前版面覆蓋',onclick:()=>{S[n]={bg:state.bg,grid:state.grid,widgets:state.widgets,z:state.z,at:Date.now()};setScenes(S);renderScenes();toast('已更新「'+n+'」');}},'覆蓋'),
+    h('button',{class:'btn sm',title:'用目前版面覆蓋',onclick:()=>{S[n]={bg:state.bg,theme:state.theme||'glass',grid:state.grid,widgets:state.widgets,z:state.z,roster:state.roster||'',at:Date.now()};setScenes(S);renderScenes();toast('已更新「'+n+'」');}},'覆蓋'),
     h('button',{class:'btn sm d',onclick:()=>{if(confirm('刪除場景「'+n+'」？')){delete S[n];setScenes(S);renderScenes();}}},'✕'))));
 }
 $('#exportBtn').onclick=()=>{
@@ -2324,7 +2487,7 @@ function startStudent(pin0){
 /* ---------- 啟動 ---------- */
 if(IS_STUDENT){startStudent((JOIN_PARAM||'').replace(/\D/g,''));}
 else{
-applyBg();
+applyTheme();applyBg();
 state.widgets.forEach(w=>{if(!(w.w>=120))w.w=360;if(!(w.h>=100))w.h=260;});
 state.widgets.forEach(mount);
 updateEmpty();
