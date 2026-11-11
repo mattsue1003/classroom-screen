@@ -536,6 +536,7 @@ body.student #stu{display:flex;flex-direction:column;min-height:100%;max-width:5
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
       <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理，不會錄影錄音。</li>
       <li><b>線上課程</b>：在 Meet、Zoom、Teams 分享「教室螢幕」這個分頁即可。用「螢幕分享」把簡報放進來、「我的鏡頭」疊在角落（可圓形、圓角或去背），「問答牆」「線上簽到」「即時投票」按「複製連結」貼到聊天室，學生點連結就能參與。</li>
+      <li><b>搶答遊戲</b>：Kahoot 風格的即時問答，學生用手機作答，答得越快分數越高，每題有排行榜。題庫和搶答大作戰網站共用。</li>
       <li><b>手機當實物投影機</b>：在「攝影機」按「用手機當鏡頭」，手機掃 QR Code 後按「開啟相機」，畫面會直接傳到螢幕上。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
@@ -611,6 +612,7 @@ const G={
   share:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V8M9.5 10L12 7.5l2.5 2.5"/>',
   wall:'<rect x="3.5" y="4" width="7.5" height="7" rx="1.6"/><rect x="13" y="4" width="7.5" height="7" rx="1.6"/><rect x="3.5" y="13" width="7.5" height="7" rx="1.6"/><path d="M14 15h6M14 18.5h4"/>',
   checkin:'<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c0-3.5 2.9-6.3 6.5-6.3 1.2 0 2.3.3 3.3.8M14.5 17.5l2.3 2.3 4.2-4.600"/>',
+  quiz:'<path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/>',
   /* 工作模式用 */
   mute:'<path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
   whisper:'<path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M15.5 9.5a3.6 3.6 0 0 1 0 5"/>',
@@ -624,6 +626,7 @@ const TC={clock:['#6ea0ff','#2563eb'],timer:['#ffa15c','#ea580c'],stopwatch:['#3
   noise:['#ff86c4','#db2777'],traffic:['#62e08a','#16a34a'],symbols:['#57c8ff','#0284c7'],agenda:['#b49bff','#6d28d9'],breathe:['#63e6d3','#0d9488'],counter:['#ffa66b','#c2410c'],
   poll:['#8d99ff','#4338ca'],exit:['#ffd35c','#e08a00'],score:['#ffc04a','#b45309'],stars:['#ff9ecb','#be185d'],
   mycam:['#7fb2ff','#2563eb'],share:['#9aa7ff','#4f46e5'],wall:['#ffb37a','#ea580c'],checkin:['#6fe3b0','#059669'],
+  quiz:['#b18cff','#6d28d9'],
   text:['#9fb0c6','#475569'],sticky:['#ffd84d','#d19a00'],draw:['#ff8686','#dc2626'],embed:['#4ddcf0','#0891b2'],image:['#7fe3a0','#15803d'],camera:['#7d8aa3','#1e293b'],qr:['#66758f','#0f172a']};
 function toolIcon(key,grad){const c=grad||TC[key]||['#8d99ff','#4338ca'];
   return h('span',{class:'tico',style:`background:linear-gradient(145deg,${c[0]},${c[1]})`,html:`<svg viewBox="0 0 24 24">${G[key]||G.symbols}</svg>`});}
@@ -2040,6 +2043,19 @@ mount(body,s,ctx){
   return {destroy:()=>live.destroy()};
 }};
 
+/* ---- 搶答遊戲（嵌入搶答大作戰：Kahoot 風格即時問答） ---- */
+const QUIZ_URL='https://mattsue1003.github.io/quiz-rush/?host';
+WIDGETS.quiz={name:'搶答遊戲',icon:'',w:4000,h:4000,minW:420,minH:320,init:()=>({}),
+mount(body,s,ctx){
+  const f=h('iframe',{class:'embed-frame',src:QUIZ_URL,title:'搶答大作戰',allow:'autoplay; fullscreen; clipboard-write; clipboard-read',allowfullscreen:true});
+  body.append(f,h('div',{class:'foot',style:'padding:6px 10px'},
+    h('span',{class:'muted'},'學生用手機掃 QR Code 加入。點一下遊戲畫面後，空白鍵可進行下一步。'),h('span',{class:'grow'}),
+    h('button',{class:'btn sm',title:'重新載入遊戲',onclick:()=>{f.src=QUIZ_URL;}},'↺ 重新載入'),
+    h('button',{class:'btn sm',title:'在新分頁開啟搶答大作戰',onclick:()=>open(QUIZ_URL,'_blank')},'↗ 新分頁')));
+  ctx.setTitle('搶答遊戲・搶答大作戰');
+  return {};
+}};
+
 /* =========================================================
    工具列
    ========================================================= */
@@ -2047,7 +2063,7 @@ const CATS=[
   ['時間',['clock','timer','stopwatch','days']],
   ['隨機',['picker','wheel','groups','dice','coin','rnum']],
   ['課堂管理',['noise','traffic','symbols','agenda','breathe']],
-  ['互動回饋',['poll','exit','score','stars','counter']],
+  ['互動回饋',['quiz','poll','exit','score','stars','counter']],
   ['內容與展示',['text','sticky','draw','embed','image','camera','qr']],
   ['線上課程',['mycam','share','wall','checkin']]];
 const tools=$('#tools');
@@ -2064,7 +2080,7 @@ Object.entries({btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'
 $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
 const TEMPLATES=[['上課開場','時鐘、流程、倒數',['clock','agenda','timer','symbols']],['小組活動','分組、計時、計分',['groups','timer','score','noise']],
-  ['互動問答','抽籤、轉盤、投票',['picker','wheel','poll','timer']],['安靜自習','倒數、音量、提醒',['timer','noise','symbols','text']],
+  ['互動問答','搶答、抽籤、投票',['quiz','picker','poll']],['安靜自習','倒數、音量、提醒',['timer','noise','symbols','text']],
   ['線上課程','鏡頭、簡報、問答',['share','wall','checkin','mycam']]];
 $('#tplGrid').append(...TEMPLATES.map(([n,d,keys])=>h('button',{class:'tpl',onclick:()=>{keys.forEach(k=>addWidget(k));arrange();toast('已建立「'+n+'」版面，可自由拖曳調整');}},
   h('span',{class:'mini'},keys.map(k=>toolIcon(k))),n,h('small',{},d))));
