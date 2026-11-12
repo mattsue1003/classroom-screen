@@ -705,6 +705,22 @@ body.clean [data-oth-report]{display:none!important}
 body.clean #barToggle{opacity:0;transition:opacity .25s}
 body.clean #barToggle:hover,body.clean #barToggle.peek{opacity:1}
 body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
+/* 手機：整條工具列一起左右滑動，右邊的按鈕不會被裁掉 */
+@media (max-width:700px){
+  body:not([data-bar=left]):not([data-bar=right]) #bar{left:6px;right:6px;transform:none;max-width:none;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;touch-action:pan-x}
+  body:not([data-bar=left]):not([data-bar=right]) #bar::-webkit-scrollbar{display:none}
+  body:not([data-bar=left]):not([data-bar=right]) #bar.hidden{transform:translateY(130%)}
+  body[data-bar=top] #bar.hidden{transform:translateY(-130%)}
+  body:not([data-bar=left]):not([data-bar=right]) #bar .tools{flex:none;overflow:visible;min-width:0;-webkit-mask-image:none;mask-image:none;padding:4px 2px 0}
+  #bar .tb{scroll-snap-align:start}
+  body[data-bar=left] #bar .tools,body[data-bar=right] #bar .tools{min-width:0}
+}
+/* 矮螢幕（手機橫放）：左右側工具列整條上下滑動 */
+@media (max-height:700px){
+  body[data-bar=left] #bar,body[data-bar=right] #bar{overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior-y:contain;touch-action:pan-y}
+  body[data-bar=left] #bar::-webkit-scrollbar,body[data-bar=right] #bar::-webkit-scrollbar{display:none}
+  body[data-bar=left] #bar .tools,body[data-bar=right] #bar .tools{flex:none;overflow:visible;min-height:0;-webkit-mask-image:none;mask-image:none}
+}
 </style>
 </head>
 <body>
