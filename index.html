@@ -1592,10 +1592,17 @@ mount(body,s,ctx){
 
 /* ---- 嵌入網頁 ---- */
 function isCanvaShort(u){try{const h=new URL(/^https?:/i.test(u)?u:'https://'+u).hostname.replace('www.','');return h==='canva.link'||h==='canva.me'||h==='canva.page';}catch(e){return false;}}
+async function resolveCanvaShort(u){
+  u=/^https?:/i.test(u)?u:'https://'+u;
+  try{const r=await fetch('https://unshorten.me/json/'+u,{signal:AbortSignal.timeout(9000)});const d=await r.json();
+    const f=d&&d.resolved_url;if(f&&/^https:\/\/(www\.)?canva\.com\/design\//.test(f))return f;}catch(e){}
+  return null;
+}
+function canvaShortWait(){return h('div',{class:'fit muted col',style:'gap:8px'},toolIcon('slides'),'正在轉換 Canva 短網址…');}
 function canvaShortHelp(raw,onUrl,onBack){
   const inp=h('input',{class:'inp grow',placeholder:'貼上 canva.com/design/… 的完整網址',onkeydown:e=>{if(e.key==='Enter')ok();}});
   const ok=()=>{const v=inp.value.trim();if(!v)return;if(isCanvaShort(v)){toast('這還是短網址，請複製瀏覽器網址列裡的完整網址');return;}onUrl(v);};
-  return h('div',{class:'sl-drop'},toolIcon('slides'),h('b',{},'Canva 短網址需要換成完整網址'),
+  return h('div',{class:'sl-drop'},toolIcon('slides'),h('b',{},'Canva 短網址轉換失敗，請換成完整網址'),
     h('div',{class:'muted sl-tip'},
       h('div',{},'canva.link 短網址會轉址，Canva 不允許網頁讀取轉址後的位置，所以要多做一步：'),
       h('div',{},'1. 按「開啟短網址」，Canva 會在新分頁打開這份簡報。'),
@@ -1637,7 +1644,8 @@ mount(body,s,ctx){
       const quick=h('div',{class:'row',style:'justify-content:center;margin-top:6px'},
         QUICK_LINKS.map(([t,u])=>h('button',{class:'btn sm',onclick:()=>{s.url=u;ctx.save();render();}},t)));
       view.append(h('div',{class:'fit muted col',style:'gap:6px'},h('div',{style:'font-size:40px'},'🌐'),'貼上網址後按「嵌入」','支援 YouTube、Google 簡報/文件/表單、Canva、Vimeo、Padlet、Wordwall、Quizlet 等',quick));return;}
-    if(isCanvaShort(s.url)){view.append(canvaShortHelp(s.url,v=>{s.url=v;ctx.save();render();},()=>{s.url='';ctx.save();render();}));return;}
+    if(isCanvaShort(s.url)){const short=s.url;view.append(canvaShortWait());
+      resolveCanvaShort(short).then(f=>{if(s.url!==short)return;if(f){s.url=f;ctx.save();render();}else{view.innerHTML='';view.append(canvaShortHelp(short,v=>{s.url=v;ctx.save();render();},()=>{s.url='';ctx.save();render();}));}});return;}
     const src=toEmbedUrl(s.url);
     const f=h('iframe',{class:'embed-frame',src,allow:'autoplay; fullscreen; camera; microphone; clipboard-write',allowfullscreen:true,referrerpolicy:'no-referrer-when-downgrade'});
     view.append(f,h('div',{class:'muted',style:'padding:4px 10px;font-size:11.5px;border-top:1px solid var(--line)'},'若畫面空白，表示該網站不允許被嵌入，請按 ↗ 在新分頁開啟。'));
@@ -1736,7 +1744,8 @@ mount(body,s,ctx){
     let u=String(raw||'').trim();if(!u)return;
     const snip=u.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);if(snip)u=snip[1].replace(/&amp;/g,'&');
     if(!/^https?:/i.test(u))u='https://'+u;
-    if(isCanvaShort(u)){stopDoc();mode='';view.innerHTML='';setFoot('');view.append(canvaShortHelp(u,goUrl,()=>{s.url='';ctx.save();empty();}));return;}
+    if(isCanvaShort(u)){stopDoc();mode='';view.innerHTML='';setFoot('');view.append(canvaShortWait());const my=++loadId;
+      resolveCanvaShort(u).then(f=>{if(dead||my!==loadId)return;if(f){toast('已轉換 Canva 短網址');goUrl(f);}else{view.innerHTML='';view.append(canvaShortHelp(u,goUrl,()=>{s.url='';ctx.save();empty();}));}});return;}
     stopDoc();Object.assign(s,{url:u,fid:'',name:'',page:s.url===u?s.page:1});ctx.save();openUrl();
   }
   function openUrl(){
