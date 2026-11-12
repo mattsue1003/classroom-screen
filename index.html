@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>教室螢幕 Classroom Screen</title>
-<meta name="description" content="老師的互動教室螢幕：計時器、抽籤、分組、骰子、音量計、嵌入網頁、白板等小工具，線上與實體課堂都能用。">
+<meta name="description" content="免登入的老師教室螢幕：播放 Canva／PDF 簡報、手機當遙控器和雷射筆、鏡頭疊在簡報上、搶答遊戲、手機當實物投影機、錄影錄音，還有計時、抽籤、分組等 30 多種小工具。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="教室螢幕 Classroom Screen">
+<meta property="og:description" content="免登入、免安裝的老師教室螢幕：簡報、手機遙控、鏡頭、搶答、錄影錄音，一個網頁搞定。">
+<meta property="og:url" content="https://mattsue1003.github.io/classroom-screen/">
+<meta property="og:image" content="https://mattsue1003.github.io/classroom-screen/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#5b4a38">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b4a38'/%3E%3Crect x='14' y='16' width='36' height='24' rx='4' fill='none' stroke='%23fff' stroke-width='4'/%3E%3Cpath d='M26 48h12M32 40v8' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M25 28l5 5 9-9' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 :root{
   --ink:#1b2430; --muted:#6b7684; --line:rgba(0,0,0,.08);
@@ -707,7 +716,7 @@ body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
       <h1>教室螢幕</h1>
       <p>選一個情境快速開始，或從下方工具列自由加入小工具</p>
       <div class="tpl-grid" id="tplGrid"></div>
-      <div class="hint">拖曳標題列移動、拉右下角縮放　·　<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 隱藏工具列　<kbd>?</kbd> 說明</div>
+      <div class="hint">拖曳標題列移動、拉右下角縮放　·　<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 純淨畫面　<kbd>?</kbd> 說明</div>
     </div>
   </div>
 </div>
@@ -796,14 +805,15 @@ body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
 <div class="modal" id="help">
   <div class="card"><div class="pad">
     <h2>教室螢幕 使用說明</h2>
-    <p style="margin:0 0 6px;line-height:1.6">把這個頁面投影到教室白板，或在線上課程中分享螢幕，就能用各種小工具與學生互動。所有內容都存在你這台裝置的瀏覽器中，不會上傳。</p>
+    <p style="margin:0 0 6px;line-height:1.6">把這個頁面投影到教室白板，或在線上課程中分享螢幕，就能用各種小工具與學生互動。不用註冊帳號，版面、名單、PDF 都只存在你這台裝置的瀏覽器中，不會上傳。手機連線（遙控、學生作答、手機鏡頭）是兩台裝置直接傳送，公用連線伺服器只負責配對；嵌入的網站（YouTube、Canva 等）由該網站提供；貼 Canva 短網址時，會把短網址送到 unshorten.me 換成完整網址。</p>
     <ul>
       <li><b>加入小工具</b>：點底部工具列的圖示。可以同時開很多個，同一種也能開多個。</li>
       <li><b>移動 / 縮放</b>：拖曳標題列移動，拉右下角調整大小；點 ⤢ 可放大到全螢幕，再點一次還原。</li>
       <li><b>畫筆</b>：在所有小工具上方直接畫圖、圈重點，Esc 關閉。</li>
       <li><b>嵌入</b>：貼上 YouTube、Google 簡報、Padlet、Wordwall、Kahoot 等網址；部分網站不允許被嵌入時會顯示提示，請改用「在新分頁開啟」。</li>
       <li><b>外觀</b>：工具列的調色盤可切換五種風格：簡約紙本（預設）、玻璃光感、夜間深色、黑板教室、童趣繽紛，也能另外換背景。</li>
-      <li><b>簡報/PDF</b>：直接開電腦裡的 PDF（PowerPoint 先另存成 PDF），用 ← → 鍵、簡報翻頁器或空白鍵翻頁，可在投影片上畫重點、全螢幕放映。也能貼 Canva、Google 簡報、.pptx 網址。按「📱 手機遙控」掃 QR Code，手機就是翻頁器和雷射筆。</li>
+      <li><b>簡報/PDF</b>：直接開電腦裡的 PDF（PowerPoint 先另存成 PDF），用 ← → 鍵、簡報翻頁器或空白鍵翻頁，可在投影片上畫重點、全螢幕放映。也能貼 Canva、Google 簡報、.pptx 網址（Canva 短網址也可以）。按「手機遙控」掃 QR Code，手機就是翻頁器和雷射筆。</li>
+      <li><b>純淨畫面</b>：按工具列的「隱藏」或 <kbd>H</kbd>，工具列、縮小列、錄影標示、視窗標題列都會藏起來，滑鼠移到標題列才出現；按 <kbd>H</kbd> 或 <kbd>Esc</kbd> 還原。</li>
       <li><b>縮小視窗</b>：按視窗右上角的 — 把它收到下方（或按 M），點標籤就還原；拖曳標籤左邊的 ⋮⋮ 可以移動位置。</li>
       <li><b>手機遙控</b>：按工具列的「遙控」掃 QR Code，手機就是觸控板：滑動移動游標、點一下＝點擊、兩指滑動捲動，也能切換雷射筆、畫筆（直接畫在整個螢幕上）、放大鏡、聚光燈，並翻簡報頁。</li>
       <li><b>工具列位置</b>：在「外觀」可以把工具列放在下方、上方、左側或右側。</li>
