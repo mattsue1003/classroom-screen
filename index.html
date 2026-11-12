@@ -686,6 +686,16 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
 #recHud button{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;background:rgba(255,255,255,.14);color:#fff}
 #recHud button.stop{background:#e5484d}
 #btnRec.rec{background:rgba(229,72,77,.6)}
+/* 純淨畫面：一鍵隱藏工具列、縮小列、錄影標示、視窗標題列 */
+body.clean #minTray,body.clean #recHud,body.clean #undo,body.clean #recMenu{display:none!important}
+body.clean .win-head,body.clean .win .foot,body.clean .win .rs{opacity:0;transition:opacity .2s}
+body.clean .win-head:hover,body.clean .win .foot:hover,body.clean .win .rs:hover{opacity:1}
+body.clean .win.active{box-shadow:var(--shadow)}
+body.clean .win-head{position:absolute;top:0;left:0;right:0;z-index:6}
+body.clean [data-oth-report]{display:none!important}
+body.clean #barToggle{opacity:0;transition:opacity .25s}
+body.clean #barToggle:hover,body.clean #barToggle.peek{opacity:1}
+body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
 </style>
 </head>
 <body>
@@ -739,9 +749,9 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
   <button class="tb" id="btnScenes"><span class="i">🗂️</span>場景</button>
   <button class="tb" id="btnFull"><span class="i">⛶</span>全螢幕</button>
   <button class="tb" id="btnHelp"><span class="i">❔</span>說明</button>
-  <button class="tb" id="btnHide" title="隱藏工具列 (H)"><span class="i">⬇️</span>隱藏</button>
+  <button class="tb" id="btnHide" title="純淨畫面：隱藏工具列、縮小列、錄影標示和視窗標題列 (H)"><span class="i">⬇️</span>隱藏</button>
 </div>
-<button id="barToggle" title="顯示工具列 (H)">⬆️</button>
+<button id="barToggle" title="還原工具列 (H / Esc)">⬆️</button>
 
 <!-- 全部工具 -->
 <div class="panel" id="pnTools">
@@ -807,7 +817,7 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
     </ul>
-    <p style="margin:6px 0"><b>快速鍵</b>：<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 隱藏/顯示工具列　<kbd>P</kbd> 畫筆　<kbd>A</kbd> 排列視窗　<kbd>S</kbd> 聚光燈　<kbd>R</kbd> 錄影／錄音　<kbd>Delete</kbd> 關閉選取的視窗　<kbd>空白鍵</kbd> 開始/暫停目前選取的計時器、抽籤、骰子、轉盤　<kbd>Esc</kbd> 關閉面板　<kbd>?</kbd> 說明</p>
+    <p style="margin:6px 0"><b>快速鍵</b>：<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 純淨畫面（隱藏工具列、縮小列、錄影標示、視窗標題列；Esc 還原）　<kbd>P</kbd> 畫筆　<kbd>A</kbd> 排列視窗　<kbd>S</kbd> 聚光燈　<kbd>R</kbd> 錄影／錄音　<kbd>Delete</kbd> 關閉選取的視窗　<kbd>空白鍵</kbd> 開始/暫停目前選取的計時器、抽籤、骰子、轉盤　<kbd>Esc</kbd> 關閉面板　<kbd>?</kbd> 說明</p>
     <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn p" data-close>知道了</button></div>
   </div></div>
 </div>
@@ -2775,7 +2785,9 @@ $('#help').addEventListener('click',e=>{if(e.target.id==='help')closePanels();})
 $('#btnFull').onclick=toggleFull;
 function toggleFull(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>toast('此瀏覽器不支援全螢幕，請用 F11'));}
 const bar=$('#bar'),barToggle=$('#barToggle');
-function toggleBar(){bar.classList.toggle('hidden');barToggle.classList.toggle('show',bar.classList.contains('hidden'));renderTray();}
+function toggleBar(){const on=!document.body.classList.contains('clean');bar.classList.toggle('hidden',on);document.body.classList.toggle('clean',on);barToggle.classList.toggle('show',on);
+  if(on){barToggle.classList.add('peek');clearTimeout(toggleBar.t);toggleBar.t=setTimeout(()=>barToggle.classList.remove('peek'),2500);toast('純淨畫面：按 H 或 Esc 還原，或把滑鼠移到角落按鈕');}
+  renderTray();}
 $('#btnHide').onclick=toggleBar;barToggle.onclick=toggleBar;
 $('#clearAll').onclick=()=>{if(!state.widgets.length||confirm('確定要移除目前螢幕上的所有小工具？')){[...state.widgets].forEach(w=>removeWidget(w.id));closePanels();}};
 
@@ -2830,7 +2842,7 @@ $$('#overlayTools .dot').forEach(d=>d.onclick=()=>{OD.set({color:d.dataset.c});$
 document.addEventListener('keydown',e=>{
   if(IS_STUDENT)return;
   const tag=(e.target.tagName||'').toLowerCase();const typing=tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable;
-  if(e.key==='Escape'){closePanels();penOn(false);spotOn(false);closeTimesUp();return;}
+  if(e.key==='Escape'){const busy=ov.classList.contains('on')||spot.classList.contains('on')||document.querySelector('.panel.open,.modal.open');closePanels();penOn(false);spotOn(false);closeTimesUp();if(!busy&&document.body.classList.contains('clean'))toggleBar();return;}
   const k=e.key.toLowerCase();
   if((e.metaKey||e.ctrlKey)&&k==='z'&&!typing&&lastRemoved){e.preventDefault();undoClose();return;}
   if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
