@@ -1551,6 +1551,20 @@ mount(body,s,ctx){
 }};
 
 /* ---- 嵌入網頁 ---- */
+function isCanvaShort(u){try{const h=new URL(/^https?:/i.test(u)?u:'https://'+u).hostname.replace('www.','');return h==='canva.link'||h==='canva.me'||h==='canva.page';}catch(e){return false;}}
+function canvaShortHelp(raw,onUrl,onBack){
+  const inp=h('input',{class:'inp grow',placeholder:'貼上 canva.com/design/… 的完整網址',onkeydown:e=>{if(e.key==='Enter')ok();}});
+  const ok=()=>{const v=inp.value.trim();if(!v)return;if(isCanvaShort(v)){toast('這還是短網址，請複製瀏覽器網址列裡的完整網址');return;}onUrl(v);};
+  return h('div',{class:'sl-drop'},toolIcon('slides'),h('b',{},'Canva 短網址需要換成完整網址'),
+    h('div',{class:'muted sl-tip'},
+      h('div',{},'canva.link 短網址會轉址，Canva 不允許網頁讀取轉址後的位置，所以要多做一步：'),
+      h('div',{},'1. 按「開啟短網址」，Canva 會在新分頁打開這份簡報。'),
+      h('div',{},'2. 複製那個分頁網址列裡的網址（canva.com/design/… 開頭），貼到下面按「播放」。'),
+      h('div',{},'或在 Canva 按「分享 → 更多 → 嵌入」，複製嵌入碼貼上也可以。簡報要設成「知道連結的任何人可檢視」。')),
+    h('div',{class:'row',style:'justify-content:center'},h('button',{class:'btn',onclick:()=>open(/^https?:/i.test(raw)?raw:'https://'+raw,'_blank')},'開啟短網址 ↗')),
+    h('div',{class:'row',style:'width:min(100%,520px)'},inp,h('button',{class:'btn p sm',onclick:ok},'播放')),
+    onBack?h('button',{class:'btn sm',onclick:onBack},'返回'):null);
+}
 function toEmbedUrl(u){
   u=String(u||'').trim();const snip=u.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);if(snip)u=snip[1].replace(/&amp;/g,'&');
   try{
@@ -1560,7 +1574,7 @@ function toEmbedUrl(u){
     if(host==='youtube.com'||host==='m.youtube.com'){const v=url.searchParams.get('v');if(v)return yt(v);const L=url.searchParams.get('list');if(L)return `https://www.youtube.com/embed/videoseries?list=${L}`;if(url.pathname.startsWith('/live/')||url.pathname.startsWith('/shorts/'))return yt(url.pathname.split('/')[2]);}
     if(host==='youtu.be')return yt(url.pathname.slice(1));
     if(host==='docs.google.com'&&/\/forms\//.test(url.pathname)){url.searchParams.set('embedded','true');return url.toString();}
-    if(host==='canva.com'&&/\/design\//.test(url.pathname)&&!url.searchParams.has('embed')){return url.origin+url.pathname.replace(/\/(edit|view)?\/?$/,'/view')+'?embed';}
+    if(host==='canva.com'&&/\/design\//.test(url.pathname)&&!url.searchParams.has('embed')){const m=url.pathname.match(/^\/design\/([^/]+)\/([^/]+)/);if(m)return `https://www.canva.com/design/${m[1]}/${m[2]}/view?embed`;}
     if(host==='docs.google.com'&&/\/(presentation|document|spreadsheets)\/d\//.test(url.pathname)&&!/\/(embed|preview|pub)/.test(url.pathname))return u.replace(/\/(edit|view).*$/,'/preview');
     if(host==='drive.google.com'&&/\/file\/d\//.test(url.pathname))return u.replace(/\/view.*$/,'/preview');
     if(host==='vimeo.com'&&/^\/\d+/.test(url.pathname))return `https://player.vimeo.com/video${url.pathname}`;
@@ -1583,6 +1597,7 @@ mount(body,s,ctx){
       const quick=h('div',{class:'row',style:'justify-content:center;margin-top:6px'},
         QUICK_LINKS.map(([t,u])=>h('button',{class:'btn sm',onclick:()=>{s.url=u;ctx.save();render();}},t)));
       view.append(h('div',{class:'fit muted col',style:'gap:6px'},h('div',{style:'font-size:40px'},'🌐'),'貼上網址後按「嵌入」','支援 YouTube、Google 簡報/文件/表單、Canva、Vimeo、Padlet、Wordwall、Quizlet 等',quick));return;}
+    if(isCanvaShort(s.url)){view.append(canvaShortHelp(s.url,v=>{s.url=v;ctx.save();render();},()=>{s.url='';ctx.save();render();}));return;}
     const src=toEmbedUrl(s.url);
     const f=h('iframe',{class:'embed-frame',src,allow:'autoplay; fullscreen; camera; microphone; clipboard-write',allowfullscreen:true,referrerpolicy:'no-referrer-when-downgrade'});
     view.append(f,h('div',{class:'muted',style:'padding:4px 10px;font-size:11.5px;border-top:1px solid var(--line)'},'若畫面空白，表示該網站不允許被嵌入，請按 ↗ 在新分頁開啟。'));
@@ -1681,6 +1696,7 @@ mount(body,s,ctx){
     let u=String(raw||'').trim();if(!u)return;
     const snip=u.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);if(snip)u=snip[1].replace(/&amp;/g,'&');
     if(!/^https?:/i.test(u))u='https://'+u;
+    if(isCanvaShort(u)){stopDoc();mode='';view.innerHTML='';setFoot('');view.append(canvaShortHelp(u,goUrl,()=>{s.url='';ctx.save();empty();}));return;}
     stopDoc();Object.assign(s,{url:u,fid:'',name:'',page:s.url===u?s.page:1});ctx.save();openUrl();
   }
   function openUrl(){
