@@ -507,7 +507,7 @@ body[data-theme=paper] .tpl:hover{background:#f1e8d8}
 body[data-theme=playful] .welcome kbd,body[data-theme=paper] .welcome kbd{background:#f3ece0;border-color:#d9ccb5;color:inherit}
 body[data-theme=playful] .welcome .logo{background:linear-gradient(145deg,#ff8f8f,#ff6b6b);border:3px solid #2b2d42;box-shadow:0 4px 0 #2b2d42}
 body[data-theme=paper] .welcome .logo{background:#5b4636;box-shadow:none}
-/* 聚光燈 */
+/* 聚光燈（樣式） */
 #spot{position:fixed;inset:0;z-index:4500;display:none;cursor:none}
 #spot.on{display:block}
 
@@ -666,6 +666,26 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
 .st-pen{display:flex;flex-direction:column;gap:8px;flex:1}
 .st-pen .rowp{display:flex;gap:8px;align-items:center}
 .st-pen .btn{flex:1;padding:9px 6px;font-size:14px;border-radius:12px;justify-content:center}
+
+/* 錄影／錄音 */
+#recMenu{position:fixed;z-index:6000;bottom:96px;left:50%;transform:translateX(-50%);width:min(340px,calc(100vw - 24px));background:rgba(20,22,28,.95);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.4);display:none;flex-direction:column;gap:8px;backdrop-filter:blur(12px)}
+#recMenu.open{display:flex}
+#recMenu h4{margin:0 0 2px;font-size:15px}
+#recMenu .opt{display:flex;gap:12px;align-items:center;text-align:left;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:inherit;border:0;cursor:pointer;font:inherit}
+#recMenu .opt:hover,#recMenu .opt:focus-visible{background:rgba(229,72,77,.35);outline:none}
+#recMenu .opt b{display:block;font-size:14px}
+#recMenu .opt small{display:block;font-size:12px;opacity:.75;margin-top:2px;line-height:1.45}
+#recMenu .opt .dot{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;background:#e5484d;color:#fff;font-size:14px}
+#recMenu label{display:flex;gap:8px;align-items:center;font-size:12.5px;opacity:.85;padding:2px 4px}
+#recMenu .tip{font-size:11.5px;opacity:.65;line-height:1.5}
+#recHud{position:fixed;z-index:6001;top:12px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:8px;padding:6px 8px 6px 14px;border-radius:999px;background:rgba(20,22,28,.9);color:#fff;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-variant-numeric:tabular-nums;cursor:grab;touch-action:none}
+#recHud.on{display:flex}
+#recHud .rd{width:11px;height:11px;border-radius:50%;background:#e5484d;animation:recblink 1.2s infinite}
+#recHud.paused .rd{animation:none;background:#f5a524}
+@keyframes recblink{50%{opacity:.25}}
+#recHud button{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;background:rgba(255,255,255,.14);color:#fff}
+#recHud button.stop{background:#e5484d}
+#btnRec.rec{background:rgba(229,72,77,.6)}
 </style>
 </head>
 <body>
@@ -697,6 +717,14 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
   <button class="btn sm d" id="ovClose">關閉畫筆 (Esc)</button>
 </div>
 
+<div id="recMenu" role="dialog" aria-label="錄影錄音">
+  <h4>邊上課邊錄下來</h4>
+  <button class="opt" type="button" id="recVideo"><span class="dot">▶</span><span><b>錄影：畫面＋聲音</b><small>選「這個分頁」或整個螢幕；畫筆、聚光燈、簡報都會錄進去</small></span></button>
+  <button class="opt" type="button" id="recAudio"><span class="dot">●</span><span><b>只錄音</b><small>錄老師講課的聲音，檔案小，適合做逐字稿</small></span></button>
+  <label><input type="checkbox" id="recMic" checked> 錄影時加入麥克風（老師的聲音）</label>
+  <div class="tip">停止後會自動下載到電腦。檔案只存在這台電腦，不會上傳。建議用電腦版 Chrome 或 Edge。</div>
+</div>
+<div id="recHud" aria-live="polite"><span class="rd"></span><span id="recLab">錄影中</span><span id="recTime">00:00</span><button type="button" id="recPause">暫停</button><button type="button" class="stop" id="recStop">停止並存檔</button></div>
 <div id="bar">
   <button class="tb" id="btnAll" title="所有小工具"><span class="i">🧰</span>全部</button>
   <div class="sep"></div>
@@ -704,6 +732,7 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
   <div class="sep"></div>
   <button class="tb" id="btnRemote" title="手機遙控"><span class="i">📱</span>遙控</button>
   <button class="tb" id="btnPen" title="畫筆：在整個螢幕上畫圖 (P)"><span class="i">🖍️</span>畫筆</button>
+  <button class="tb" id="btnRec" title="錄影／錄音：邊上課邊錄，停止後自動存檔 (R)"><span class="i">⏺</span>錄製</button>
   <button class="tb" id="btnSpot" title="聚光燈：只照亮滑鼠附近，其他變暗 (S)"><span class="i"></span>聚光燈</button>
   <button class="tb" id="btnArrange" title="自動排列所有視窗"><span class="i">🪟</span>排列</button>
   <button class="tb" id="btnBg"><span class="i">🎨</span>背景</button>
@@ -771,14 +800,14 @@ body.has-min:not([data-bar=bottom]) #undo{bottom:72px}
       <li><b>場景</b>：把整個版面存起來，不同班級、不同課程各存一組。也可以匯出成檔案到另一台電腦匯入。</li>
       <li><b>班級名單</b>：在抽籤、轉盤、分組的名單畫面按「存成名單」，之後各工具都能一鍵載入同一份名單。</li>
       <li><b>學生用手機作答</b>：在「即時投票」或「心情回饋」按「📱 開放學生作答」，學生用手機掃 QR Code（或開網址輸入 PIN）就能作答，票數即時出現在你的螢幕上。每支手機一票（可改答案），可隨時截止、歸零、改題目。不需要帳號，資料只在你和學生的瀏覽器之間直接傳送；重新整理後會沿用同一個 PIN。</li>
-      <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理，不會錄影錄音。</li>
+      <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理；只有按下<b>錄製</b>時才會錄影或錄音，檔案直接存到這台電腦。</li>
       <li><b>線上課程</b>：在 Meet、Zoom、Teams 分享「教室螢幕」這個分頁即可。用「螢幕分享」把簡報放進來、「我的鏡頭」疊在角落（可圓形、圓角或去背），「問答牆」「線上簽到」「即時投票」按「複製連結」貼到聊天室，學生點連結就能參與。</li>
       <li><b>搶答遊戲</b>：Kahoot 風格的即時問答，學生用手機作答，答得越快分數越高，每題有排行榜。題庫和搶答大作戰網站共用。</li>
       <li><b>手機當實物投影機</b>：在「攝影機」按「用手機當鏡頭」，手機掃 QR Code 後按「開啟相機」，畫面會直接傳到螢幕上。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
     </ul>
-    <p style="margin:6px 0"><b>快速鍵</b>：<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 隱藏/顯示工具列　<kbd>P</kbd> 畫筆　<kbd>A</kbd> 排列視窗　<kbd>S</kbd> 聚光燈　<kbd>Delete</kbd> 關閉選取的視窗　<kbd>空白鍵</kbd> 開始/暫停目前選取的計時器、抽籤、骰子、轉盤　<kbd>Esc</kbd> 關閉面板　<kbd>?</kbd> 說明</p>
+    <p style="margin:6px 0"><b>快速鍵</b>：<kbd>F</kbd> 全螢幕　<kbd>H</kbd> 隱藏/顯示工具列　<kbd>P</kbd> 畫筆　<kbd>A</kbd> 排列視窗　<kbd>S</kbd> 聚光燈　<kbd>R</kbd> 錄影／錄音　<kbd>Delete</kbd> 關閉選取的視窗　<kbd>空白鍵</kbd> 開始/暫停目前選取的計時器、抽籤、骰子、轉盤　<kbd>Esc</kbd> 關閉面板　<kbd>?</kbd> 說明</p>
     <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn p" data-close>知道了</button></div>
   </div></div>
 </div>
@@ -2617,6 +2646,7 @@ $('#btnAll').onclick=e=>togglePanel('#pnTools',e.currentTarget);
 /* 系統按鈕：換成線條圖示，文字改為提示 */
 Object.entries({btnRemote:['phone','手機遙控：手機當滑鼠、雷射筆、聚光燈和翻頁器'],btnAll:['grid','全部小工具'],btnPen:['pen'],btnSpot:['spot'],btnArrange:['layout','自動排列所有視窗 (A)'],btnBg:['palette','外觀：風格主題與背景'],btnScenes:['layers','場景：儲存與載入版面'],btnFull:['full','全螢幕 (F)'],btnHelp:['help','使用說明 (?)'],btnHide:['down']})
   .forEach(([id,[ic,tip]])=>{const b=$('#'+id);if(!b)return;b.classList.add('sys');const lab=b.textContent.trim();b.innerHTML='';b.append(h('span',{class:'i'},ui(ic)));if(tip||!b.title)b.title=tip||lab;b.setAttribute('aria-label',b.title);});
+{const b=$('#btnRec');if(b){b.classList.add('sys');b.innerHTML='';const s=document.createElement('template');s.innerHTML='<span class="i"><svg class="ui" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4" style="fill:#e5484d;stroke:none"/></svg></span>';b.append(s.content.firstChild);b.setAttribute('aria-label',b.title);}}
 $('#barToggle').innerHTML='';$('#barToggle').append(ui('up'));
 /* 歡迎畫面：一鍵情境 */
 const TEMPLATES=[['上課開場','時鐘、流程、倒數',['clock','agenda','timer','symbols']],['小組活動','分組、計時、計分',['groups','timer','score','noise']],
@@ -2624,6 +2654,90 @@ const TEMPLATES=[['上課開場','時鐘、流程、倒數',['clock','agenda','t
   ['線上課程','鏡頭、簡報、問答',['slides','wall','checkin','mycam']]];
 $('#tplGrid').append(...TEMPLATES.map(([n,d,keys])=>h('button',{class:'tpl',onclick:()=>{keys.forEach(k=>addWidget(k));arrange();toast('已建立「'+n+'」版面，可自由拖曳調整');}},
   h('span',{class:'mini'},keys.map(k=>toolIcon(k))),n,h('small',{},d))));
+/* ---------- 錄影／錄音 ---------- */
+const REC={mr:null,streams:[],chunks:[],t0:0,acc:0,timer:null,kind:'',ac:null};
+const recMenu=$('#recMenu'),recHud=$('#recHud');
+function recMenuToggle(force){
+  if(REC.mr){recStop();return;}
+  const open=force??!recMenu.classList.contains('open');
+  if(open)closePanels();
+  recMenu.classList.toggle('open',open);
+}
+function recPickType(video){
+  const L=video?['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+                :['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm'];
+  return L.find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
+}
+function recFmt(ms){const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function recTick(){const ms=REC.acc+(REC.mr&&REC.mr.state==='recording'?Date.now()-REC.t0:0);$('#recTime').textContent=recFmt(ms);}
+async function recStart(video){
+  recMenu.classList.remove('open');
+  if(!window.MediaRecorder||!navigator.mediaDevices){toast('這個瀏覽器不能錄製，請改用電腦版 Chrome 或 Edge');return;}
+  const tracks=[];let screen=null,mic=null;
+  try{
+    if(video){
+      if(!navigator.mediaDevices.getDisplayMedia){toast('這台裝置不能錄螢幕，可以改用「只錄音」');return;}
+      screen=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:true,preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'include',systemAudio:'include'});
+      REC.streams.push(screen);
+      if($('#recMic').checked){try{mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});REC.streams.push(mic);}catch(e){toast('沒有麥克風權限，這次只錄畫面和電腦聲音');}}
+      tracks.push(...screen.getVideoTracks());
+      const srcs=[screen,mic].filter(s=>s&&s.getAudioTracks().length);
+      if(srcs.length===1)tracks.push(...srcs[0].getAudioTracks());
+      else if(srcs.length>1){REC.ac=new AudioContext();const dst=REC.ac.createMediaStreamDestination();srcs.forEach(s=>REC.ac.createMediaStreamSource(s).connect(dst));tracks.push(...dst.stream.getAudioTracks());}
+      screen.getVideoTracks()[0].addEventListener('ended',()=>{if(REC.mr)recStop();});
+    }else{
+      mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});REC.streams.push(mic);tracks.push(...mic.getAudioTracks());
+    }
+  }catch(e){recCleanup();if(e.name!=='NotAllowedError'&&e.name!=='AbortError')toast('無法開始錄製：'+(e.message||e.name));else toast(video?'已取消錄影':'需要允許麥克風才能錄音');return;}
+  const type=recPickType(video);
+  const opt=type?{mimeType:type,audioBitsPerSecond:128000}:{};
+  if(type&&video)opt.videoBitsPerSecond=3500000;
+  let mr;try{mr=new MediaRecorder(new MediaStream(tracks),opt);}
+  catch(e){recCleanup();toast('這個瀏覽器不支援錄製格式');return;}
+  REC.mr=mr;REC.chunks=[];REC.kind=video?'錄影':'錄音';REC.acc=0;REC.t0=Date.now();
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)REC.chunks.push(e.data);};
+  mr.onstop=recSave;
+  mr.start(1000);
+  $('#recLab').textContent=REC.kind+'中';$('#recPause').textContent='暫停';
+  recHud.classList.add('on');recHud.classList.remove('paused');$('#btnRec').classList.add('rec');
+  REC.timer=setInterval(recTick,500);recTick();
+  toast(REC.kind+'開始：上方紅點可以暫停或停止，按 R 也能停止');
+}
+function recPause(){
+  const mr=REC.mr;if(!mr)return;
+  if(mr.state==='recording'){mr.pause();REC.acc+=Date.now()-REC.t0;recHud.classList.add('paused');$('#recLab').textContent='已暫停';$('#recPause').textContent='繼續';}
+  else if(mr.state==='paused'){mr.resume();REC.t0=Date.now();recHud.classList.remove('paused');$('#recLab').textContent=REC.kind+'中';$('#recPause').textContent='暫停';}
+  recTick();
+}
+function recStop(){const mr=REC.mr;if(!mr)return;if(mr.state!=='inactive')mr.stop();else recSave();}
+function recCleanup(){REC.streams.forEach(s=>s.getTracks().forEach(t=>t.stop()));REC.streams=[];try{REC.ac&&REC.ac.close();}catch(e){}REC.ac=null;}
+function recSave(){
+  const mr=REC.mr;if(!mr)return;
+  clearInterval(REC.timer);recCleanup();
+  const type=(mr.mimeType||'').split(';')[0]||(REC.kind==='錄影'?'video/webm':'audio/webm');
+  const blob=new Blob(REC.chunks,{type});REC.chunks=[];REC.mr=null;
+  recHud.classList.remove('on','paused');$('#btnRec').classList.remove('rec');
+  if(!blob.size){toast('沒有錄到內容');return;}
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  const ext=type.includes('mp4')?(REC.kind==='錄影'?'mp4':'m4a'):'webm';
+  const name=`教室螢幕_${REC.kind}_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.${ext}`;
+  const url=URL.createObjectURL(blob);const a=h('a',{href:url,download:name});document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+  toast('已存檔：'+name+'（在「下載」資料夾）');
+}
+$('#btnRec').onclick=e=>{e.stopPropagation();recMenuToggle();};
+$('#recVideo').onclick=()=>recStart(true);
+$('#recAudio').onclick=()=>recStart(false);
+$('#recPause').onclick=recPause;
+$('#recStop').onclick=recStop;
+document.addEventListener('pointerdown',e=>{if(recMenu.classList.contains('open')&&!e.target.closest('#recMenu,#btnRec'))recMenu.classList.remove('open');});
+addEventListener('beforeunload',e=>{if(REC.mr){e.preventDefault();e.returnValue='';}});
+{ // 紅點可以拖到別的位置，避免擋住畫面
+  let dx=0,dy=0,drag=false;
+  recHud.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;const r=recHud.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;recHud.setPointerCapture(e.pointerId);});
+  recHud.addEventListener('pointermove',e=>{if(!drag)return;recHud.style.left=clamp(e.clientX-dx,0,innerWidth-recHud.offsetWidth)+'px';recHud.style.top=clamp(e.clientY-dy,0,innerHeight-recHud.offsetHeight)+'px';recHud.style.transform='none';});
+  recHud.addEventListener('pointerup',()=>{drag=false;});
+}
 /* 聚光燈 */
 const spot=$('#spot');let spR=170,spX=innerWidth/2,spY=innerHeight/2,spLock=false;
 function spDraw(){spot.style.background=`radial-gradient(circle ${spR}px at ${spX}px ${spY}px,transparent 0,transparent ${Math.max(0,spR-3)}px,rgba(5,8,20,.87) ${spR}px)`;}
@@ -2733,7 +2847,7 @@ document.addEventListener('keydown',e=>{
     if(t){e.preventDefault();if(e.target.blur)e.target.blur();live.get(t.id).api.space();}
     return;
   }
-  if(k==='f')toggleFull();else if(k==='h')toggleBar();else if(k==='p')penOn(!ov.classList.contains('on'));else if(k==='a')arrange();else if(k==='s')spotOn(!spot.classList.contains('on'));else if((e.key==='Delete'||e.key==='Backspace')&&activeId&&state.widgets.some(w=>w.id===activeId)){e.preventDefault();closeWidget(activeId);activeId=null;}else if(e.key==='?')$('#help').classList.toggle('open');
+  if(k==='f')toggleFull();else if(k==='h')toggleBar();else if(k==='p')penOn(!ov.classList.contains('on'));else if(k==='a')arrange();else if(k==='s')spotOn(!spot.classList.contains('on'));else if(k==='r')recMenuToggle();else if((e.key==='Delete'||e.key==='Backspace')&&activeId&&state.widgets.some(w=>w.id===activeId)){e.preventDefault();closeWidget(activeId);activeId=null;}else if(e.key==='?')$('#help').classList.toggle('open');
 });
 addEventListener('resize',()=>{
   {const t=$('#minTray');if(t&&state.trayPos)placeTray(t);}
