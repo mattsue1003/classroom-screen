@@ -721,6 +721,7 @@ body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
   body[data-bar=left] #bar::-webkit-scrollbar,body[data-bar=right] #bar::-webkit-scrollbar{display:none}
   body[data-bar=left] #bar .tools,body[data-bar=right] #bar .tools{flex:none;overflow:visible;min-height:0;-webkit-mask-image:none;mask-image:none}
 }
+.cam-wrap.ph-guide{background:var(--win,#fffdf8);color:var(--ink,#2b2b2b);align-items:flex-start;overflow:auto}
 </style>
 </head>
 <body>
@@ -839,6 +840,7 @@ body.clean #barToggle::before{content:'';position:absolute;inset:-40px}
       <li><b>攝影機</b>可當實物投影機，<b>音量計</b>需要麥克風；影像與聲音都只在本機處理；只有按下<b>錄製</b>時才會錄影或錄音，檔案直接存到這台電腦。</li>
       <li><b>線上課程</b>：在 Meet、Zoom、Teams 分享「教室螢幕」這個分頁即可。用「螢幕分享」把簡報放進來、「我的鏡頭」疊在角落（可圓形、圓角或去背），「問答牆」「線上簽到」「即時投票」按「複製連結」貼到聊天室，學生點連結就能參與。</li>
       <li><b>搶答遊戲</b>：Kahoot 風格的即時問答，學生用手機作答，答得越快分數越高，每題有排行榜。題庫和搶答大作戰網站共用。</li>
+      <li><b>顯示手機畫面</b>：在「螢幕分享」按「顯示手機畫面」，照步驟把手機畫面投到電腦（iPhone 鏡像輸出、QuickTime、手機連結或 scrcpy），再選那個視窗，就能示範手機操作。</li>
       <li><b>手機當實物投影機</b>：在「攝影機」按「用手機當鏡頭」，手機掃 QR Code 後按「開啟相機」，畫面會直接傳到螢幕上。</li>
       <li><b>關錯視窗</b>？按提示中的「復原」或 <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> 找回來。</li>
       <li>開著這個頁面時，電腦螢幕不會自動休眠（瀏覽器支援時）。</li>
@@ -2584,15 +2586,42 @@ mount(body,s,ctx){
   const msg=h('div',{class:'fit col',style:'gap:8px;max-width:440px;margin:auto'},ico,h('div',{},'把簡報、文件或其他視窗顯示在這裡'),hint);
   const view=h('div',{class:'cam-wrap'},msg);
   const bGo=h('button',{class:'btn p',onclick:()=>stream?stop():start()},'選擇要顯示的視窗');
-  body.append(view,h('div',{class:'foot'},bGo,h('span',{class:'muted'},'可搭配「我的鏡頭」疊在上面')));
+  const bPhone=h('button',{class:'btn',onclick:()=>stream?null:showPhone(s.ph||'ios')},'顯示手機畫面');
+  body.append(view,h('div',{class:'foot'},bGo,bPhone,h('span',{class:'muted'},'可搭配「我的鏡頭」疊在上面')));
   let stream=null;
+  // 手機瀏覽器不支援把螢幕分享給網頁，所以先把手機畫面投到電腦，再把那個視窗抓進來
+  const PH={
+    ios:{t:'iPhone',steps:[
+      ['Mac（macOS 15 以上）','打開「iPhone 鏡像輸出」App，iPhone 畫面會出現在 Mac 的一個視窗裡，還能直接用滑鼠操作 iPhone。'],
+      ['Mac（較舊的系統）','iPhone 用傳輸線接上 Mac，打開 QuickTime Player →「檔案 → 新增影片錄製」，按錄影鍵旁的箭頭選你的 iPhone。'],
+      ['Mac 無線','iPhone 開控制中心 →「螢幕鏡像輸出」→ 選這台 Mac（Mac 要開啟「AirPlay 接收器」）。'],
+      ['Windows 電腦','需要另外安裝 AirPlay 接收軟體（例如 LonelyScreen、AirServer），iPhone 再用「螢幕鏡像輸出」投過去。']]},
+    android:{t:'Android',steps:[
+      ['Windows 電腦','用 Windows 內建的「手機連結」（Phone Link）App 連線手機，打開「應用程式」或手機畫面視窗。'],
+      ['Mac 或 Windows','手機用傳輸線接電腦，安裝免費的 scrcpy，執行後手機畫面會出現在一個視窗裡。'],
+      ['三星手機','可用 Samsung Flow 或 Smart View 投到電腦。']]}
+  };
+  function showPhone(k){
+    s.ph=k;const I=ctx.inst;if(I&&!I.max&&I.h<600){I.h=Math.min(600,innerHeight-130);I.y=Math.max(8,Math.min(I.y,innerHeight-I.h-116));place(I);}ctx.save();const P=PH[k];
+    view.classList.add('ph-guide');
+    const tabs=h('div',{class:'row',style:'justify-content:center;gap:6px'},...Object.entries(PH).map(([kk,v])=>h('button',{class:'btn sm'+(kk===k?' p':''),onclick:()=>showPhone(kk)},v.t)));
+    const list=h('ol',{style:'text-align:left;margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.55'},
+      ...P.steps.map(([a,b])=>h('li',{},h('b',{},a+'：'),b)));
+    view.innerHTML='';
+    view.append(h('div',{class:'col',style:'gap:12px;max-width:520px;margin:auto;padding:16px;overflow:auto;max-height:100%'},
+      h('b',{style:'font-size:16px;text-align:center'},'把手機畫面顯示在教室螢幕'),tabs,
+      h('div',{class:'muted',style:'font-size:13px;text-align:center'},'第一步：先用下面任一種方式，讓手機畫面出現在這台電腦上'),list,
+      h('div',{class:'muted',style:'font-size:13px;text-align:center'},'第二步：按下面的按鈕，選「視窗」裡的手機畫面視窗'),
+      h('div',{class:'row',style:'justify-content:center;gap:8px'},h('button',{class:'btn p',onclick:start},'選擇手機畫面視窗'),h('button',{class:'btn',onclick:()=>{view.classList.remove('ph-guide');view.innerHTML='';view.append(msg);}},'返回')),
+      h('div',{class:'muted',style:'font-size:12px;text-align:center'},'手機瀏覽器不支援直接分享螢幕，所以無法用掃 QR Code 的方式傳手機畫面。只想拍課本或作業的話，可用「攝影機」的「用手機當鏡頭」。')));
+  }
   async function start(){
     if(!navigator.mediaDevices?.getDisplayMedia){hint.textContent='這個瀏覽器不支援螢幕分享，請改用電腦版 Chrome、Edge 或 Safari';return;}
     try{stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});}catch(e){if(e.name!=='NotAllowedError')hint.textContent='無法分享：'+(e.message||e.name);return;}
     stream.getVideoTracks()[0].addEventListener('ended',()=>stop());
-    vid.srcObject=stream;view.innerHTML='';view.append(vid);bGo.textContent='停止顯示';
+    view.classList.remove('ph-guide');vid.srcObject=stream;view.innerHTML='';view.append(vid);bGo.textContent='停止顯示';bPhone.style.display='none';
   }
-  function stop(){stream?.getTracks().forEach(t=>t.stop());stream=null;vid.srcObject=null;view.innerHTML='';view.append(msg);bGo.textContent='選擇要顯示的視窗';}
+  function stop(){stream?.getTracks().forEach(t=>t.stop());stream=null;vid.srcObject=null;view.innerHTML='';view.append(msg);bGo.textContent='選擇要顯示的視窗';bPhone.style.display='';}
   return {destroy:()=>stream?.getTracks().forEach(t=>t.stop())};
 }};
 
